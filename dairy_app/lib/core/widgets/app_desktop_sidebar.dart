@@ -219,25 +219,29 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
               : (_isHovered ? AppColors.lightBlue : Colors.transparent),
           borderRadius: AppSizes.borderMedium,
         ),
-        child: ListTile(
-          onTap: widget.onTap,
-          shape: RoundedRectangleBorder(borderRadius: AppSizes.borderMedium),
-          contentPadding: const EdgeInsets.symmetric(horizontal: AppSizes.p16, vertical: 2),
-          leading: Icon(
-            active ? widget.activeIcon : widget.icon,
-            color: active
-                ? Colors.white
-                : (_isHovered ? AppColors.primaryBlue : AppColors.textSecondary),
-            size: 22,
-          ),
-          title: Text(
-            widget.label,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: AppSizes.borderMedium,
+          child: ListTile(
+            onTap: widget.onTap,
+            shape: RoundedRectangleBorder(borderRadius: AppSizes.borderMedium),
+            contentPadding: const EdgeInsets.symmetric(horizontal: AppSizes.p16, vertical: 2),
+            leading: Icon(
+              active ? widget.activeIcon : widget.icon,
               color: active
                   ? Colors.white
-                  : (_isHovered ? AppColors.primaryBlue : AppColors.textPrimary),
+                  : (_isHovered ? AppColors.primaryBlue : AppColors.textSecondary),
+              size: 22,
+            ),
+            title: Text(
+              widget.label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                color: active
+                    ? Colors.white
+                    : (_isHovered ? AppColors.primaryBlue : AppColors.textPrimary),
+              ),
             ),
           ),
         ),

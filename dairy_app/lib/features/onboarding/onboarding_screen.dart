@@ -41,10 +41,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   void _nextPage() {
     if (_currentPage < 2) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 350),
-        curve: Curves.easeInOut,
-      );
+      if (_pageController.hasClients) {
+        _pageController.nextPage(
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeInOut,
+        );
+      } else {
+        // Controller not yet attached — advance state directly.
+        setState(() => _currentPage++);
+      }
     } else {
       _completeOnboarding();
     }

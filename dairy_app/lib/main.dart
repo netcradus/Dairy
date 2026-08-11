@@ -4,6 +4,13 @@ import 'core/router/app_router.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Catch any uncaught Flutter build/layout exceptions so the app renders
+  // an error message instead of a blank white screen.
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+  };
+
   runApp(
     const ProviderScope(
       child: MyApp(),

@@ -232,8 +232,11 @@ class _NotificationTile extends StatelessWidget {
             ),
           ],
         ),
-        child: ListTile(
-          onTap: onTap,
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: AppSizes.borderLarge,
+          child: ListTile(
+            onTap: onTap,
             contentPadding: const EdgeInsets.symmetric(
             horizontal: AppSizes.p14,
             vertical: AppSizes.p12,
@@ -324,6 +327,7 @@ class _NotificationTile extends StatelessWidget {
               const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary, size: 18),
             ],
           ),
+        ),
         ),
       ),
     );

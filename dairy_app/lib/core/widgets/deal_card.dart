@@ -132,11 +132,14 @@ class DealCard extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        PriceText(
-                          price: product.price,
-                          originalPrice: product.originalPrice,
-                          priceFontSize: 14,
+                        Flexible(
+                          child: PriceText(
+                            price: product.price,
+                            originalPrice: product.originalPrice,
+                            priceFontSize: 14,
+                          ),
                         ),
+                        const SizedBox(width: 4),
                         QuantitySelector(
                           quantity: quantity,
                           onIncrement: onIncrement ?? () {},

@@ -39,13 +39,16 @@ class PriceText extends StatelessWidget {
         ),
         if (hasDiscount) ...[
           const SizedBox(width: 6),
-          Text(
-            AppFormatters.formatCurrency(originalPrice!),
-            style: TextStyle(
-              fontSize: originalPriceFontSize,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textMuted,
-              decoration: TextDecoration.lineThrough,
+          Flexible(
+            child: Text(
+              AppFormatters.formatCurrency(originalPrice!),
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: originalPriceFontSize,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textMuted,
+                decoration: TextDecoration.lineThrough,
+              ),
             ),
           ),
         ],
