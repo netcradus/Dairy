@@ -1,0 +1,346 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+
+import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_sizes.dart';
+import '../../core/responsive/responsive.dart';
+import '../../models/notification_item.dart';
+import '../../models/order.dart';
+import '../../providers/navigation_provider.dart';
+import '../../providers/notification_provider.dart';
+import '../../providers/order_provider.dart';
+import '../orders/order_details_screen.dart';
+
+/// Sawariya Dairy Phase 7 — Notifications Screen
+class NotificationsScreen extends ConsumerWidget {
+  const NotificationsScreen({super.key});
+
+  String _timeAgo(DateTime timestamp) {
+    final now = DateTime.now();
+    final diff = now.difference(timestamp);
+
+    if (diff.inSeconds < 60) return '${diff.inSeconds}s ago';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.inDays < 2) return 'Yesterday';
+    return DateFormat.MMMd().format(timestamp);
+  }
+
+  void _openNotification(BuildContext context, WidgetRef ref, NotificationItem item) {
+    ref.read(notificationsProvider.notifier).markRead(item.id);
+
+    if (item.orderId != null) {
+      final orders = ref.read(ordersProvider);
+      Order? order;
+      for (final o in orders) {
+        if (o.id == item.orderId) {
+          order = o;
+          break;
+        }
+      }
+      if (order != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => OrderDetailsScreen(order: order!)),
+        );
+        return;
+      }
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(item.title)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifications = ref.watch(notificationsProvider);
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text('Notifications'),
+        backgroundColor: AppColors.surface,
+        foregroundColor: AppColors.textPrimary,
+        elevation: 0,
+        actions: [
+          if (notifications.any((n) => !n.isRead))
+            TextButton.icon(
+              onPressed: () =>
+                  ref.read(notificationsProvider.notifier).markAllRead(),
+              icon: const Icon(Icons.done_all_rounded, size: 18),
+              label: const Text(
+                'Mark all read',
+                style: TextStyle(
+                  color: AppColors.primaryBlue,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          if (notifications.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.delete_sweep_rounded, size: 20),
+              tooltip: 'Clear all',
+              onPressed: () =>
+                  ref.read(notificationsProvider.notifier).clearAll(),
+            ),
+          const SizedBox(width: 8),
+        ],
+      ),
+        body: notifications.isEmpty
+          ? _buildEmptyState(context, ref)
+          : ListView.separated(
+              padding: EdgeInsets.symmetric(
+                horizontal: context.responsiveHorizontalPadding,
+                vertical: AppSizes.p16,
+              ),
+              itemCount: notifications.length,
+              separatorBuilder: (_, _) => const SizedBox(height: AppSizes.p12),
+              itemBuilder: (context, index) {
+                final item = notifications[index];
+                return _NotificationTile(
+                  item: item,
+                  timeAgo: _timeAgo(item.timestamp),
+                  onTap: () => _openNotification(context, ref, item),
+                  onDismiss: (context) {
+                    ref.read(notificationsProvider.notifier).dismiss(item.id);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Notification dismissed')),
+                    );
+                  },
+                );
+              },
+            ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context, WidgetRef ref) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSizes.p24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: AppColors.lightBlue,
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.notifications_off_outlined,
+                  size: 50,
+                  color: AppColors.primaryBlue,
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSizes.p24),
+            const Text(
+              'No Notifications Yet',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: AppSizes.p8),
+            const Text(
+              'We will notify you about your order status, delivery updates and special offers.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: AppSizes.p24),
+            SizedBox(
+              height: 48,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  ref.read(navigationProvider.notifier).setIndex(0);
+                },
+                icon: const Icon(Icons.home_rounded),
+                label: const Text(
+                  'Back to Home',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryBlue,
+                  foregroundColor: AppColors.textOnPrimary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: AppSizes.borderMedium,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NotificationTile extends StatelessWidget {
+  final NotificationItem item;
+  final String timeAgo;
+  final VoidCallback onTap;
+  final void Function(BuildContext)? onDismiss;
+
+  const _NotificationTile({
+    required this.item,
+    required this.timeAgo,
+    required this.onTap,
+    required this.onDismiss,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final iconColor = _iconColor(item.type);
+
+    return Dismissible(
+      key: ValueKey(item.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        decoration: BoxDecoration(
+          color: AppColors.error,
+          borderRadius: AppSizes.borderLarge,
+        ),
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16),
+        child: const Icon(Icons.delete_rounded, color: Colors.white, size: 22),
+      ),
+      onDismissed: (_) {
+        if (onDismiss != null) onDismiss!(context);
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: AppSizes.borderLarge,
+          border: Border.all(
+            color: item.isRead ? AppColors.border : AppColors.primaryBlue.withValues(alpha: 0.3),
+            width: item.isRead ? 1 : 1.5,
+          ),
+          boxShadow: const [
+            BoxShadow(
+              color: AppColors.shadow,
+              blurRadius: 8,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: ListTile(
+          onTap: onTap,
+            contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppSizes.p14,
+            vertical: AppSizes.p12,
+          ),
+          leading: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(item.type.icon, size: 22, color: iconColor),
+          ),
+          title: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  item.title,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight:
+                        item.isRead ? FontWeight.w600 : FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                timeAgo,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 4),
+              Text(
+                item.body,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                  height: 1.4,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (item.isActionable) ...[
+                const SizedBox(height: 6),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.lightBlue,
+                      borderRadius: AppSizes.borderSmall,
+                    ),
+                    child: const Text(
+                      'Tap to view',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryBlue,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (!item.isRead)
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: const BoxDecoration(
+                    color: AppColors.primaryBlue,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              const SizedBox(width: 6),
+              const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary, size: 18),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color _iconColor(NotificationType type) {
+    switch (type) {
+      case NotificationType.order:
+        return const Color(0xFF0284C7);
+      case NotificationType.delivery:
+        return AppColors.primaryBlue;
+      case NotificationType.promotional:
+        return const Color(0xFFF59E0B);
+      case NotificationType.subscription:
+        return const Color(0xFF7C3AED);
+      case NotificationType.system:
+        return AppColors.textSecondary;
+    }
+  }
+}
