@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
 
 /// Product image displayed in a clean rounded container with soft
 /// grey/white background so packaging graphics pop. Falls back to a
-/// styled placeholder when no image is available.
+/// styled placeholder when no image is available or loading fails.
 class ProductImage extends StatelessWidget {
   final String imageUrl;
   final double? width;
@@ -38,14 +37,19 @@ class ProductImage extends StatelessWidget {
       padding: const EdgeInsets.all(AppSizes.p8),
       child: ClipRRect(
         borderRadius: radius,
-        child: CachedNetworkImage(
-          imageUrl: imageUrl,
-          fit: fit,
-          width: width,
-          height: height,
-          placeholder: (context, url) => _placeholder(),
-          errorWidget: (context, url, error) => _placeholder(),
-        ),
+        child: imageUrl.isEmpty
+            ? _placeholder()
+            : Image.network(
+                imageUrl,
+                fit: fit,
+                width: width,
+                height: height,
+                loadingBuilder: (context, child, progress) {
+                  if (progress == null) return child;
+                  return _placeholder();
+                },
+                errorBuilder: (context, error, stack) => _placeholder(),
+              ),
       ),
     );
   }
