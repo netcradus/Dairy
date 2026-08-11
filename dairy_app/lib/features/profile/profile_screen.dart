@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/responsive/responsive.dart';
@@ -73,36 +74,36 @@ class ProfileScreen extends ConsumerWidget {
                   },
                 ),
                 _buildTile(
-                   context: context,
-                   icon: Icons.repeat_rounded,
-                   title: 'Daily Milk Subscriptions',
-                   subtitle: 'Manage recurring morning/evening deliveries',
-                   onTap: () {
-                     Navigator.push(
-                       context,
-                       MaterialPageRoute(
-                         builder: (_) => const SubscriptionsScreen(),
-                       ),
-                     );
-                   },
-                 ),
+                  context: context,
+                  icon: Icons.repeat_rounded,
+                  title: 'Daily Milk Subscriptions',
+                  subtitle: 'Manage recurring morning/evening deliveries',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const SubscriptionsScreen(),
+                      ),
+                    );
+                  },
+                ),
 
                 const SizedBox(height: 16),
                 _buildSectionTitle('Preferences & Support'),
-                   _buildTile(
-                   context: context,
-                   icon: Icons.notifications_none_rounded,
-                   title: 'Notifications',
-                   subtitle: 'Delivery updates and daily reminders',
-                   onTap: () {
-                     Navigator.push(
-                       context,
-                       MaterialPageRoute(
-                         builder: (_) => const NotificationsScreen(),
-                       ),
-                     );
-                   },
-                 ),
+                _buildTile(
+                  context: context,
+                  icon: Icons.notifications_none_rounded,
+                  title: 'Notifications',
+                  subtitle: 'Delivery updates and daily reminders',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const NotificationsScreen(),
+                      ),
+                    );
+                  },
+                ),
                 _buildTile(
                   context: context,
                   icon: Icons.headset_mic_outlined,
@@ -116,6 +117,15 @@ class ProfileScreen extends ConsumerWidget {
                   title: 'About Sawariya Dairy',
                   subtitle: 'App version 1.0.0',
                   onTap: () {},
+                ),
+                _buildTile(
+                  context: context,
+                  icon: Icons.admin_panel_settings_outlined,
+                  title: 'Admin Panel',
+                  subtitle: 'Manage orders, corridors, staff & products',
+                  onTap: () {
+                    context.push('/admin');
+                  },
                 ),
 
                 const SizedBox(height: 24),

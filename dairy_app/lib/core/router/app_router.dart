@@ -1,4 +1,10 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+
+import '../theme/admin_theme.dart';
+import '../../providers/admin_provider.dart';
+import '../../screens/admin_main_shell.dart';
 
 import '../../features/address/add_address_screen.dart';
 import '../../features/address/address_screen.dart';
@@ -99,6 +105,22 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/offers',
       builder: (context, state) => const OffersScreen(),
+    ),
+    GoRoute(
+      path: '/admin',
+      builder: (context, state) => MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => AdminProvider()),
+        ],
+        child: Consumer<AdminProvider>(
+          builder: (context, adminProvider, child) {
+            return Theme(
+              data: adminProvider.isDarkMode ? AdminTheme.darkTheme : AdminTheme.lightTheme,
+              child: const AdminMainShell(),
+            );
+          },
+        ),
+      ),
     ),
   ],
 );

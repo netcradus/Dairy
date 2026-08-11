@@ -1,0 +1,272 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../core/constants/app_colors.dart';
+import '../providers/admin_provider.dart';
+
+class NavItemData {
+  final String title;
+  final IconData icon;
+
+  const NavItemData({required this.title, required this.icon});
+}
+
+class SidebarNavigation extends StatelessWidget {
+  final bool isDrawer;
+
+  const SidebarNavigation({super.key, this.isDrawer = false});
+
+  static const List<NavItemData> navItems = [
+    NavItemData(title: 'Dashboard', icon: Icons.dashboard_rounded),
+    NavItemData(title: 'Customers', icon: Icons.people_alt_outlined),
+    NavItemData(title: 'Products', icon: Icons.inventory_2_outlined),
+    NavItemData(title: 'Categories', icon: Icons.grid_view_rounded),
+    NavItemData(title: 'Orders', icon: Icons.receipt_long_rounded),
+    NavItemData(title: 'Delivery Management', icon: Icons.local_shipping_outlined),
+    NavItemData(title: 'Delivery Staff', icon: Icons.directions_bike_rounded),
+    NavItemData(title: 'Payments', icon: Icons.credit_card_rounded),
+    NavItemData(title: 'Notifications', icon: Icons.notifications_none_rounded),
+    NavItemData(title: 'Support / Complaints', icon: Icons.chat_bubble_outline_rounded),
+    NavItemData(title: 'Staff & Roles', icon: Icons.manage_accounts_outlined),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.watch<AdminProvider>();
+
+    return Container(
+      width: 260,
+      height: double.infinity,
+      color: AppColors.sidebarBg,
+      child: Column(
+        children: [
+          // Brand Logo Header with Sawariya Dairy branding
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.sidebarBorder, width: 1),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.sidebarActive.withValues(alpha: 0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Image.asset(
+                    'assets/images/sawariya_logo.png',
+                    fit: BoxFit.contain,
+                    errorBuilder: (ctx, err, stack) => const Center(
+                      child: Icon(
+                        Icons.water_drop_rounded,
+                        color: AppColors.primary,
+                        size: 26,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Sawariya Dairy',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textWhite,
+                          letterSpacing: -0.3,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        'Premium Milk Products',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.sidebarActive,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(color: AppColors.sidebarBorder, height: 1),
+          // Navigation Items Scrollable List
+          Expanded(
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              itemCount: navItems.length,
+              separatorBuilder: (ctx, idx) => const SizedBox(height: 4),
+              itemBuilder: (ctx, idx) {
+                final item = navItems[idx];
+                final isSelected = provider.selectedNavIndex == idx;
+
+                return Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      provider.setNavIndex(idx);
+                      if (isDrawer) {
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.sidebarActive
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            item.icon,
+                            size: 19,
+                            color: isSelected
+                                ? AppColors.sidebarActiveText
+                                : AppColors.sidebarText,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              item.title,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 13,
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: isSelected
+                                    ? AppColors.sidebarActiveText
+                                    : AppColors.sidebarText,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          // Light / Dark Mode Toggle Row
+          const Divider(color: AppColors.sidebarBorder, height: 1),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            color: AppColors.sidebarBgDarker,
+            child: Row(
+              children: [
+                Icon(
+                  provider.isDarkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                  size: 18,
+                  color: provider.isDarkMode ? Colors.amber : Colors.orangeAccent,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    provider.isDarkMode ? 'Dark Mode' : 'Light Mode',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textWhite,
+                    ),
+                  ),
+                ),
+                Transform.scale(
+                  scale: 0.75,
+                  child: Switch(
+                    value: provider.isDarkMode,
+                    activeThumbColor: AppColors.primary,
+                    activeTrackColor: AppColors.primary.withValues(alpha: 0.4),
+                    onChanged: (val) => provider.toggleTheme(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // User Profile Card Footer
+          const Divider(color: AppColors.sidebarBorder, height: 1),
+          Container(
+            padding: const EdgeInsets.all(14),
+            color: AppColors.sidebarBgDarker,
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 16,
+                  backgroundColor: AppColors.sidebarHover,
+                  child: const Icon(
+                    Icons.person_rounded,
+                    color: Colors.white70,
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Admin User',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textWhite,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        'Super Admin',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.sidebarText,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.logout_rounded,
+                    size: 18,
+                    color: AppColors.sidebarText,
+                  ),
+                  tooltip: 'Sign Out',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Logged in as Super Admin — Sawariya Dairy')),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

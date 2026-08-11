@@ -44,4 +44,83 @@ abstract class AppColors {
   static const Color darkTextPrimary = Color(0xFFF8FAFC);
   static const Color darkTextSecondary = Color(0xFF94A3B8);
   static const Color darkBorder = Color(0xFF334155);
+
+  // Sidebar Colors (Dark Navy - consistent in both modes for a premium admin feel)
+  static const Color sidebarBg = Color(0xFF0A132C);
+  static const Color sidebarBgDarker = Color(0xFF070E22);
+  static const Color sidebarText = Color(0xFF94A3B8);
+  static const Color sidebarActive = Color(0xFF1E6BFF);
+  static const Color sidebarActiveText = Color(0xFFFFFFFF);
+  static const Color sidebarHover = Color(0xFF132247);
+  static const Color sidebarBorder = Color(0xFF1E293B);
+
+  // Light Theme Palette aliases / additions
+  static const Color cardBg = Color(0xFFFFFFFF);
+  static const Color cardBorder = Color(0xFFEBF0F7);
+
+  // Dark Theme Palette additions
+  static const Color darkCardBg = Color(0xFF161F36);
+  static const Color darkCardBorder = Color(0xFF222F4E);
+  static const Color darkDivider = Color(0xFF1E293B);
+  static const Color darkTextMuted = Color(0xFF64748B);
+
+  // Primary brand
+  static const Color primary = Color(0xFF1E6BFF);
+  static const Color primaryLight = Color(0xFFEFF6FF);
+  static const Color primaryDark = Color(0xFF1D4ED8);
+
+  // KPI Card Theme Colors
+  static const Color revenueGreen = Color(0xFF00BA88);
+  static const Color revenueGreenBg = Color(0xFFE8FAF2);
+  
+  static const Color ordersBlue = Color(0xFF1E6BFF);
+  static const Color ordersBlueBg = Color(0xFFEFF6FF);
+  
+  static const Color customersOrange = Color(0xFFF97316);
+  static const Color customersOrangeBg = Color(0xFFFFF4EC);
+  
+  static const Color deliveriesPurple = Color(0xFF8B5CF6);
+  static const Color deliveriesPurpleBg = Color(0xFFF6F3FF);
+
+  // Donut Chart & Status Colors
+  static const Color statusPending = Color(0xFFF97316);
+  static const Color statusConfirmed = Color(0xFFEA580C);
+  static const Color statusPreparing = Color(0xFFA855F7);
+  static const Color statusOutForDelivery = Color(0xFF0284C7);
+  static const Color statusDelivered = Color(0xFF10B981);
+  static const Color statusCancelled = Color(0xFF64748B);
+  static const Color statusOnRoute = Color(0xFF0284C7);
+
+  static const Color textWhite = Color(0xFFFFFFFF);
+
+  // Dynamic Theme-Aware Getters
+  static Color bgOf(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkBackground : background;
+
+  static Color cardBgOf(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkCardBg : cardBg;
+
+  static Color cardBorderOf(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkCardBorder : cardBorder;
+
+  static Color dividerOf(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkDivider : divider;
+
+  static Color textPrimaryOf(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkTextPrimary : textPrimary;
+
+  static Color textSecondaryOf(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkTextSecondary : textSecondary;
+
+  static Color textMutedOf(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkTextMuted : textMuted;
+
+  // Surface Shadows
+  static List<BoxShadow> cardShadow = [
+    BoxShadow(
+      color: const Color(0xFF0F172A).withValues(alpha: 0.04),
+      blurRadius: 16,
+      offset: const Offset(0, 4),
+    ),
+  ];
 }
