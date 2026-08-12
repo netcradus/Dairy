@@ -162,23 +162,27 @@ class _DeliveryPanelScreenState extends ConsumerState<DeliveryPanelScreen> {
                 final isSelected = currentIndex == index;
                 return Container(
                   margin: const EdgeInsets.only(bottom: 8),
-                  child: ListTile(
-                    leading: Icon(
-                      isSelected ? item.activeIcon : item.icon,
-                      color: isSelected ? AppColors.primary : textSecondary,
-                    ),
-                    title: Text(
-                      item.label,
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 14,
-                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                        color: isSelected ? AppColors.primary : textPrimary,
-                      ),
-                    ),
-                    selected: isSelected,
-                    selectedTileColor: AppColors.primaryLight.withValues(alpha: 0.1),
+                  child: Material(
+                    color: isSelected
+                        ? AppColors.primaryLight.withValues(alpha: 0.1)
+                        : Colors.transparent,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    onTap: () => ref.read(deliveryPanelTabProvider.notifier).setTab(index),
+                    child: ListTile(
+                      leading: Icon(
+                        isSelected ? item.activeIcon : item.icon,
+                        color: isSelected ? AppColors.primary : textSecondary,
+                      ),
+                      title: Text(
+                        item.label,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14,
+                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                          color: isSelected ? AppColors.primary : textPrimary,
+                        ),
+                      ),
+                      selected: isSelected,
+                      onTap: () => ref.read(deliveryPanelTabProvider.notifier).setTab(index),
+                    ),
                   ),
                 );
               },

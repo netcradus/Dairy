@@ -264,9 +264,10 @@ class _OrderCard extends ConsumerWidget {
             child: Row(
               children: [
                 // Product thumbnails
-                SizedBox(
-                  height: 46,
-                  child: Stack(
+                Expanded(
+                  child: SizedBox(
+                    height: 46,
+                    child: Stack(
                     children: [
                       ...List.generate(
                         order.items.length.clamp(0, 3),
@@ -310,6 +311,7 @@ class _OrderCard extends ConsumerWidget {
                         ),
                     ],
                   ),
+                ),
                 ),
                 SizedBox(
                     width: 16 + (order.items.length.clamp(0, 3) - 1) * 30.0),

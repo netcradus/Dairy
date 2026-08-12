@@ -71,36 +71,43 @@ class _ProductCardState extends State<ProductCard> {
               // Product Image Header with Discount/A2 Badges
               Expanded(
                 child: Stack(
+                  fit: StackFit.loose,
                   children: [
-                    Container(
-                      width: double.infinity,
-                      decoration: const BoxDecoration(
-                        color: AppColors.lightBlue,
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(AppSizes.radiusLarge - 1),
-                        ),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(AppSizes.radiusLarge - 1),
-                        ),
-                        child: CachedNetworkImage(
-                          imageUrl: p.imageUrl,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(
-                            color: AppColors.lightBlue,
-                            child: const Center(
-                              child: Icon(Icons.water_drop_outlined,
-                                  color: AppColors.secondaryBlue, size: 32),
-                            ),
+                    Positioned.fill(
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: AppColors.lightBlue,
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(AppSizes.radiusLarge - 1),
                           ),
-                          errorWidget: (context, url, error) => Container(
-                            color: AppColors.lightBlue,
-                            child: const Center(
-                              child: Icon(Icons.opacity_rounded,
-                                  color: AppColors.primaryBlue, size: 36),
-                            ),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(AppSizes.radiusLarge - 1),
                           ),
+                          child: p.imageUrl.isNotEmpty
+                              ? CachedNetworkImage(
+                                  imageUrl: p.imageUrl,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => Container(
+                                    color: AppColors.lightBlue,
+                                    child: const Center(
+                                      child: Icon(Icons.water_drop_outlined,
+                                          color: AppColors.secondaryBlue, size: 32),
+                                    ),
+                                  ),
+                                  errorWidget: (context, url, error) => Container(
+                                    color: AppColors.lightBlue,
+                                    child: const Center(
+                                      child: Icon(Icons.opacity_rounded,
+                                          color: AppColors.primaryBlue, size: 36),
+                                    ),
+                                  ),
+                                )
+                              : const Center(
+                                  child: Icon(Icons.water_drop_outlined,
+                                      color: AppColors.secondaryBlue, size: 32),
+                                ),
                         ),
                       ),
                     ),
@@ -178,7 +185,7 @@ class _ProductCardState extends State<ProductCard> {
 
                     // Product Title
                     Text(
-                      p.title,
+                      p.title.isEmpty ? 'Product' : p.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(

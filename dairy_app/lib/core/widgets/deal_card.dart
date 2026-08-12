@@ -50,6 +50,7 @@ class DealCard extends StatelessWidget {
             children: [
               // Left Image
               Stack(
+                fit: StackFit.loose,
                 children: [
                   Container(
                     width: 84,

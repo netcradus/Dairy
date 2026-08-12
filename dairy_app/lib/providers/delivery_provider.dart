@@ -243,9 +243,7 @@ class DeliveryRequestsNotifier extends StateNotifier<List<DeliveryRequest>> {
 }
 
 final deliveryRequestsProvider = StateNotifierProvider<DeliveryRequestsNotifier, List<DeliveryRequest>>((ref) {
-  final notifier = DeliveryRequestsNotifier();
-  ref.onDispose(() => notifier.dispose());
-  return notifier;
+  return DeliveryRequestsNotifier();
 });
 
 class DeliveryEarningsNotifier extends StateNotifier<List<DeliveryEarnings>> {

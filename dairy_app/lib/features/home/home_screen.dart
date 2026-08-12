@@ -96,6 +96,8 @@ class HomeScreen extends ConsumerWidget {
                 height: 152,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
                   padding: EdgeInsets.zero,
                   itemCount: freshDeals.length,
                   itemBuilder: (context, index) {

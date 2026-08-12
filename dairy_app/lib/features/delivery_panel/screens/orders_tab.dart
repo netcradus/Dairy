@@ -134,7 +134,7 @@ class OrdersTab extends ConsumerWidget {
           const SizedBox(width: 16),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
                   'Order #${order.orderId}',
@@ -157,21 +157,27 @@ class OrdersTab extends ConsumerWidget {
                   children: [
                     Icon(Icons.access_time_rounded, size: 12, color: textMuted),
                     const SizedBox(width: 4),
-                    Text(
-                      _formatDate(order.date),
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 12,
-                        color: textMuted,
+                    Expanded(
+                      child: Text(
+                        _formatDate(order.date),
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12,
+                          color: textMuted,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 16),
                     Icon(Icons.straighten_rounded, size: 12, color: textMuted),
                     const SizedBox(width: 4),
-                    Text(
-                      order.distance,
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 12,
-                        color: textMuted,
+                    Expanded(
+                      child: Text(
+                        order.distance,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12,
+                          color: textMuted,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],

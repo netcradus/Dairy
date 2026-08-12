@@ -186,6 +186,7 @@ class PromoBanner extends StatelessWidget {
         ],
       ),
       child: Stack(
+        fit: StackFit.loose,
         clipBehavior: Clip.antiAlias,
         children: [
           // Decorative background circles
