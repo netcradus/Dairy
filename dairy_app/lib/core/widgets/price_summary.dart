@@ -88,7 +88,7 @@ class PriceSummaryCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               margin: const EdgeInsets.symmetric(vertical: 4),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.lightBlue,
                 borderRadius: AppSizes.borderSmall,
               ),
@@ -149,7 +149,7 @@ class PriceSummaryCard extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryBlue,
                   foregroundColor: AppColors.textOnPrimary,
-                  shape: RoundedRectangleBorder(
+                  shape: const RoundedRectangleBorder(
                     borderRadius: AppSizes.borderMedium,
                   ),
                   elevation: 2,

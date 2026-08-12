@@ -4,14 +4,14 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
+import '../../../core/utils/validators.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../providers/auth_provider.dart';
 import '../widgets/auth_card.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/loading_button.dart';
-import '../widgets/password_field.dart';
 
-/// Sawariya Dairy Login Screen Component
+/// Sawariya Dairy Mobile Sign In Screen
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -21,39 +21,35 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailOrPhoneController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _rememberMe = false;
+  final _mobileController = TextEditingController();
 
   @override
   void dispose() {
-    _emailOrPhoneController.dispose();
-    _passwordController.dispose();
+    _mobileController.dispose();
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
+  Future<void> _handleSendOtp() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final mobile = _mobileController.text.trim();
     final authNotifier = ref.read(authProvider.notifier);
-    final success = await authNotifier.login(
-      _emailOrPhoneController.text.trim(),
-      _passwordController.text,
-    );
+    final success = await authNotifier.startSignIn(mobile);
 
     if (!mounted) return;
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Login successful! Welcome to Sawariya Dairy.'),
+          content: Text('OTP sent successfully!'),
           backgroundColor: AppColors.freshGreen,
         ),
       );
-      context.go('/home');
+      // Navigate to OTP screen
+      context.push('/otp', extra: mobile);
     } else {
       final errorState = ref.read(authProvider);
-      final errorMsg = errorState.error?.toString() ?? 'Login failed. Please check credentials.';
+      final errorMsg = errorState.status.error?.toString() ?? 'Failed to send OTP. Please try again.';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(errorMsg.replaceAll('Exception: ', '')),
@@ -66,7 +62,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
-    final isLoading = authState.isLoading;
+    final isLoading = authState.status.isLoading;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -84,104 +80,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 // Header
                 const AuthHeader(
                   title: 'Welcome Back!',
-                  subtitle: 'Login to continue with Sawariya Dairy',
+                  subtitle: 'Sign in using your mobile number',
                 ),
 
                 const SizedBox(height: AppSizes.p24),
 
-                // Email or Phone Input
+                // Mobile Number Input
                 AppTextField(
-                  label: 'Email or Mobile Number',
-                  hint: 'Enter registered email or 10-digit mobile',
-                  controller: _emailOrPhoneController,
-                  prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter your email or mobile number';
-                    }
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: AppSizes.p16),
-
-                // Password Field
-                PasswordField(
-                  controller: _passwordController,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
-                    }
-                    if (value.length < 6) {
-                      return 'Password must contain at least 6 characters';
-                    }
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: AppSizes.p12),
-
-                // Remember Me & Forgot Password Row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: Checkbox(
-                            value: _rememberMe,
-                            activeColor: AppColors.primaryBlue,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            onChanged: (val) {
-                              setState(() {
-                                _rememberMe = val ?? false;
-                              });
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Remember me',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        context.push('/forgot-password');
-                      },
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: const Text(
-                        'Forgot Password?',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.primaryBlue,
-                        ),
-                      ),
-                    ),
-                  ],
+                  label: 'Mobile Number',
+                  hint: 'Enter 10-digit mobile number',
+                  controller: _mobileController,
+                  keyboardType: TextInputType.phone,
+                  prefixIcon: const Icon(Icons.phone_outlined, size: 20),
+                  validator: AppValidators.validatePhone,
                 ),
 
                 const SizedBox(height: AppSizes.p24),
 
-                // Submit Login Button
+                // Send OTP Button
                 LoadingButton(
-                  text: 'Login',
+                  text: 'Send OTP',
                   isLoading: isLoading,
-                  onPressed: _handleLogin,
+                  onPressed: _handleSendOtp,
                 ),
 
                 const SizedBox(height: AppSizes.p24),

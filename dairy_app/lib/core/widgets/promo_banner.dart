@@ -282,7 +282,7 @@ class PromoBanner extends StatelessWidget {
                             foregroundColor: _gradientStart,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(horizontal: 16),
-                            shape: RoundedRectangleBorder(
+                            shape: const RoundedRectangleBorder(
                               borderRadius: AppSizes.borderMedium,
                             ),
                           ),

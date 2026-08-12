@@ -17,7 +17,7 @@ void main() {
     await tester.pump();
 
     // Verify key home screen sections render.
-    expect(find.text('Good Morning 👋'), findsOneWidget);
+    expect(find.text('Categories'), findsOneWidget);
     expect(find.text('Fresh Milk'), findsWidgets);
   });
 }

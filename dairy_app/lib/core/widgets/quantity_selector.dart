@@ -31,7 +31,7 @@ class QuantitySelector extends StatelessWidget {
             foregroundColor: AppColors.primaryBlue,
             elevation: 0,
             padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16),
-            shape: RoundedRectangleBorder(borderRadius: AppSizes.borderMedium),
+            shape: const RoundedRectangleBorder(borderRadius: AppSizes.borderMedium),
           ),
           child: const Row(
             mainAxisSize: MainAxisSize.min,
@@ -55,7 +55,7 @@ class QuantitySelector extends StatelessWidget {
     return Container(
       height: height,
       width: width,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.primaryBlue,
         borderRadius: AppSizes.borderMedium,
       ),

@@ -70,7 +70,7 @@ class CheckoutScreen extends ConsumerWidget {
       context: context,
       barrierDismissible: false,
       builder: (dialogCtx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: AppSizes.borderLarge),
+        shape: const RoundedRectangleBorder(borderRadius: AppSizes.borderLarge),
         content: Padding(
           padding: const EdgeInsets.symmetric(vertical: 12),
           child: Column(
@@ -124,7 +124,7 @@ class CheckoutScreen extends ConsumerWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryBlue,
                     foregroundColor: AppColors.textOnPrimary,
-                    shape: RoundedRectangleBorder(
+                    shape: const RoundedRectangleBorder(
                       borderRadius: AppSizes.borderMedium,
                     ),
                   ),

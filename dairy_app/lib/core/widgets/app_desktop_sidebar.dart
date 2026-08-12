@@ -36,7 +36,7 @@ class AppDesktopSidebar extends StatelessWidget {
                 Container(
                   height: 42,
                   width: 42,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: AppColors.lightBlue,
                     borderRadius: AppSizes.borderMedium,
                   ),
@@ -141,15 +141,15 @@ class AppDesktopSidebar extends StatelessWidget {
                 borderRadius: AppSizes.borderMedium,
                 border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.2)),
               ),
-              child: Row(
+              child: const Row(
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     backgroundColor: AppColors.primaryBlue,
                     radius: 18,
                     child: Icon(Icons.person, color: Colors.white, size: 20),
                   ),
-                  const SizedBox(width: AppSizes.p12),
-                  const Expanded(
+                  SizedBox(width: AppSizes.p12),
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -224,7 +224,7 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
           borderRadius: AppSizes.borderMedium,
           child: ListTile(
             onTap: widget.onTap,
-            shape: RoundedRectangleBorder(borderRadius: AppSizes.borderMedium),
+            shape: const RoundedRectangleBorder(borderRadius: AppSizes.borderMedium),
             contentPadding: const EdgeInsets.symmetric(horizontal: AppSizes.p16, vertical: 2),
             leading: Icon(
               active ? widget.activeIcon : widget.icon,

@@ -5,6 +5,7 @@ class User {
   final String phone;
   final String? email;
   final String? profileImageUrl;
+  final String role; // 'admin' or 'customer'
 
   const User({
     required this.id,
@@ -12,5 +13,28 @@ class User {
     required this.phone,
     this.email,
     this.profileImageUrl,
+    this.role = 'customer',
   });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'phone': phone,
+      'email': email,
+      'profileImageUrl': profileImageUrl,
+      'role': role,
+    };
+  }
+
+  factory User.fromMap(Map<String, dynamic> map) {
+    return User(
+      id: map['id'] ?? '',
+      name: map['name'] ?? '',
+      phone: map['phone'] ?? '',
+      email: map['email'],
+      profileImageUrl: map['profileImageUrl'],
+      role: map['role'] ?? 'customer',
+    );
+  }
 }

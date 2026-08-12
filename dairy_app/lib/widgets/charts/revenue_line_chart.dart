@@ -19,7 +19,7 @@ class RevenueLineChart extends StatelessWidget {
     final textMuted = AppColors.textMutedOf(context);
     final gridLineColor = isDark ? const Color(0xFF222F4E) : AppColors.divider;
 
-    final List<FlSpot> weekSpots = const [
+    const List<FlSpot> weekSpots = [
       FlSpot(0, 24000),
       FlSpot(1, 58000),
       FlSpot(2, 44000),

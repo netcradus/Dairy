@@ -59,7 +59,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: AppSizes.p12, vertical: AppSizes.p8),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AppColors.lightBlue,
                       borderRadius: AppSizes.borderLarge,
                     ),
@@ -106,7 +106,7 @@ class SubscriptionsScreen extends ConsumerWidget {
             Container(
               width: 100,
               height: 100,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.lightBlue,
                 shape: BoxShape.circle,
               ),
@@ -156,7 +156,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryBlue,
                   foregroundColor: AppColors.textOnPrimary,
-                  shape: RoundedRectangleBorder(
+                  shape: const RoundedRectangleBorder(
                     borderRadius: AppSizes.borderMedium,
                   ),
                 ),
@@ -191,7 +191,7 @@ class _SubscriptionCard extends ConsumerWidget {
           ? DismissDirection.horizontal
           : DismissDirection.endToStart,
       background: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: AppColors.error,
           borderRadius: AppSizes.borderLarge,
         ),
@@ -240,7 +240,7 @@ class _SubscriptionCard extends ConsumerWidget {
                       Container(
                         width: 48,
                         height: 48,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: AppColors.lightBlue,
                           borderRadius: AppSizes.borderSmall,
                         ),
@@ -382,7 +382,7 @@ class _SubscriptionCard extends ConsumerWidget {
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(
                                 color: AppColors.primaryBlue),
-                            shape: RoundedRectangleBorder(
+                            shape: const RoundedRectangleBorder(
                                 borderRadius: AppSizes.borderMedium),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
@@ -410,7 +410,7 @@ class _SubscriptionCard extends ConsumerWidget {
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(
                                 color: AppColors.freshGreen),
-                            shape: RoundedRectangleBorder(
+                            shape: const RoundedRectangleBorder(
                                 borderRadius: AppSizes.borderMedium),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),

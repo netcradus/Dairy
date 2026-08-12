@@ -60,23 +60,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final isDesktop = context.isDesktop;
 
     final List<OnboardingData> pages = [
-      OnboardingData(
+      const OnboardingData(
         title: 'Fresh Dairy, Every Day',
         description:
             'Enjoy fresh and quality dairy products delivered with care from Sawariya Dairy.',
-        visualWidget: const _DairyFreshVisual(),
+        visualWidget: _DairyFreshVisual(),
       ),
-      OnboardingData(
+      const OnboardingData(
         title: 'Pure Products, Trusted Quality',
         description:
             'Choose quality milk, curd, paneer, butter and cheese for your family.',
-        visualWidget: const _DairyCollectionVisual(),
+        visualWidget: _DairyCollectionVisual(),
       ),
-      OnboardingData(
+      const OnboardingData(
         title: 'Simple Shopping, Fresh Delivery',
         description:
             'Discover your favorite dairy products, order easily and enjoy freshness at your doorstep.',
-        visualWidget: const _DairyDeliveryVisual(),
+        visualWidget: _DairyDeliveryVisual(),
       ),
     ];
 
@@ -105,8 +105,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // Logo / Brand
-              Row(
-                children: const [
+              const Row(
+                children: [
                   Icon(Icons.water_drop_rounded,
                       color: AppColors.primaryBlue, size: 24),
                   SizedBox(width: 6),
@@ -222,7 +222,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   minimumSize: const Size(140, AppSizes.buttonHeight),
                   backgroundColor: AppColors.primaryBlue,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
+                  shape: const RoundedRectangleBorder(
                     borderRadius: AppSizes.borderMedium,
                   ),
                 ),
@@ -294,8 +294,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: const [
+                        const Row(
+                          children: [
                             Icon(Icons.water_drop_rounded,
                                 color: AppColors.primaryBlue, size: 28),
                             SizedBox(width: 8),
@@ -366,7 +366,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                                 const Size(160, AppSizes.buttonHeight),
                             backgroundColor: AppColors.primaryBlue,
                             foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
+                            shape: const RoundedRectangleBorder(
                               borderRadius: AppSizes.borderMedium,
                             ),
                           ),
@@ -443,9 +443,9 @@ class _DairyFreshVisual extends StatelessWidget {
               ),
             ],
           ),
-          child: Column(
+          child: const Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
+            children: [
               Icon(
                 Icons.local_drink_rounded,
                 size: 70,
@@ -469,13 +469,13 @@ class _DairyFreshVisual extends StatelessWidget {
           top: 30,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppColors.freshGreen,
               borderRadius: AppSizes.borderSmall,
             ),
-            child: Row(
+            child: const Row(
               mainAxisSize: MainAxisSize.min,
-              children: const [
+              children: [
                 Icon(Icons.verified, color: Colors.white, size: 14),
                 SizedBox(width: 4),
                 Text(
@@ -512,11 +512,11 @@ class _DairyCollectionVisual extends StatelessWidget {
             color: AppColors.lightBlue.withValues(alpha: 0.6),
           ),
         ),
-        Wrap(
+        const Wrap(
           spacing: 16,
           runSpacing: 16,
           alignment: WrapAlignment.center,
-          children: const [
+          children: [
             _ItemBadge(icon: Icons.inventory_2_rounded, label: 'Pure Paneer'),
             _ItemBadge(icon: Icons.rice_bowl_rounded, label: 'Fresh Curd'),
             _ItemBadge(icon: Icons.cookie_rounded, label: 'Desi Ghee'),
@@ -602,9 +602,9 @@ class _DairyDeliveryVisual extends StatelessWidget {
               ),
             ],
           ),
-          child: Column(
+          child: const Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
+            children: [
               Icon(
                 Icons.delivery_dining_rounded,
                 size: 64,
@@ -627,7 +627,7 @@ class _DairyDeliveryVisual extends StatelessWidget {
           bottom: 20,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppColors.primaryBlue,
               borderRadius: AppSizes.borderSmall,
             ),

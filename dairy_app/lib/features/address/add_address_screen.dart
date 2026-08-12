@@ -81,10 +81,10 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
           child: Container(
             constraints: const BoxConstraints(maxWidth: 600),
             padding: const EdgeInsets.all(AppSizes.p20),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppColors.surface,
               borderRadius: AppSizes.borderLarge,
-              boxShadow: const [
+              boxShadow: [
                 BoxShadow(
                   color: AppColors.shadow,
                   blurRadius: 10,

@@ -76,7 +76,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     }
 
     final authNotifier = ref.read(authProvider.notifier);
-    final success = await authNotifier.verifyOtp(_otpCode);
+    final success = await authNotifier.verifyOtp(_otpCode, ref);
 
     if (!mounted) return;
 
@@ -87,15 +87,11 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
           backgroundColor: AppColors.freshGreen,
         ),
       );
-
-      if (widget.isPasswordResetFlow) {
-        context.push('/reset-password');
-      } else {
-        context.go('/login');
-      }
+      
+      // session is saved, GoRouter redirect will automatically handle routing
     } else {
       final errorState = ref.read(authProvider);
-      final errorMsg = errorState.error?.toString() ?? 'Invalid OTP code';
+      final errorMsg = errorState.status.error?.toString() ?? 'Invalid OTP code';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(errorMsg.replaceAll('Exception: ', '')),
@@ -108,28 +104,34 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
   Future<void> _handleResendOtp() async {
     if (!_canResend) return;
 
-    final target = widget.targetDestination ?? 'your mobile number';
     final authNotifier = ref.read(authProvider.notifier);
-    await authNotifier.sendOtp(target);
+    final success = await authNotifier.resendOtp();
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('A new OTP has been sent to $target.'),
-        backgroundColor: AppColors.primaryBlue,
-      ),
-    );
-
-    _startResendTimer();
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('A new OTP has been sent.'),
+          backgroundColor: AppColors.primaryBlue,
+        ),
+      );
+      _startResendTimer();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to resend OTP. Please try again.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
-    final isLoading = authState.isLoading;
-    final displayDestination =
-        widget.targetDestination ?? '+91 98765 43210';
+    final isLoading = authState.status.isLoading;
+    final displayDestination = authState.mobileNumber ?? widget.targetDestination ?? '+91 98765 43210';
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -156,9 +158,9 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                 onTap: () {
                   context.pop();
                 },
-                child: Row(
+                child: const Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
+                  children: [
                     Icon(Icons.edit_outlined,
                         size: 14, color: AppColors.primaryBlue),
                     SizedBox(width: 4),

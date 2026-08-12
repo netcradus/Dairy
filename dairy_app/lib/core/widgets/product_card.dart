@@ -112,7 +112,7 @@ class _ProductCardState extends State<ProductCard> {
                         left: 8,
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: AppColors.discountTag,
                             borderRadius: AppSizes.borderSmall,
                           ),
@@ -134,7 +134,7 @@ class _ProductCardState extends State<ProductCard> {
                         right: 8,
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: AppColors.freshGreen,
                             borderRadius: AppSizes.borderSmall,
                           ),

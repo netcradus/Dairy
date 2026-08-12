@@ -125,7 +125,7 @@ class NotificationsScreen extends ConsumerWidget {
             Container(
               width: 100,
               height: 100,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.lightBlue,
                 shape: BoxShape.circle,
               ),
@@ -171,7 +171,7 @@ class NotificationsScreen extends ConsumerWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryBlue,
                   foregroundColor: AppColors.textOnPrimary,
-                  shape: RoundedRectangleBorder(
+                  shape: const RoundedRectangleBorder(
                     borderRadius: AppSizes.borderMedium,
                   ),
                 ),
@@ -205,7 +205,7 @@ class _NotificationTile extends StatelessWidget {
       key: ValueKey(item.id),
       direction: DismissDirection.endToStart,
       background: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: AppColors.error,
           borderRadius: AppSizes.borderLarge,
         ),
@@ -294,7 +294,7 @@ class _NotificationTile extends StatelessWidget {
                   alignment: Alignment.centerLeft,
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AppColors.lightBlue,
                       borderRadius: AppSizes.borderSmall,
                     ),

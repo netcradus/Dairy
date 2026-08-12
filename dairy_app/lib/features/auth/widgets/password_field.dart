@@ -75,22 +75,22 @@ class _PasswordFieldState extends State<PasswordField> {
               horizontal: AppSizes.p16,
               vertical: AppSizes.p14,
             ),
-            border: OutlineInputBorder(
+            border: const OutlineInputBorder(
               borderRadius: AppSizes.borderMedium,
               borderSide: BorderSide.none,
             ),
-            focusedBorder: OutlineInputBorder(
+            focusedBorder: const OutlineInputBorder(
               borderRadius: AppSizes.borderMedium,
               borderSide:
-                  const BorderSide(color: AppColors.primaryBlue, width: 1.5),
+                  BorderSide(color: AppColors.primaryBlue, width: 1.5),
             ),
-            errorBorder: OutlineInputBorder(
+            errorBorder: const OutlineInputBorder(
               borderRadius: AppSizes.borderMedium,
-              borderSide: const BorderSide(color: AppColors.error, width: 1.0),
+              borderSide: BorderSide(color: AppColors.error, width: 1.0),
             ),
-            focusedErrorBorder: OutlineInputBorder(
+            focusedErrorBorder: const OutlineInputBorder(
               borderRadius: AppSizes.borderMedium,
-              borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+              borderSide: BorderSide(color: AppColors.error, width: 1.5),
             ),
           ),
         ),

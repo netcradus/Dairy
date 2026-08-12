@@ -141,7 +141,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                 Container(
                   width: 120,
                   height: 120,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: AppColors.lightBlue,
                     shape: BoxShape.circle,
                   ),
@@ -157,7 +157,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: AppColors.lightBlue,
                     borderRadius: AppSizes.borderSmall,
                   ),
@@ -190,7 +190,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppColors.discountTag,
                   borderRadius: AppSizes.borderSmall,
                 ),
@@ -215,7 +215,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: AppColors.lightBlue,
             borderRadius: AppSizes.borderSmall,
           ),
@@ -395,7 +395,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.primaryBlue,
                     side: const BorderSide(color: AppColors.primaryBlue, width: 1.5),
-                    shape: RoundedRectangleBorder(
+                    shape: const RoundedRectangleBorder(
                       borderRadius: AppSizes.borderMedium,
                     ),
                   ),
@@ -426,7 +426,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryBlue,
                     foregroundColor: AppColors.textOnPrimary,
-                    shape: RoundedRectangleBorder(
+                    shape: const RoundedRectangleBorder(
                       borderRadius: AppSizes.borderMedium,
                     ),
                   ),

@@ -1,91 +1,166 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../core/services/auth_service.dart';
+import '../core/services/mock_otp_service.dart';
+import '../models/user.dart';
+import 'user_provider.dart';
 
-/// Provider for AuthService instance
-final authServiceProvider = Provider<AuthService>((ref) {
-  return AuthService();
+/// Provider for MockOtpService instance
+final mockOtpServiceProvider = Provider<MockOtpService>((ref) {
+  return MockOtpService();
 });
 
-/// Auth State Notifier for managing loading and auth state
-class AuthNotifier extends StateNotifier<AsyncValue<void>> {
-  final AuthService _authService;
+/// State containing status of the auth requests
+class AuthState {
+  final AsyncValue<void> status;
+  final String? mobileNumber;
+  final String? tempFullName;
+  final bool isSignUpFlow;
 
-  AuthNotifier(this._authService) : super(const AsyncData(null));
+  AuthState({
+    required this.status,
+    this.mobileNumber,
+    this.tempFullName,
+    this.isSignUpFlow = false,
+  });
 
-  Future<bool> login(String usernameOrEmail, String password) async {
-    state = const AsyncLoading();
+  bool get isLoading => status.isLoading;
+
+  AuthState copyWith({
+    AsyncValue<void>? status,
+    String? mobileNumber,
+    String? tempFullName,
+    bool? isSignUpFlow,
+  }) {
+    return AuthState(
+      status: status ?? this.status,
+      mobileNumber: mobileNumber ?? this.mobileNumber,
+      tempFullName: tempFullName ?? this.tempFullName,
+      isSignUpFlow: isSignUpFlow ?? this.isSignUpFlow,
+    );
+  }
+}
+
+/// Auth State Notifier for managing loading, mobile, temp signup state and verification
+class AuthNotifier extends StateNotifier<AuthState> {
+  final MockOtpService _otpService;
+
+  AuthNotifier(this._otpService)
+      : super(AuthState(status: const AsyncData(null)));
+
+  /// Compatibility stub for forgot password flow
+  Future<bool> sendOtp(String mobileNumber) async {
+    return startSignIn(mobileNumber);
+  }
+
+  /// Compatibility stub for reset password flow
+  Future<bool> resetPassword(String newPassword) async {
+    state = state.copyWith(status: const AsyncLoading());
+    await Future.delayed(const Duration(milliseconds: 1000));
+    state = state.copyWith(status: const AsyncData(null));
+    return true;
+  }
+
+  /// Initiates OTP sending for Sign In
+  Future<bool> startSignIn(String mobileNumber) async {
+    state = state.copyWith(status: const AsyncLoading());
     try {
-      final success = await _authService.login(
-        usernameOrEmail: usernameOrEmail,
-        password: password,
-      );
-      state = const AsyncData(null);
-      return success;
+      final success = await _otpService.sendOtp(mobileNumber);
+      if (success) {
+        state = state.copyWith(
+          status: const AsyncData(null),
+          mobileNumber: mobileNumber,
+          isSignUpFlow: false,
+        );
+        return true;
+      }
+      throw Exception('Failed to send OTP. Please try again.');
     } catch (e, st) {
-      state = AsyncError(e, st);
+      state = state.copyWith(status: AsyncError(e, st));
       return false;
     }
   }
 
-  Future<bool> register({
+  /// Initiates OTP sending for Sign Up
+  Future<bool> startSignUp({
     required String fullName,
     required String mobileNumber,
-    required String email,
-    required String password,
   }) async {
-    state = const AsyncLoading();
+    state = state.copyWith(status: const AsyncLoading());
     try {
-      final success = await _authService.register(
-        fullName: fullName,
-        mobileNumber: mobileNumber,
-        email: email,
-        password: password,
+      final success = await _otpService.sendOtp(mobileNumber);
+      if (success) {
+        state = state.copyWith(
+          status: const AsyncData(null),
+          mobileNumber: mobileNumber,
+          tempFullName: fullName,
+          isSignUpFlow: true,
+        );
+        return true;
+      }
+      throw Exception('Failed to send OTP. Please try again.');
+    } catch (e, st) {
+      state = state.copyWith(status: AsyncError(e, st));
+      return false;
+    }
+  }
+
+  /// Resends OTP to the current mobile number
+  Future<bool> resendOtp() async {
+    final mobile = state.mobileNumber;
+    if (mobile == null) return false;
+    
+    state = state.copyWith(status: const AsyncLoading());
+    try {
+      final success = await _otpService.sendOtp(mobile);
+      state = state.copyWith(status: const AsyncData(null));
+      return success;
+    } catch (e, st) {
+      state = state.copyWith(status: AsyncError(e, st));
+      return false;
+    }
+  }
+
+  /// Verifies the OTP and completes the Sign In / Sign Up process
+  Future<bool> verifyOtp(String otp, WidgetRef ref) async {
+    final mobile = state.mobileNumber;
+    if (mobile == null) {
+      state = state.copyWith(
+        status: AsyncError(Exception('No active mobile number found for verification.'), StackTrace.current),
       );
-      state = const AsyncData(null);
-      return success;
-    } catch (e, st) {
-      state = AsyncError(e, st);
       return false;
     }
-  }
 
-  Future<bool> sendOtp(String emailOrMobile) async {
-    state = const AsyncLoading();
+    state = state.copyWith(status: const AsyncLoading());
     try {
-      final success = await _authService.sendOtp(emailOrMobile: emailOrMobile);
-      state = const AsyncData(null);
-      return success;
-    } catch (e, st) {
-      state = AsyncError(e, st);
-      return false;
-    }
-  }
+      final verified = await _otpService.verifyOtp(mobile, otp);
+      if (verified) {
+        // Create user session details
+        final String role = (mobile == '9999999999') ? 'admin' : 'customer';
+        final String name = state.isSignUpFlow
+            ? (state.tempFullName ?? 'Sawariya Customer')
+            : (role == 'admin' ? 'Sawariya Admin' : 'Sawariya Customer');
 
-  Future<bool> verifyOtp(String otp) async {
-    state = const AsyncLoading();
-    try {
-      final success = await _authService.verifyOtp(otp: otp);
-      state = const AsyncData(null);
-      return success;
-    } catch (e, st) {
-      state = AsyncError(e, st);
-      return false;
-    }
-  }
+        final user = User(
+          id: 'user_${DateTime.now().millisecondsSinceEpoch}',
+          name: name,
+          phone: mobile,
+          email: state.isSignUpFlow ? null : (role == 'admin' ? 'admin@sawariyadairy.com' : 'customer@sawariyadairy.com'),
+          role: role,
+        );
 
-  Future<bool> resetPassword(String newPassword) async {
-    state = const AsyncLoading();
-    try {
-      final success = await _authService.resetPassword(newPassword: newPassword);
-      state = const AsyncData(null);
-      return success;
+        // Save session in UserNotifier
+        await ref.read(userProvider.notifier).setSession(user);
+
+        state = AuthState(status: const AsyncData(null)); // reset state
+        return true;
+      }
+      throw Exception('Invalid OTP. Please check the code and try again.');
     } catch (e, st) {
-      state = AsyncError(e, st);
+      state = state.copyWith(status: AsyncError(e, st));
       return false;
     }
   }
 }
 
-final authProvider = StateNotifierProvider<AuthNotifier, AsyncValue<void>>((ref) {
-  return AuthNotifier(ref.watch(authServiceProvider));
+final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+  return AuthNotifier(ref.watch(mockOtpServiceProvider));
 });

@@ -1,0 +1,34 @@
+[1mdiff --git a/lib/features/auth/screens/otp_screen.dart b/lib/features/auth/screens/otp_screen.dart[m
+[1mindex 21c7695..7b846a9 100644[m
+[1m--- a/lib/features/auth/screens/otp_screen.dart[m
+[1m+++ b/lib/features/auth/screens/otp_screen.dart[m
+[36m@@ -156,9 +156,9 @@[m [mclass _OtpScreenState extends ConsumerState<OtpScreen> {[m
+                 onTap: () {[m
+                   context.pop();[m
+                 },[m
+[31m-                child: Row([m
+[32m+[m[32m                child: const Row([m
+                   mainAxisSize: MainAxisSize.min,[m
+[31m-                  children: const [[m
+[32m+[m[32m                  children: [[m
+                     Icon(Icons.edit_outlined,[m
+                         size: 14, color: AppColors.primaryBlue),[m
+                     SizedBox(width: 4),[m
+[1mdiff --git a/lib/main.dart b/lib/main.dart[m
+[1mindex 148e592..a8659ef 100644[m
+[1m--- a/lib/main.dart[m
+[1m+++ b/lib/main.dart[m
+[36m@@ -4,6 +4,13 @@[m [mimport 'core/router/app_router.dart';[m
+ [m
+ void main() {[m
+   WidgetsFlutterBinding.ensureInitialized();[m
+[32m+[m
+[32m+[m[32m  // Catch any uncaught Flutter build/layout exceptions so the app renders[m
+[32m+[m[32m  // an error message instead of a blank white screen.[m
+[32m+[m[32m  FlutterError.onError = (FlutterErrorDetails details) {[m
+[32m+[m[32m    FlutterError.presentError(details);[m
+[32m+[m[32m  };[m
+[32m+[m
+   runApp([m
+     const ProviderScope([m
+       child: MyApp(),[m

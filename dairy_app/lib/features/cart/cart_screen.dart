@@ -40,7 +40,7 @@ class CartScreen extends ConsumerWidget {
                 Container(
                   width: 120,
                   height: 120,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: AppColors.lightBlue,
                     shape: BoxShape.circle,
                   ),
@@ -86,7 +86,7 @@ class CartScreen extends ConsumerWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryBlue,
                       foregroundColor: AppColors.textOnPrimary,
-                      shape: RoundedRectangleBorder(
+                      shape: const RoundedRectangleBorder(
                         borderRadius: AppSizes.borderMedium,
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -229,7 +229,7 @@ class CartScreen extends ConsumerWidget {
   Widget _buildCartHeader() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.lightBlue,
         borderRadius: AppSizes.borderSmall,
       ),
@@ -260,7 +260,7 @@ class CartScreen extends ConsumerWidget {
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.primaryBlue,
         side: const BorderSide(color: AppColors.primaryBlue),
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: AppSizes.borderMedium,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),

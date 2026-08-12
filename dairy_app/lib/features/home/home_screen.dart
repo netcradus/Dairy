@@ -39,7 +39,7 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(height: AppSizes.p16),
 
               // ─── Trust Badges Strip ───────────────────────────────────────
-              _TrustBadgesStrip(),
+              const _TrustBadgesStrip(),
 
               const SizedBox(height: AppSizes.p16),
 
@@ -307,7 +307,7 @@ class _A2MilkPromotionSection extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: AppSizes.p8, vertical: 3),
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: AppColors.freshGreen,
                         borderRadius: AppSizes.borderSmall,
                       ),
@@ -345,10 +345,10 @@ class _A2MilkPromotionSection extends StatelessWidget {
                     const SizedBox(height: AppSizes.p12),
 
                     // Feature Pills Row
-                    Wrap(
+                    const Wrap(
                       spacing: AppSizes.p6,
                       runSpacing: AppSizes.p6,
-                      children: const [
+                      children: [
                         _A2FeaturePill(label: '✓ No Hormones'),
                         _A2FeaturePill(label: '✓ A2 Protein'),
                         _A2FeaturePill(label: '✓ Bilona Method'),
@@ -388,7 +388,7 @@ class _A2MilkPromotionSection extends StatelessWidget {
                         foregroundColor: Colors.white,
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(horizontal: 14),
-                        shape: RoundedRectangleBorder(
+                        shape: const RoundedRectangleBorder(
                             borderRadius: AppSizes.borderMedium),
                       ),
                       child: const Text(

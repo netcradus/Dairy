@@ -47,7 +47,7 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
                 Container(
                   height: 36,
                   width: 36,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: AppColors.lightBlue,
                     borderRadius: AppSizes.borderSmall,
                   ),
@@ -121,13 +121,13 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
               child: TextField(
                 readOnly: true,
                 onTap: onSearchTap,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: 'Search milk, curd, paneer, ghee...',
-                  hintStyle: const TextStyle(fontSize: 13, color: AppColors.textMuted),
-                  prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColors.primaryBlue),
+                  hintStyle: TextStyle(fontSize: 13, color: AppColors.textMuted),
+                  prefixIcon: Icon(Icons.search_rounded, size: 20, color: AppColors.primaryBlue),
                   filled: true,
                   fillColor: AppColors.inputBackground,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                  contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 12),
                   border: OutlineInputBorder(
                     borderRadius: AppSizes.borderMedium,
                     borderSide: BorderSide.none,

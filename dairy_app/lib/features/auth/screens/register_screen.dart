@@ -10,7 +10,6 @@ import '../../../providers/auth_provider.dart';
 import '../widgets/auth_card.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/loading_button.dart';
-import '../widgets/password_field.dart';
 
 /// Sawariya Dairy Customer Registration Screen Component
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -24,18 +23,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _fullNameController = TextEditingController();
   final _mobileController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
   bool _acceptTerms = false;
 
   @override
   void dispose() {
     _fullNameController.dispose();
     _mobileController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -52,12 +45,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
 
+    final name = _fullNameController.text.trim();
+    final mobile = _mobileController.text.trim();
+
     final authNotifier = ref.read(authProvider.notifier);
-    final success = await authNotifier.register(
-      fullName: _fullNameController.text.trim(),
-      mobileNumber: _mobileController.text.trim(),
-      email: _emailController.text.trim(),
-      password: _passwordController.text,
+    final success = await authNotifier.startSignUp(
+      fullName: name,
+      mobileNumber: mobile,
     );
 
     if (!mounted) return;
@@ -65,16 +59,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Account created! Please verify your mobile number.'),
+          content: Text('OTP sent successfully! Please verify your mobile number.'),
           backgroundColor: AppColors.freshGreen,
         ),
       );
       // Navigate to OTP verification with mobile number parameter
-      context.push('/otp', extra: _mobileController.text.trim());
+      context.push('/otp', extra: mobile);
     } else {
+      final errorState = ref.read(authProvider);
+      final errorMsg = errorState.status.error?.toString() ?? 'Registration failed. Please try again.';
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Registration failed. Please try again.'),
+        SnackBar(
+          content: Text(errorMsg.replaceAll('Exception: ', '')),
           backgroundColor: AppColors.error,
         ),
       );
@@ -84,7 +80,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
-    final isLoading = authState.isLoading;
+    final isLoading = authState.status.isLoading;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -135,54 +131,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                 const SizedBox(height: AppSizes.p14),
 
-                // Email Address
-                AppTextField(
-                  label: 'Email Address',
-                  hint: 'Enter your email address',
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  prefixIcon: const Icon(Icons.email_outlined, size: 20),
-                  validator: AppValidators.validateEmail,
-                ),
-
-                const SizedBox(height: AppSizes.p14),
-
-                // Password Field
-                PasswordField(
-                  label: 'Password',
-                  hint: 'Create password (min. 8 chars)',
-                  controller: _passwordController,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a password';
-                    }
-                    if (value.length < 8) {
-                      return 'Password must contain at least 8 characters';
-                    }
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: AppSizes.p14),
-
-                // Confirm Password Field
-                PasswordField(
-                  label: 'Confirm Password',
-                  hint: 'Re-enter your password',
-                  controller: _confirmPasswordController,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please confirm your password';
-                    }
-                    if (value != _passwordController.text) {
-                      return 'Passwords do not match';
-                    }
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: AppSizes.p12),
-
                 // Terms & Conditions Checkbox
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -221,7 +169,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                 // Submit Button
                 LoadingButton(
-                  text: 'Create Account',
+                  text: 'Send OTP',
                   isLoading: isLoading,
                   onPressed: _handleRegister,
                 ),

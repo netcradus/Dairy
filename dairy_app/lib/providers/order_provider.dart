@@ -4,7 +4,7 @@ import '../models/cart_item.dart';
 import '../models/order.dart';
 import '../repositories/product_repository.dart';
 
-final _sampleAddress = const Address(
+const _sampleAddress = Address(
   id: 'addr_1',
   label: 'Home',
   fullName: 'Rahul Sharma',

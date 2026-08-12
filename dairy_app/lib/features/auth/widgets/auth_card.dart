@@ -111,9 +111,9 @@ class AuthCard extends StatelessWidget {
                             ),
                             const SizedBox(height: AppSizes.p32),
                             // Quality Badges
-                            Row(
+                            const Row(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
+                              children: [
                                 _FeatureChip(icon: Icons.verified, label: '100% Pure'),
                                 SizedBox(width: 8),
                                 _FeatureChip(icon: Icons.local_shipping, label: 'Fast Delivery'),

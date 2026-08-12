@@ -23,11 +23,9 @@ class PriceText extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasDiscount = originalPrice != null && originalPrice! > price;
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: alignment,
-      crossAxisAlignment: CrossAxisAlignment.baseline,
-      textBaseline: TextBaseline.alphabetic,
+    return Wrap(
+      spacing: 6,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         Text(
           AppFormatters.formatCurrency(price),
@@ -37,21 +35,16 @@ class PriceText extends StatelessWidget {
             color: AppColors.textPrimary,
           ),
         ),
-        if (hasDiscount) ...[
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              AppFormatters.formatCurrency(originalPrice!),
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: originalPriceFontSize,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textMuted,
-                decoration: TextDecoration.lineThrough,
-              ),
+        if (hasDiscount)
+          Text(
+            AppFormatters.formatCurrency(originalPrice!),
+            style: TextStyle(
+              fontSize: originalPriceFontSize,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textMuted,
+              decoration: TextDecoration.lineThrough,
             ),
           ),
-        ],
       ],
     );
   }

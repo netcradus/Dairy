@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as provider;
 
 import '../theme/admin_theme.dart';
 import '../../providers/admin_provider.dart';
@@ -23,104 +24,133 @@ import '../../features/product/product_details_screen.dart';
 import '../../features/shop/shop_screen.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../models/product.dart';
+import '../../providers/user_provider.dart';
 
-/// Central GoRouter configuration for Sawariya Dairy (Phase 6 Shopping & Checkout Flow)
-final GoRouter appRouter = GoRouter(
-  initialLocation: '/splash',
-  routes: [
-    GoRoute(
-      path: '/splash',
-      builder: (context, state) => const SplashScreen(),
-    ),
-    GoRoute(
-      path: '/onboarding',
-      builder: (context, state) => const OnboardingScreen(),
-    ),
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginScreen(),
-    ),
-    GoRoute(
-      path: '/register',
-      builder: (context, state) => const RegisterScreen(),
-    ),
-    GoRoute(
-      path: '/otp',
-      builder: (context, state) {
-        final extra = state.extra;
-        if (extra is Map<String, dynamic>) {
-          return OtpScreen(
-            targetDestination: extra['targetDestination'] as String?,
-            isPasswordResetFlow: extra['isPasswordResetFlow'] as bool? ?? false,
-          );
-        } else if (extra is String) {
-          return OtpScreen(targetDestination: extra);
+/// Central GoRouter configuration provider for Sawariya Dairy
+final appRouterProvider = Provider<GoRouter>((ref) {
+  final user = ref.watch(userProvider);
+  final isLoggedIn = user.id.isNotEmpty;
+  final isAdmin = user.role == 'admin';
+
+  return GoRouter(
+    initialLocation: '/splash',
+    redirect: (context, state) {
+      final path = state.matchedLocation;
+      final isAuthPath = path == '/login' ||
+                         path == '/register' ||
+                         path == '/otp' ||
+                         path == '/splash' ||
+                         path == '/onboarding';
+
+      if (!isLoggedIn && !isAuthPath) {
+        return '/login';
+      }
+
+      if (isLoggedIn) {
+        if (isAuthPath) {
+          return isAdmin ? '/admin' : '/home';
         }
-        return const OtpScreen();
-      },
-    ),
-    GoRoute(
-      path: '/forgot-password',
-      builder: (context, state) => const ForgotPasswordScreen(),
-    ),
-    GoRoute(
-      path: '/reset-password',
-      builder: (context, state) => const ResetPasswordScreen(),
-    ),
-    GoRoute(
-      path: '/home',
-      builder: (context, state) => const MainLayoutScreen(),
-    ),
-    GoRoute(
-      path: '/shop',
-      builder: (context, state) => const ShopScreen(),
-    ),
-    GoRoute(
-      path: '/product-details',
-      builder: (context, state) {
-        final product = state.extra as Product;
-        return ProductDetailsScreen(product: product);
-      },
-    ),
-    GoRoute(
-      path: '/cart',
-      builder: (context, state) => const CartScreen(),
-    ),
-    GoRoute(
-      path: '/address',
-      builder: (context, state) => const AddressScreen(),
-    ),
-    GoRoute(
-      path: '/add-address',
-      builder: (context, state) => const AddAddressScreen(),
-    ),
-    GoRoute(
-      path: '/checkout',
-      builder: (context, state) => const CheckoutScreen(),
-    ),
-    GoRoute(
-      path: '/notifications',
-      builder: (context, state) => const NotificationsScreen(),
-    ),
-    GoRoute(
-      path: '/offers',
-      builder: (context, state) => const OffersScreen(),
-    ),
-    GoRoute(
-      path: '/admin',
-      builder: (context, state) => MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (_) => AdminProvider()),
-        ],
-        child: Consumer<AdminProvider>(
-          builder: (context, adminProvider, child) {
-            return Theme(
-              data: adminProvider.isDarkMode ? AdminTheme.darkTheme : AdminTheme.lightTheme,
-              child: const AdminMainShell(),
+        if (path == '/admin' && !isAdmin) {
+          return '/home';
+        }
+      }
+      return null;
+    },
+    routes: [
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingScreen(),
+      ),
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/register',
+        builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/otp',
+        builder: (context, state) {
+          final extra = state.extra;
+          if (extra is Map<String, dynamic>) {
+            return OtpScreen(
+              targetDestination: extra['targetDestination'] as String?,
+              isPasswordResetFlow: extra['isPasswordResetFlow'] as bool? ?? false,
             );
-          },
+          } else if (extra is String) {
+            return OtpScreen(targetDestination: extra);
+          }
+          return const OtpScreen();
+        },
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/reset-password',
+        builder: (context, state) => const ResetPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/home',
+        builder: (context, state) => const MainLayoutScreen(),
+      ),
+      GoRoute(
+        path: '/shop',
+        builder: (context, state) => const ShopScreen(),
+      ),
+      GoRoute(
+        path: '/product-details',
+        builder: (context, state) {
+          final product = state.extra as Product;
+          return ProductDetailsScreen(product: product);
+        },
+      ),
+      GoRoute(
+        path: '/cart',
+        builder: (context, state) => const CartScreen(),
+      ),
+      GoRoute(
+        path: '/address',
+        builder: (context, state) => const AddressScreen(),
+      ),
+      GoRoute(
+        path: '/add-address',
+        builder: (context, state) => const AddAddressScreen(),
+      ),
+      GoRoute(
+        path: '/checkout',
+        builder: (context, state) => const CheckoutScreen(),
+      ),
+      GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: '/offers',
+        builder: (context, state) => const OffersScreen(),
+      ),
+      GoRoute(
+        path: '/admin',
+        builder: (context, state) => provider.MultiProvider(
+          providers: [
+            provider.ChangeNotifierProvider(create: (_) => AdminProvider()),
+          ],
+          child: provider.Consumer<AdminProvider>(
+            builder: (context, adminProvider, child) {
+              return Theme(
+                data: adminProvider.isDarkMode ? AdminTheme.darkTheme : AdminTheme.lightTheme,
+                child: const AdminMainShell(),
+              );
+            },
+          ),
         ),
       ),
-    ),
-  ],
-);
+    ],
+  );
+});

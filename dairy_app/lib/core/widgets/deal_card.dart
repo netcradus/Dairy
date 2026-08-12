@@ -54,7 +54,7 @@ class DealCard extends StatelessWidget {
                   Container(
                     width: 84,
                     height: 84,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AppColors.lightBlue,
                       borderRadius: AppSizes.borderMedium,
                     ),
@@ -70,7 +70,7 @@ class DealCard extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 5, vertical: 2),
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: AppColors.discountTag,
                           borderRadius: AppSizes.borderSmall,
                         ),
@@ -97,7 +97,7 @@ class DealCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: AppColors.lightBlue,
                         borderRadius: AppSizes.borderSmall,
                       ),

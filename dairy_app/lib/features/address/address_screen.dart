@@ -55,7 +55,7 @@ class AddressScreen extends ConsumerWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryBlue,
                         foregroundColor: AppColors.textOnPrimary,
-                        shape: RoundedRectangleBorder(
+                        shape: const RoundedRectangleBorder(
                           borderRadius: AppSizes.borderMedium,
                         ),
                       ),
@@ -67,7 +67,7 @@ class AddressScreen extends ConsumerWidget {
                 if (addresses.isEmpty) ...[
                   Container(
                     padding: const EdgeInsets.all(AppSizes.p24),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AppColors.surface,
                       borderRadius: AppSizes.borderLarge,
                     ),

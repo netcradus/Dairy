@@ -43,13 +43,13 @@ abstract class AppTheme {
       ),
 
       // Card Theme
-      cardTheme: CardThemeData(
+      cardTheme: const CardThemeData(
         color: AppColors.cardBackground,
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: AppSizes.borderLarge,
-          side: const BorderSide(color: AppColors.border, width: 1.0),
+          side: BorderSide(color: AppColors.border, width: 1.0),
         ),
       ),
 
@@ -60,7 +60,7 @@ abstract class AppTheme {
           backgroundColor: AppColors.primaryBlue,
           foregroundColor: AppColors.textOnPrimary,
           minimumSize: const Size(double.infinity, AppSizes.buttonHeight),
-          shape: RoundedRectangleBorder(
+          shape: const RoundedRectangleBorder(
             borderRadius: AppSizes.borderMedium,
           ),
           textStyle: textTheme.labelLarge?.copyWith(
@@ -81,7 +81,7 @@ abstract class AppTheme {
           foregroundColor: AppColors.primaryBlue,
           minimumSize: const Size(double.infinity, AppSizes.buttonHeight),
           side: const BorderSide(color: AppColors.primaryBlue, width: 1.5),
-          shape: RoundedRectangleBorder(
+          shape: const RoundedRectangleBorder(
             borderRadius: AppSizes.borderMedium,
           ),
           textStyle: textTheme.labelLarge?.copyWith(
@@ -101,7 +101,7 @@ abstract class AppTheme {
           textStyle: textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.w600,
           ),
-          shape: RoundedRectangleBorder(
+          shape: const RoundedRectangleBorder(
             borderRadius: AppSizes.borderSmall,
           ),
         ),
@@ -121,28 +121,28 @@ abstract class AppTheme {
         labelStyle: textTheme.bodyMedium?.copyWith(
           color: AppColors.textSecondary,
         ),
-        border: OutlineInputBorder(
+        border: const OutlineInputBorder(
           borderRadius: AppSizes.borderMedium,
           borderSide: BorderSide.none,
         ),
-        enabledBorder: OutlineInputBorder(
+        enabledBorder: const OutlineInputBorder(
           borderRadius: AppSizes.borderMedium,
-          borderSide: const BorderSide(color: Colors.transparent),
+          borderSide: BorderSide(color: Colors.transparent),
         ),
-        focusedBorder: OutlineInputBorder(
+        focusedBorder: const OutlineInputBorder(
           borderRadius: AppSizes.borderMedium,
-          borderSide: const BorderSide(
+          borderSide: BorderSide(
             color: AppColors.primaryBlue,
             width: 1.5,
           ),
         ),
-        errorBorder: OutlineInputBorder(
+        errorBorder: const OutlineInputBorder(
           borderRadius: AppSizes.borderMedium,
-          borderSide: const BorderSide(color: AppColors.error, width: 1.0),
+          borderSide: BorderSide(color: AppColors.error, width: 1.0),
         ),
-        focusedErrorBorder: OutlineInputBorder(
+        focusedErrorBorder: const OutlineInputBorder(
           borderRadius: AppSizes.borderMedium,
-          borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+          borderSide: BorderSide(color: AppColors.error, width: 1.5),
         ),
       ),
 
@@ -190,7 +190,7 @@ abstract class AppTheme {
           horizontal: AppSizes.p12,
           vertical: AppSizes.p8,
         ),
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: AppSizes.borderSmall,
         ),
         side: BorderSide.none,
@@ -200,7 +200,7 @@ abstract class AppTheme {
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surface,
         elevation: 8,
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: AppSizes.borderXLarge,
         ),
         titleTextStyle: textTheme.headlineSmall,
@@ -213,7 +213,7 @@ abstract class AppTheme {
         contentTextStyle: textTheme.bodyMedium?.copyWith(
           color: AppColors.textOnPrimary,
         ),
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: AppSizes.borderMedium,
         ),
         behavior: SnackBarBehavior.floating,
@@ -248,12 +248,12 @@ abstract class AppTheme {
         outline: AppColors.darkBorder,
       ),
       textTheme: textTheme,
-      cardTheme: CardThemeData(
+      cardTheme: const CardThemeData(
         color: AppColors.darkCard,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: AppSizes.borderLarge,
-          side: const BorderSide(color: AppColors.darkBorder, width: 1.0),
+          side: BorderSide(color: AppColors.darkBorder, width: 1.0),
         ),
       ),
       appBarTheme: AppBarTheme(

@@ -211,10 +211,10 @@ class SidebarNavigation extends StatelessWidget {
             color: AppColors.sidebarBgDarker,
             child: Row(
               children: [
-                CircleAvatar(
+                const CircleAvatar(
                   radius: 16,
                   backgroundColor: AppColors.sidebarHover,
-                  child: const Icon(
+                  child: Icon(
                     Icons.person_rounded,
                     color: Colors.white70,
                     size: 18,

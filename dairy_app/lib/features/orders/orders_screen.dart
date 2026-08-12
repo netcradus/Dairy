@@ -71,8 +71,8 @@ debugPrint(
               tabs: [
                 Tab(text: 'All (${allOrders.length})'),
                 Tab(text: 'Upcoming (${upcoming.length})'),
-                Tab(text: 'Completed'),
-                Tab(text: 'Cancelled'),
+                const Tab(text: 'Completed'),
+                const Tab(text: 'Cancelled'),
               ],
             ),
           ),
@@ -134,7 +134,7 @@ class _OrderList extends StatelessWidget {
             Container(
               width: 100,
               height: 100,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.lightBlue,
                 shape: BoxShape.circle,
               ),
@@ -339,9 +339,9 @@ class _OrderCard extends ConsumerWidget {
 
           // Footer: total + action buttons
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppColors.background,
-              borderRadius: const BorderRadius.vertical(
+              borderRadius: BorderRadius.vertical(
                   bottom: Radius.circular(16)),
             ),
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),

@@ -76,17 +76,17 @@ class _OtpInputFieldState extends State<OtpInputField> {
               FilteringTextInputFormatter.digitsOnly,
             ],
             onChanged: (value) => _onDigitChanged(index, value),
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               filled: true,
               fillColor: AppColors.inputBackground,
               contentPadding: EdgeInsets.zero,
               border: OutlineInputBorder(
                 borderRadius: AppSizes.borderMedium,
-                borderSide: const BorderSide(color: AppColors.border),
+                borderSide: BorderSide(color: AppColors.border),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: AppSizes.borderMedium,
-                borderSide: const BorderSide(
+                borderSide: BorderSide(
                   color: AppColors.primaryBlue,
                   width: 2.0,
                 ),

@@ -48,7 +48,7 @@ class CartItemTile extends StatelessWidget {
           Container(
             width: isCompact ? 56 : 68,
             height: isCompact ? 56 : 68,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppColors.lightBlue,
               borderRadius: AppSizes.borderSmall,
             ),
@@ -127,7 +127,7 @@ class CartItemTile extends StatelessWidget {
           ] else ...[
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.lightBlue,
                 borderRadius: AppSizes.borderSmall,
               ),
