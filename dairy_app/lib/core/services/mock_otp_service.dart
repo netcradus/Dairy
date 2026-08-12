@@ -18,7 +18,7 @@ class MockOtpService {
     await Future.delayed(const Duration(milliseconds: 1000));
 
     String otp;
-    if (mobileNumber == '9999999999' || mobileNumber == '8888888888') {
+    if (mobileNumber == '9999999999' || mobileNumber == '8888888888' || mobileNumber == '7777777777') {
       // Fixed OTP for easy automated testing/manual demo testing
       otp = '123456';
     } else {

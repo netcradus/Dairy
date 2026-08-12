@@ -134,16 +134,28 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final verified = await _otpService.verifyOtp(mobile, otp);
       if (verified) {
         // Create user session details
-        final String role = (mobile == '9999999999') ? 'admin' : 'customer';
-        final String name = state.isSignUpFlow
-            ? (state.tempFullName ?? 'Sawariya Customer')
-            : (role == 'admin' ? 'Sawariya Admin' : 'Sawariya Customer');
+        String role;
+        String name;
+        String? email;
+        if (mobile == '9999999999') {
+          role = 'admin';
+          name = state.isSignUpFlow ? (state.tempFullName ?? 'Sawariya Admin') : 'Sawariya Admin';
+          email = state.isSignUpFlow ? null : 'admin@sawariyadairy.com';
+        } else if (mobile == '7777777777') {
+          role = 'delivery';
+          name = state.isSignUpFlow ? (state.tempFullName ?? 'Delivery Partner') : 'Rajesh Kumar';
+          email = state.isSignUpFlow ? null : 'delivery@sawariyadairy.com';
+        } else {
+          role = 'customer';
+          name = state.isSignUpFlow ? (state.tempFullName ?? 'Sawariya Customer') : 'Sawariya Customer';
+          email = state.isSignUpFlow ? null : 'customer@sawariyadairy.com';
+        }
 
         final user = User(
           id: 'user_${DateTime.now().millisecondsSinceEpoch}',
           name: name,
           phone: mobile,
-          email: state.isSignUpFlow ? null : (role == 'admin' ? 'admin@sawariyadairy.com' : 'customer@sawariyadairy.com'),
+          email: email,
           role: role,
         );
 

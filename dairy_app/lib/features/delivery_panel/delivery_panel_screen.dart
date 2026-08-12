@@ -1,0 +1,344 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import '../../core/constants/app_colors.dart';
+import '../../core/responsive/responsive_layout.dart';
+import '../../core/widgets/app_bottom_navigation.dart';
+import '../../models/delivery_boy_model.dart';
+import '../../providers/delivery_provider.dart';
+import 'screens/requests_tab.dart';
+import 'screens/active_delivery_tab.dart';
+import 'screens/orders_tab.dart';
+import 'screens/earnings_tab.dart';
+import 'screens/profile_tab.dart';
+
+class _BottomNavItem {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+
+  const _BottomNavItem({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+  });
+}
+
+/// Delivery Boy Panel - Main Screen with Bottom Navigation
+class DeliveryPanelScreen extends ConsumerStatefulWidget {
+  const DeliveryPanelScreen({super.key});
+
+  @override
+  ConsumerState<DeliveryPanelScreen> createState() => _DeliveryPanelScreenState();
+}
+
+class _DeliveryPanelScreenState extends ConsumerState<DeliveryPanelScreen> {
+  static const List<_BottomNavItem> _navItems = [
+    _BottomNavItem(icon: Icons.assignment_outlined, activeIcon: Icons.assignment, label: 'Requests'),
+    _BottomNavItem(icon: Icons.local_shipping_outlined, activeIcon: Icons.local_shipping, label: 'Active'),
+    _BottomNavItem(icon: Icons.history_outlined, activeIcon: Icons.history, label: 'Orders'),
+    _BottomNavItem(icon: Icons.account_balance_wallet, activeIcon: Icons.account_balance_wallet, label: 'Earnings'),
+    _BottomNavItem(icon: Icons.person_outline, activeIcon: Icons.person, label: 'Profile'),
+  ];
+
+  static const List<Widget> _pages = [
+    RequestsTab(),
+    ActiveDeliveryTab(),
+    OrdersTab(),
+    EarningsTab(),
+    ProfileTab(),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final isDesktop = ResponsiveLayout.isDesktop(context);
+    final agent = ref.watch(deliveryAgentProvider);
+    final isOnline = agent.status == DeliveryStatus.onDuty;
+    final currentIndex = ref.watch(deliveryPanelTabProvider);
+
+    if (isDesktop) {
+      return Scaffold(
+        body: Row(
+          children: [
+            _buildDesktopSidebar(currentIndex),
+            Expanded(
+              child: Column(
+                children: [
+                  _buildDesktopTopBar(isOnline, currentIndex),
+                  Expanded(
+                    child: IndexedStack(
+                      index: currentIndex,
+                      children: _pages,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Scaffold(
+      appBar: _buildMobileAppBar(isOnline, currentIndex),
+      body: IndexedStack(
+        index: currentIndex,
+        children: _pages,
+      ),
+      bottomNavigationBar: _buildMobileBottomNav(currentIndex),
+    );
+  }
+
+  Widget _buildMobileBottomNav(int currentIndex) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(
+          top: BorderSide(color: AppColors.border, width: 1.0),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow,
+            blurRadius: 12,
+            offset: Offset(0, -4),
+          ),
+        ],
+      ),
+      child: BottomNavigationBar(
+        currentIndex: currentIndex,
+        onTap: (index) => ref.read(deliveryPanelTabProvider.notifier).setTab(index),
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: AppColors.primary,
+        unselectedItemColor: AppColors.textSecondary,
+        selectedFontSize: 12,
+        unselectedFontSize: 12,
+        items: _navItems.map((item) => BottomNavigationBarItem(
+          icon: Icon(item.icon),
+          activeIcon: Icon(item.activeIcon),
+          label: item.label,
+        )).toList(),
+      ),
+    );
+  }
+
+  Widget _buildDesktopSidebar(int currentIndex) {
+    final textPrimary = AppColors.textPrimaryOf(context);
+    final textSecondary = AppColors.textSecondaryOf(context);
+    final cardBg = AppColors.cardBgOf(context);
+    final cardBorder = AppColors.cardBorderOf(context);
+
+    return Container(
+      width: 280,
+      color: cardBg,
+      child: Column(
+        children: [
+          Container(
+            height: 140,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: cardBg,
+              border: Border(bottom: BorderSide(color: cardBorder)),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                const CircleAvatar(
+                  radius: 32,
+                  backgroundColor: AppColors.primaryLight,
+                  child: Icon(Icons.person, size: 32, color: AppColors.primary),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: _navItems.length,
+              itemBuilder: (context, index) {
+                final item = _navItems[index];
+                final isSelected = currentIndex == index;
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    leading: Icon(
+                      isSelected ? item.activeIcon : item.icon,
+                      color: isSelected ? AppColors.primary : textSecondary,
+                    ),
+                    title: Text(
+                      item.label,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 14,
+                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                        color: isSelected ? AppColors.primary : textPrimary,
+                      ),
+                    ),
+                    selected: isSelected,
+                    selectedTileColor: AppColors.primaryLight.withValues(alpha: 0.1),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    onTap: () => ref.read(deliveryPanelTabProvider.notifier).setTab(index),
+                  ),
+                );
+              },
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border(top: BorderSide(color: cardBorder)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Today\'s Stats',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12,
+                          color: textSecondary,
+                        ),
+                      ),
+                      Text(
+                        '${ref.watch(deliveryAgentProvider).completedDeliveriesToday} / ${ref.watch(deliveryAgentProvider).totalDeliveriesToday}',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  '₹${ref.watch(deliveryAgentProvider).earningsToday.toStringAsFixed(0)}',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDesktopTopBar(bool isOnline, int currentIndex) {
+    final textPrimary = AppColors.textPrimaryOf(context);
+    final cardBg = AppColors.cardBgOf(context);
+    final cardBorder = AppColors.cardBorderOf(context);
+
+    return Container(
+      height: 70,
+      padding: const EdgeInsets.symmetric(horizontal: 28),
+      decoration: BoxDecoration(
+        color: cardBg,
+        border: Border(bottom: BorderSide(color: cardBorder)),
+      ),
+      child: Row(
+        children: [
+          Text(
+            _navItems[currentIndex].label,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: textPrimary,
+            ),
+          ),
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+color: isOnline ? AppColors.success.withValues(alpha: 0.1) : AppColors.error.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isOnline ? AppColors.success : AppColors.error,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: isOnline ? AppColors.success : AppColors.error,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  isOnline ? 'Online' : 'Offline',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: isOnline ? AppColors.success : AppColors.error,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildMobileAppBar(bool isOnline, int currentIndex) {
+    final textPrimary = AppColors.textPrimaryOf(context);
+    final cardBg = AppColors.cardBgOf(context);
+
+    return AppBar(
+      backgroundColor: cardBg,
+      elevation: 0,
+      title: Text(
+        _navItems[currentIndex].label,
+        style: GoogleFonts.plusJakartaSans(
+          fontSize: 20,
+          fontWeight: FontWeight.w800,
+          color: textPrimary,
+        ),
+      ),
+      actions: [
+        Container(
+          margin: const EdgeInsets.only(right: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: isOnline ? AppColors.success.withValues(alpha: 0.1) : AppColors.error.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isOnline ? AppColors.success : AppColors.error,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: isOnline ? AppColors.success : AppColors.error,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                isOnline ? 'Online' : 'Offline',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: isOnline ? AppColors.success : AppColors.error,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}

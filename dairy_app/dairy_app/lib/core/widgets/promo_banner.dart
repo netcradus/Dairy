@@ -70,8 +70,14 @@ class _HeroBannerCarouselState extends State<HeroBannerCarousel> {
             onPageChanged: (index) => setState(() => _currentIndex = index),
             itemCount: widget.banners.length,
             itemBuilder: (context, index) {
+              if (index >= widget.banners.length) {
+                return const SizedBox.shrink();
+              }
+
+              final banner = widget.banners[index];
+
               return PromoBanner(
-                banner: widget.banners[index],
+                banner: banner,
                 onTap: widget.onTap,
               );
             },
@@ -151,7 +157,6 @@ class PromoBanner extends StatelessWidget {
       child: Stack(
         clipBehavior: Clip.antiAlias,
         children: [
-          // Content
           Padding(
             padding: const EdgeInsets.symmetric(
                 horizontal: AppSizes.p24, vertical: AppSizes.p20),
@@ -210,7 +215,7 @@ class PromoBanner extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
 
-                      // CTA Button — dark blue capsule
+                      // CTA Button
                       SizedBox(
                         height: 34,
                         child: ElevatedButton(

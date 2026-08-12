@@ -1,0 +1,478 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_sizes.dart';
+import '../../../core/responsive/responsive_layout.dart';
+import '../../../core/widgets/loading_widget.dart';
+import '../../../models/delivery_boy_model.dart';
+import '../../../providers/delivery_provider.dart';
+
+/// Requests Tab - Incoming delivery requests with accept/decline
+class RequestsTab extends ConsumerStatefulWidget {
+  const RequestsTab({super.key});
+
+  @override
+  ConsumerState<RequestsTab> createState() => _RequestsTabState();
+}
+
+class _RequestsTabState extends ConsumerState<RequestsTab> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDesktop = ResponsiveLayout.isDesktop(context);
+    final requests = ref.watch(deliveryRequestsProvider);
+    final agent = ref.watch(deliveryAgentProvider);
+    final isOnline = agent.status == DeliveryStatus.onDuty;
+    final pendingRequests = requests.where((r) => r.status == DeliveryRequestStatus.pending).toList();
+    final acceptedRequests = requests.where((r) => r.status == DeliveryRequestStatus.accepted).toList();
+
+    final textPrimary = AppColors.textPrimaryOf(context);
+    final textSecondary = AppColors.textSecondaryOf(context);
+    final textMuted = AppColors.textMutedOf(context);
+    final cardBg = AppColors.cardBgOf(context);
+    final cardBorder = AppColors.cardBorderOf(context);
+
+    if (!isOnline) {
+      return _buildOfflineView(context);
+    }
+
+    if (pendingRequests.isEmpty && acceptedRequests.isEmpty) {
+      return _buildEmptyView(context);
+    }
+
+    return ListView(
+      padding: EdgeInsets.all(isDesktop ? 24 : 16),
+      children: [
+        if (pendingRequests.isNotEmpty) ...[
+          Text(
+            'New Requests',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: textPrimary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...pendingRequests.map((request) => _buildRequestCard(request, isUrgent: true)),
+          const SizedBox(height: 24),
+        ],
+        if (acceptedRequests.isNotEmpty) ...[
+          Text(
+            'Accepted Requests',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: textPrimary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...acceptedRequests.map((request) => _buildRequestCard(request, isUrgent: false)),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildOfflineView(BuildContext context) {
+    final textPrimary = AppColors.textPrimaryOf(context);
+    final textSecondary = AppColors.textSecondaryOf(context);
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.wifi_off_rounded,
+                size: 64,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'You\'re Offline',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                color: textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Go online to start receiving delivery requests',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 16,
+                color: textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              onPressed: () => ref.read(deliveryAgentProvider.notifier).toggleDuty(),
+              icon: const Icon(Icons.power_settings_new_rounded),
+              label: const Text('Go Online'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyView(BuildContext context) {
+    final textPrimary = AppColors.textPrimaryOf(context);
+    final textSecondary = AppColors.textSecondaryOf(context);
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: AppColors.success.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.check_circle_outline_rounded,
+                size: 64,
+                color: AppColors.success,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'All Caught Up!',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                color: textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'No new delivery requests at the moment',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 16,
+                color: textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRequestCard(DeliveryRequest request, {required bool isUrgent}) {
+    final textPrimary = AppColors.textPrimaryOf(context);
+    final textSecondary = AppColors.textSecondaryOf(context);
+    final textMuted = AppColors.textMutedOf(context);
+    final cardBg = AppColors.cardBgOf(context);
+    final cardBorder = AppColors.cardBorderOf(context);
+
+    final timeLeft = request.countdownSeconds;
+    final isExpiring = timeLeft <= 10 && timeLeft > 0;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isUrgent && isExpiring ? AppColors.error : cardBorder,
+          width: isUrgent && isExpiring ? 2 : 1,
+        ),
+        boxShadow: AppColors.cardShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Order #${request.orderId}',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      request.customerName,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 14,
+                        color: textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isUrgent) _buildCountdownTimer(timeLeft, isExpiring),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _InfoChip(
+                icon: Icons.location_on_outlined,
+                label: request.distance,
+                color: AppColors.primary,
+              ),
+              const SizedBox(width: 8),
+              _InfoChip(
+                icon: Icons.access_time_rounded,
+                label: request.estimatedTime,
+                color: AppColors.info,
+              ),
+              const SizedBox(width: 8),
+              _InfoChip(
+                icon: Icons.attach_money_rounded,
+                label: '₹${request.deliveryFee.toStringAsFixed(0)}',
+                color: AppColors.success,
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Pickup: ${request.pickupLocation}',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 13,
+              color: textMuted,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Delivery: ${request.customerAddress}',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 13,
+              color: textMuted,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: request.items
+                .map((item) => Chip(
+                      label: Text(
+                        item,
+                        style: GoogleFonts.plusJakartaSans(fontSize: 11),
+                      ),
+                      backgroundColor: AppColors.primaryLight.withValues(alpha: 0.1),
+                      side: BorderSide(color: AppColors.primaryLight),
+                      visualDensity: VisualDensity.compact,
+                    ))
+                .toList(),
+          ),
+          const SizedBox(height: 16),
+          if (isUrgent) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _handleDecline(request.id),
+                    icon: const Icon(Icons.close_rounded, size: 18),
+                    label: const Text('Decline'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.error,
+                      side: BorderSide(color: AppColors.error),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _handleAccept(request.id),
+                    icon: const Icon(Icons.check_rounded, size: 18),
+                    label: const Text('Accept'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ] else ...[
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _navigateToActiveTab,
+                icon: const Icon(Icons.local_shipping_rounded, size: 18),
+                label: const Text('View Active Deliveries'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.info,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCountdownTimer(int seconds, bool isExpiring) {
+    final minutes = (seconds / 60).floor();
+    final secs = seconds % 60;
+    final timeStr = '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: isExpiring ? AppColors.error.withValues(alpha: 0.1) : AppColors.warning.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isExpiring ? AppColors.error : AppColors.warning,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.timer_outlined,
+            size: 14,
+            color: isExpiring ? AppColors.error : AppColors.warning,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            timeStr,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: isExpiring ? AppColors.error : AppColors.warning,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleAccept(String requestId) {
+    ref.read(deliveryRequestsProvider.notifier).acceptRequest(requestId);
+    // Also add to active orders
+    final request = ref.read(deliveryRequestsProvider).firstWhere((r) => r.id == requestId);
+    final order = DeliveryOrder(
+      id: 'DO-${DateTime.now().millisecondsSinceEpoch}',
+      orderId: request.orderId,
+      customerName: request.customerName,
+      customerPhone: request.customerPhone,
+      customerAddress: request.customerAddress,
+      pickupLocation: request.pickupLocation,
+      pickupPhone: request.pickupPhone,
+      items: request.items,
+      amount: request.amount,
+      deliveryFee: request.deliveryFee,
+      status: DeliveryOrderStatus.accepted,
+      orderTime: request.requestTime,
+      acceptedTime: DateTime.now(),
+      distance: request.distance,
+      estimatedTime: request.estimatedTime,
+    );
+    ref.read(deliveryOrdersProvider.notifier).addOrder(order);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Order ${request.orderId} accepted!'),
+        backgroundColor: AppColors.success,
+      ),
+    );
+    // Switch to Active tab
+    ref.read(deliveryPanelTabProvider.notifier).state = 1;
+  }
+
+  void _handleDecline(String requestId) {
+    ref.read(deliveryRequestsProvider.notifier).declineRequest(requestId);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Order declined'),
+        backgroundColor: AppColors.error,
+      ),
+    );
+  }
+
+  void _navigateToActiveTab() {
+    ref.read(deliveryPanelTabProvider.notifier).setTab(1);
+  }
+}
+
+class _InfoChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  const _InfoChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

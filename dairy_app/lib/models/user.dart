@@ -5,7 +5,7 @@ class User {
   final String phone;
   final String? email;
   final String? profileImageUrl;
-  final String role; // 'admin' or 'customer'
+  final String role; // 'admin', 'customer', 'delivery'
 
   const User({
     required this.id,
@@ -15,6 +15,10 @@ class User {
     this.profileImageUrl,
     this.role = 'customer',
   });
+
+  bool get isDelivery => role == 'delivery';
+  bool get isAdmin => role == 'admin';
+  bool get isCustomer => role == 'customer';
 
   Map<String, dynamic> toMap() {
     return {

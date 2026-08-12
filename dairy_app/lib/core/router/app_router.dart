@@ -16,6 +16,7 @@ import '../../features/auth/screens/register_screen.dart';
 import '../../features/auth/screens/reset_password_screen.dart';
 import '../../features/cart/cart_screen.dart';
 import '../../features/checkout/checkout_screen.dart';
+import '../../features/delivery_panel/delivery_panel_screen.dart';
 import '../../features/main_layout/main_layout_screen.dart';
 import '../../features/notifications/notifications_screen.dart';
 import '../../features/offers/offers_screen.dart';
@@ -31,6 +32,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   final user = ref.watch(userProvider);
   final isLoggedIn = user.id.isNotEmpty;
   final isAdmin = user.role == 'admin';
+  final isDelivery = user.role == 'delivery';
 
   return GoRouter(
     initialLocation: '/splash',
@@ -48,10 +50,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       if (isLoggedIn) {
         if (isAuthPath) {
-          return isAdmin ? '/admin' : '/home';
+          if (isAdmin) return '/admin';
+          if (isDelivery) return '/delivery';
+          return '/home';
         }
         if (path == '/admin' && !isAdmin) {
-          return '/home';
+          return isDelivery ? '/delivery' : '/home';
+        }
+        if (path == '/delivery' && !isDelivery) {
+          return isAdmin ? '/admin' : '/home';
+        }
+        if (path == '/home' && (isAdmin || isDelivery)) {
+          return isAdmin ? '/admin' : '/delivery';
         }
       }
       return null;
@@ -135,7 +145,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/offers',
         builder: (context, state) => const OffersScreen(),
       ),
-      GoRoute(
+GoRoute(
         path: '/admin',
         builder: (context, state) => provider.MultiProvider(
           providers: [
@@ -150,6 +160,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             },
           ),
         ),
+      ),
+      GoRoute(
+        path: '/delivery',
+        builder: (context, state) => const DeliveryPanelScreen(),
       ),
     ],
   );

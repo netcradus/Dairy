@@ -54,6 +54,21 @@ class UserNotifier extends StateNotifier<User> {
     } catch (_) {}
   }
 
+  /// Developer-only helper (used by debug toggles) to switch the current
+  /// user's role so the Delivery Panel can be tested. Persists like a normal
+  /// session change.
+  Future<void> setRole(String role) async {
+    final updatedUser = User(
+      id: state.id,
+      name: state.name,
+      phone: state.phone,
+      email: state.email,
+      profileImageUrl: state.profileImageUrl,
+      role: role,
+    );
+    await setSession(updatedUser);
+  }
+
   void updateProfile({String? name, String? phone, String? email}) {
     final updatedUser = User(
       id: state.id,

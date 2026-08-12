@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/responsive/responsive.dart';
@@ -53,8 +55,28 @@ class ProfileScreen extends ConsumerWidget {
             child: Column(
               children: [
                 // User Info Header
-                buildProfileHeader(context, ref),
+                if (kDebugMode)
+                  _SecretDevGesture(
+                    onTriggered: () => _openDeliveryPanel(context, ref),
+                    child: buildProfileHeader(context, ref),
+                  )
+                else
+                  buildProfileHeader(context, ref),
                 const SizedBox(height: 24),
+
+                // Developer-only access (stripped from release builds)
+                if (kDebugMode) ...[
+                  buildSectionTitle('Developer (Debug Only)'),
+                  buildTile(
+                    context: context,
+                    icon: Icons.developer_mode_rounded,
+                    title: 'Open Delivery Panel',
+                    subtitle:
+                        'Triple-tap the avatar above, or tap here, to test the delivery experience',
+                    onTap: () => _openDeliveryPanel(context, ref),
+                  ),
+                  const SizedBox(height: 16),
+                ],
 
                 // Account Settings
                 buildSectionTitle('Account Settings'),
@@ -354,5 +376,52 @@ class ProfileScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  /// Developer-only shortcut: switch the current user to the delivery role so
+  /// the router redirects into the Delivery Panel, then navigate to it.
+  /// Only ever invoked from widgets guarded by [kDebugMode].
+  void _openDeliveryPanel(BuildContext context, WidgetRef ref) {
+    ref.read(userProvider.notifier).setRole('delivery');
+    context.push('/delivery');
+  }
+}
+
+/// Hidden secret gesture: triggers [onTriggered] after three quick taps on its
+/// child. Intended to be wrapped in [kDebugMode] so it is absent in release.
+class _SecretDevGesture extends StatefulWidget {
+  final Widget child;
+  final VoidCallback onTriggered;
+
+  const _SecretDevGesture({
+    required this.child,
+    required this.onTriggered,
+  });
+
+  @override
+  State<_SecretDevGesture> createState() => _SecretDevGestureState();
+}
+
+class _SecretDevGestureState extends State<_SecretDevGesture> {
+  int _tapCount = 0;
+  DateTime? _lastTap;
+
+  void _handleTap() {
+    final now = DateTime.now();
+    if (_lastTap != null &&
+        now.difference(_lastTap!) > const Duration(milliseconds: 600)) {
+      _tapCount = 0;
+    }
+    _lastTap = now;
+    _tapCount++;
+    if (_tapCount >= 3) {
+      _tapCount = 0;
+      widget.onTriggered();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(onTap: _handleTap, child: widget.child);
   }
 }
