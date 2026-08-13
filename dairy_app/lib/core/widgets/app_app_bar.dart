@@ -32,11 +32,12 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
       padding: EdgeInsets.symmetric(
         horizontal: context.responsiveHorizontalPadding,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surface,
-        border: Border(
+        border: const Border(
           bottom: BorderSide(color: AppColors.border, width: 1.0),
         ),
+        boxShadow: AppColors.softShadow,
       ),
       child: Row(
         children: [
@@ -45,16 +46,17 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
             children: [
               if (!isDesktop) ...[
                 Container(
-                  height: 36,
-                  width: 36,
-                  decoration: const BoxDecoration(
-                    color: AppColors.lightBlue,
+                  height: 38,
+                  width: 38,
+                  decoration: BoxDecoration(
+                    gradient: AppColors.brandGradient,
                     borderRadius: AppSizes.borderSmall,
+                    boxShadow: AppColors.primaryShadowSm,
                   ),
                   child: const Center(
                     child: Icon(
                       Icons.water_drop_rounded,
-                      color: AppColors.primaryBlue,
+                      color: Colors.white,
                       size: 22,
                     ),
                   ),

@@ -25,21 +25,48 @@ class ErrorStateWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              height: 80,
-              width: 80,
+              height: 96,
+              width: 96,
               decoration: BoxDecoration(
-                color: AppColors.error.withValues(alpha: 0.1),
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.error.withValues(alpha: 0.12),
+                    AppColors.error.withValues(alpha: 0.04),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.error.withValues(alpha: 0.12),
+                  width: 1.5,
+                ),
               ),
-              child: const Icon(Icons.error_outline_rounded, size: 40, color: AppColors.error),
+              child: Center(
+                child: Container(
+                  height: 64,
+                  width: 64,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    shape: BoxShape.circle,
+                    boxShadow: AppColors.cardShadowSm,
+                  ),
+                  child: Icon(
+                    Icons.error_outline_rounded,
+                    size: 32,
+                    color: AppColors.error,
+                  ),
+                ),
+              ),
             ),
-            const SizedBox(height: AppSizes.p20),
+            const SizedBox(height: AppSizes.p24),
             Text(
               title,
               style: const TextStyle(
-                fontSize: 18,
+                fontSize: 19,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
+                letterSpacing: -0.2,
               ),
               textAlign: TextAlign.center,
             ),
@@ -48,13 +75,14 @@ class ErrorStateWidget extends StatelessWidget {
               message,
               style: const TextStyle(
                 fontSize: 14,
+                height: 1.5,
                 color: AppColors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: AppSizes.p24),
+            const SizedBox(height: AppSizes.p28),
             SizedBox(
-              width: 160,
+              width: 170,
               child: AppButton(
                 text: 'Retry',
                 onPressed: onRetry,

@@ -16,18 +16,12 @@ class AppBottomNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surface,
         border: Border(
           top: BorderSide(color: AppColors.border, width: 1.0),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow,
-            blurRadius: 12,
-            offset: Offset(0, -4),
-          ),
-        ],
+        boxShadow: AppColors.navShadow,
       ),
       child: BottomNavigationBar(
         currentIndex: currentIndex,

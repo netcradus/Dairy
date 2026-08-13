@@ -43,9 +43,10 @@ abstract class AppTheme {
       ),
 
       // Card Theme
-      cardTheme: const CardThemeData(
+      cardTheme: CardThemeData(
         color: AppColors.cardBackground,
-        elevation: 0,
+        elevation: 2,
+        shadowColor: const Color(0xFF0F172A).withValues(alpha: 0.08),
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: AppSizes.borderLarge,
@@ -56,7 +57,8 @@ abstract class AppTheme {
       // Elevated Button Theme
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          elevation: 0,
+          elevation: 2,
+          shadowColor: AppColors.primaryBlue.withValues(alpha: 0.3),
           backgroundColor: AppColors.primaryBlue,
           foregroundColor: AppColors.textOnPrimary,
           minimumSize: const Size(double.infinity, AppSizes.buttonHeight),
@@ -199,7 +201,8 @@ abstract class AppTheme {
       // Dialog Theme
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surface,
-        elevation: 8,
+        elevation: 16,
+        shadowColor: const Color(0xFF0F172A).withValues(alpha: 0.2),
         shape: const RoundedRectangleBorder(
           borderRadius: AppSizes.borderXLarge,
         ),
@@ -210,6 +213,7 @@ abstract class AppTheme {
       // SnackBar Theme
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.textPrimary,
+        elevation: 6,
         contentTextStyle: textTheme.bodyMedium?.copyWith(
           color: AppColors.textOnPrimary,
         ),

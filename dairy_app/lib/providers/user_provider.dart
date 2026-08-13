@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../core/router/auth_refresh.dart';
 import '../models/user.dart';
 
 const User guestUser = User(
@@ -33,11 +34,13 @@ class UserNotifier extends StateNotifier<User> {
       // Fallback to guest user on error
       state = guestUser;
     }
+    notifyAuthStateChanged();
   }
 
   /// Save session to SharedPreferences and update state
   Future<void> setSession(User user) async {
     state = user;
+    notifyAuthStateChanged();
     try {
       final prefs = await SharedPreferences.getInstance();
       final sessionJson = jsonEncode(user.toMap());
@@ -48,6 +51,7 @@ class UserNotifier extends StateNotifier<User> {
   /// Clear session on Logout
   Future<void> clearSession() async {
     state = guestUser;
+    notifyAuthStateChanged();
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_sessionKey);

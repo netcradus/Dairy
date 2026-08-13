@@ -16,7 +16,7 @@ import '../../providers/product_provider.dart';
 import '../../providers/navigation_provider.dart';
 
 
-/// Sawariya Dairy Phase 4 — Complete Home Discovery Screen
+/// Sawariya Dairy — Home / Dashboard Discovery Screen
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -29,6 +29,8 @@ class HomeScreen extends ConsumerWidget {
     final bestSellers = ref.watch(bestSellersProvider);
     final cartQuantities = ref.watch(cartQuantitiesProvider);
 
+    final isMobile = context.isMobile;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SingleChildScrollView(
@@ -36,14 +38,19 @@ class HomeScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(height: AppSizes.p20),
+
+              // ─── Welcome Header ───────────────────────────────────────
+              const _WelcomeHeader(),
+
               const SizedBox(height: AppSizes.p16),
 
-              // ─── Trust Badges Strip ───────────────────────────────────────
+              // ─── Trust Badges Strip ──────────────────────────────────
               const _TrustBadgesStrip(),
 
-              const SizedBox(height: AppSizes.p16),
+              const SizedBox(height: AppSizes.p24),
 
-              // ─── 1. Hero Promotional Banner Carousel ─────────────────────
+              // ─── 1. Hero Promotional Banner Carousel ─────────────────
               if (heroBanners.isNotEmpty)
                 HeroBannerCarousel(
                   banners: heroBanners,
@@ -54,7 +61,7 @@ class HomeScreen extends ConsumerWidget {
 
               const SizedBox(height: AppSizes.p24),
 
-              // ─── 2. Categories Section ────────────────────────────────────
+              // ─── 2. Categories Section ────────────────────────────────
               SectionHeader(
                 title: AppStrings.categories,
                 subtitle: 'Farm fresh dairy essentials delivered daily',
@@ -62,14 +69,15 @@ class HomeScreen extends ConsumerWidget {
                   ref.read(navigationProvider.notifier).setIndex(1);
                 },
               ),
+              const SizedBox(height: AppSizes.p12),
               SizedBox(
-                height: 114,
+                height: 116,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   padding: EdgeInsets.zero,
                   itemCount: categories.length,
                   separatorBuilder: (context, index) =>
-                      const SizedBox(width: AppSizes.p8),
+                      const SizedBox(width: AppSizes.p12),
                   itemBuilder: (context, index) {
                     final cat = categories[index];
                     return CategoryCard(
@@ -84,7 +92,7 @@ class HomeScreen extends ConsumerWidget {
 
               const SizedBox(height: AppSizes.p24),
 
-              // ─── 3. Fresh Deals Section (Horizontal Carousel) ─────────────
+              // ─── 3. Fresh Deals Section (Horizontal Carousel) ─────────
               SectionHeader(
                 title: AppStrings.freshDeals,
                 subtitle: 'Limited time daily fresh discounts',
@@ -92,8 +100,9 @@ class HomeScreen extends ConsumerWidget {
                   ref.read(navigationProvider.notifier).setIndex(1);
                 },
               ),
+              const SizedBox(height: AppSizes.p12),
               SizedBox(
-                height: 152,
+                height: 160,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   shrinkWrap: true,
@@ -119,21 +128,27 @@ class HomeScreen extends ConsumerWidget {
 
               const SizedBox(height: AppSizes.p24),
 
-              // ─── 4. A2 Gir Cow Milk Promotion Section ────────────────────
+              // ─── 4. A2 Gir Cow Milk Promotion Section ────────────────
               _A2MilkPromotionSection(
                 products: a2Products,
                 cartQuantities: cartQuantities,
-                onIncrement: (p) =>
-                    ref.read(cartProvider.notifier).addItem(p),
-                onDecrement: (id) =>
-                    ref.read(cartProvider.notifier).decrement(id),
+                onIncrement: (p) => ref.read(cartProvider.notifier).addItem(p),
+                onDecrement: (id) => ref.read(cartProvider.notifier).decrement(id),
                 onShopTap: () =>
                     ref.read(navigationProvider.notifier).setIndex(1),
               ),
 
               const SizedBox(height: AppSizes.p24),
 
-              // ─── 5. Best Selling Products (Responsive Grid) ───────────────
+              // ─── 5. Track Order CTA ───────────────────────────────────
+              _TrackOrderCard(
+                onTrackTap: () =>
+                    ref.read(navigationProvider.notifier).setIndex(2),
+              ),
+
+              const SizedBox(height: AppSizes.p24),
+
+              // ─── 6. Best Selling Products (Responsive Grid) ───────────
               SectionHeader(
                 title: AppStrings.bestSelling,
                 subtitle: 'Customer favourites & top rated dairy',
@@ -141,15 +156,16 @@ class HomeScreen extends ConsumerWidget {
                   ref.read(navigationProvider.notifier).setIndex(1);
                 },
               ),
+              const SizedBox(height: AppSizes.p12),
 
               GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: context.responsiveGridColumns,
-                  crossAxisSpacing: AppSizes.p14,
-                  mainAxisSpacing: AppSizes.p14,
-                  childAspectRatio: context.isMobile ? 0.70 : 0.74,
+                  crossAxisSpacing: AppSizes.p16,
+                  mainAxisSpacing: AppSizes.p16,
+                  childAspectRatio: isMobile ? 0.72 : 0.78,
                 ),
                 itemCount: bestSellers.length,
                 itemBuilder: (context, index) {
@@ -178,30 +194,92 @@ class HomeScreen extends ConsumerWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Welcome Header
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _WelcomeHeader extends StatelessWidget {
+  const _WelcomeHeader();
+
+  static String _greeting() {
+    final h = DateTime.now().hour;
+    if (h < 12) return 'Good morning';
+    if (h < 17) return 'Good afternoon';
+    return 'Good evening';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          height: 46,
+          width: 46,
+          decoration: BoxDecoration(
+            gradient: AppColors.brandGradient,
+            borderRadius: AppSizes.borderMedium,
+            boxShadow: AppColors.primaryShadowSm,
+          ),
+          child: const Center(
+            child: Icon(Icons.water_drop_rounded, color: Colors.white, size: 26),
+          ),
+        ),
+        const SizedBox(width: AppSizes.p12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${_greeting()},',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 2),
+              const Text(
+                'Fresh dairy, delivered daily',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
+                  letterSpacing: -0.2,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Trust Badges Strip
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _TrustBadgesStrip extends StatelessWidget {
-  static const _badges = [
+  static const List<_TrustBadge> _badges = [
     _TrustBadge(
       icon: Icons.verified_rounded,
       label: 'FSSAI Certified',
-      color: Color(0xFF1455C3),
+      color: AppColors.primaryBlue,
     ),
     _TrustBadge(
       icon: Icons.local_shipping_outlined,
       label: 'Free Delivery',
-      color: Color(0xFF10B981),
+      color: AppColors.freshGreen,
     ),
     _TrustBadge(
       icon: Icons.schedule_rounded,
       label: 'Same-Day Fresh',
-      color: Color(0xFFF59E0B),
+      color: AppColors.warning,
     ),
     _TrustBadge(
       icon: Icons.replay_rounded,
       label: 'Easy Returns',
-      color: Color(0xFFE53935),
+      color: AppColors.error,
     ),
   ];
 
@@ -209,44 +287,53 @@ class _TrustBadgesStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 52,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        physics: const ClampingScrollPhysics(),
-        itemCount: _badges.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 0),
-        itemBuilder: (context, index) {
-          final badge = _badges[index];
-          return Padding(
-            padding: const EdgeInsets.only(right: AppSizes.p8),
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: AppSizes.p12, vertical: AppSizes.p8),
-              decoration: BoxDecoration(
-                color: badge.color.withValues(alpha: 0.07),
-                borderRadius: AppSizes.borderLarge,
-                border: Border.all(
-                    color: badge.color.withValues(alpha: 0.18), width: 1),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(badge.icon, size: 15, color: badge.color),
-                  const SizedBox(width: AppSizes.p6),
-                  Text(
-                    badge.label,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: badge.color,
-                    ),
-                  ),
-                ],
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSizes.p12,
+        vertical: AppSizes.p12,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: AppSizes.borderLarge,
+        border: Border.all(color: AppColors.border, width: 1),
+        boxShadow: AppColors.cardShadowSm,
+      ),
+      child: Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        spacing: AppSizes.p8,
+        runSpacing: AppSizes.p8,
+        children: _badges.map((badge) {
+          return Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSizes.p12,
+              vertical: AppSizes.p8,
+            ),
+            decoration: BoxDecoration(
+              color: badge.color.withValues(alpha: 0.08),
+              borderRadius: AppSizes.borderMedium,
+              border: Border.all(
+                color: badge.color.withValues(alpha: 0.16),
+                width: 1,
               ),
             ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(badge.icon, size: 15, color: badge.color),
+                const SizedBox(width: AppSizes.p6),
+                Text(
+                  badge.label,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: badge.color,
+                  ),
+                ),
+              ],
+            ),
           );
-        },
+        }).toList(),
       ),
     );
   }
@@ -256,8 +343,99 @@ class _TrustBadge {
   final IconData icon;
   final String label;
   final Color color;
-  const _TrustBadge(
-      {required this.icon, required this.label, required this.color});
+  const _TrustBadge({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Track Order CTA
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _TrackOrderCard extends StatelessWidget {
+  final VoidCallback onTrackTap;
+
+  const _TrackOrderCard({required this.onTrackTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSizes.p16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: AppSizes.borderLarge,
+        border: Border.all(color: AppColors.border, width: 1),
+        boxShadow: AppColors.cardShadowSm,
+      ),
+      child: Row(
+        children: [
+          Container(
+            height: 48,
+            width: 48,
+            decoration: BoxDecoration(
+              color: AppColors.primaryBlue.withValues(alpha: 0.10),
+              shape: BoxShape.circle,
+            ),
+            child: const Center(
+              child: Icon(
+                Icons.local_shipping_rounded,
+                color: AppColors.primaryBlue,
+                size: 24,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSizes.p14),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Track your order',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Real-time updates on your fresh delivery',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSizes.p12),
+          SizedBox(
+            height: 40,
+            child: ElevatedButton(
+              onPressed: onTrackTap,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryBlue,
+                foregroundColor: Colors.white,
+                elevation: 2,
+                shadowColor: AppColors.primaryBlue.withValues(alpha: 0.3),
+                padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: AppSizes.borderMedium,
+                ),
+              ),
+              child: const Text(
+                'Track',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -296,9 +474,13 @@ class _A2MilkPromotionSection extends StatelessWidget {
             ),
             borderRadius: AppSizes.borderXLarge,
             border: Border.all(
-                color: AppColors.freshGreen.withValues(alpha: 0.3), width: 1.5),
+              color: AppColors.freshGreen.withValues(alpha: 0.3),
+              width: 1.5,
+            ),
+            boxShadow: AppColors.cardShadowMd,
           ),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Text Column
               Expanded(
@@ -308,7 +490,9 @@ class _A2MilkPromotionSection extends StatelessWidget {
                     // Label Badge
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: AppSizes.p8, vertical: 3),
+                        horizontal: AppSizes.p8,
+                        vertical: 3,
+                      ),
                       decoration: const BoxDecoration(
                         color: AppColors.freshGreen,
                         borderRadius: AppSizes.borderSmall,
@@ -323,18 +507,18 @@ class _A2MilkPromotionSection extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: AppSizes.p8),
+                    const SizedBox(height: AppSizes.p12),
 
                     const Text(
                       'Sawariya Pure\nA2 Gir Cow Milk',
                       style: TextStyle(
-                        fontSize: 17,
+                        fontSize: 18,
                         fontWeight: FontWeight.w800,
                         color: AppColors.textPrimary,
                         height: 1.2,
                       ),
                     ),
-                    const SizedBox(height: AppSizes.p6),
+                    const SizedBox(height: AppSizes.p8),
 
                     const Text(
                       'Easy to digest, rich in A2 beta-casein\nprotein & natural immunity boosters.',
@@ -344,16 +528,16 @@ class _A2MilkPromotionSection extends StatelessWidget {
                         height: 1.5,
                       ),
                     ),
-                    const SizedBox(height: AppSizes.p12),
+                    const SizedBox(height: AppSizes.p14),
 
                     // Feature Pills Row
                     const Wrap(
                       spacing: AppSizes.p6,
                       runSpacing: AppSizes.p6,
                       children: [
-                        _A2FeaturePill(label: '✓ No Hormones'),
-                        _A2FeaturePill(label: '✓ A2 Protein'),
-                        _A2FeaturePill(label: '✓ Bilona Method'),
+                        _A2FeaturePill(label: 'No Hormones'),
+                        _A2FeaturePill(label: 'A2 Protein'),
+                        _A2FeaturePill(label: 'Bilona Method'),
                       ],
                     ),
                   ],
@@ -372,8 +556,9 @@ class _A2MilkPromotionSection extends StatelessWidget {
                       color: AppColors.freshGreen.withValues(alpha: 0.12),
                       shape: BoxShape.circle,
                       border: Border.all(
-                          color: AppColors.freshGreen.withValues(alpha: 0.4),
-                          width: 1.5),
+                        color: AppColors.freshGreen.withValues(alpha: 0.4),
+                        width: 1.5,
+                      ),
                     ),
                     child: const Center(
                       child: Icon(Icons.verified_rounded,
@@ -382,14 +567,15 @@ class _A2MilkPromotionSection extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSizes.p12),
                   SizedBox(
-                    height: 34,
+                    height: 36,
                     child: ElevatedButton(
                       onPressed: onShopTap,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.freshGreen,
                         foregroundColor: Colors.white,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        elevation: 2,
+                        shadowColor: AppColors.freshGreen.withValues(alpha: 0.3),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         shape: const RoundedRectangleBorder(
                             borderRadius: AppSizes.borderMedium),
                       ),
@@ -452,13 +638,21 @@ class _A2FeaturePill extends StatelessWidget {
         border:
             Border.all(color: AppColors.freshGreen.withValues(alpha: 0.3)),
       ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w600,
-          color: AppColors.freshGreen,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.check_circle_rounded,
+              size: 11, color: AppColors.freshGreen),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: AppColors.freshGreen,
+            ),
+          ),
+        ],
       ),
     );
   }

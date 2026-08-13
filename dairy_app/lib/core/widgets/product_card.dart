@@ -46,21 +46,7 @@ class _ProductCardState extends State<ProductCard> {
             color: _isHovered ? AppColors.primaryBlue : AppColors.border,
             width: _isHovered ? 1.5 : 1.0,
           ),
-          boxShadow: _isHovered
-              ? [
-                  BoxShadow(
-                    color: AppColors.primaryBlue.withValues(alpha: 0.12),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
-                ]
-              : [
-                  const BoxShadow(
-                    color: AppColors.shadow,
-                    blurRadius: 8,
-                    offset: Offset(0, 2),
-                  ),
-                ],
+          boxShadow: _isHovered ? AppColors.cardShadowMd : AppColors.cardShadowSm,
         ),
         child: InkWell(
           onTap: widget.onTap,
@@ -75,9 +61,9 @@ class _ProductCardState extends State<ProductCard> {
                   children: [
                     Positioned.fill(
                       child: Container(
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           color: AppColors.lightBlue,
-                          borderRadius: BorderRadius.vertical(
+                          borderRadius: const BorderRadius.vertical(
                             top: Radius.circular(AppSizes.radiusLarge - 1),
                           ),
                         ),
@@ -115,13 +101,15 @@ class _ProductCardState extends State<ProductCard> {
                     // Discount Tag
                     if (p.hasDiscount)
                       Positioned(
-                        top: 8,
-                        left: 8,
+                        top: 10,
+                        left: 10,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: const BoxDecoration(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
                             color: AppColors.discountTag,
                             borderRadius: AppSizes.borderSmall,
+                            boxShadow: AppColors.cardShadowSm,
                           ),
                           child: Text(
                             '${p.discountPercentage}% OFF',
@@ -137,18 +125,21 @@ class _ProductCardState extends State<ProductCard> {
                     // A2 Cow Milk Badge
                     if (p.isA2CowMilk)
                       Positioned(
-                        top: 8,
-                        right: 8,
+                        top: 10,
+                        right: 10,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: const BoxDecoration(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
                             color: AppColors.freshGreen,
                             borderRadius: AppSizes.borderSmall,
+                            boxShadow: AppColors.cardShadowSm,
                           ),
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.verified_rounded, size: 10, color: AppColors.textOnPrimary),
+                              Icon(Icons.verified_rounded,
+                                  size: 10, color: AppColors.textOnPrimary),
                               SizedBox(width: 2),
                               Text(
                                 'A2 PURE',
@@ -172,16 +163,25 @@ class _ProductCardState extends State<ProductCard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Unit Tag
-                    Text(
-                      p.unit,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
+                    // Unit Tag (pill)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: AppColors.lightBlue,
+                        borderRadius: AppSizes.borderSmall,
+                      ),
+                      child: Text(
+                        p.unit,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.4,
+                          color: AppColors.primaryBlue,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: AppSizes.p8),
 
                     // Product Title
                     Text(
@@ -195,7 +195,7 @@ class _ProductCardState extends State<ProductCard> {
                         height: 1.25,
                       ),
                     ),
-                    const SizedBox(height: AppSizes.p8),
+                    const SizedBox(height: AppSizes.p12),
 
                     // Price & Add Button Row
                     Row(
@@ -206,17 +206,17 @@ class _ProductCardState extends State<ProductCard> {
                           child: PriceText(
                             price: p.price,
                             originalPrice: p.originalPrice,
-                            priceFontSize: 15,
+                            priceFontSize: 16,
                             originalPriceFontSize: 11,
                           ),
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 6),
                         QuantitySelector(
                           quantity: widget.quantity,
                           onIncrement: widget.onIncrement ?? () {},
                           onDecrement: widget.onDecrement ?? () {},
-                          height: 32,
-                          width: 85,
+                          height: 34,
+                          width: 88,
                         ),
                       ],
                     ),

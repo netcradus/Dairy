@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
 import '../../providers/onboarding_provider.dart';
+import '../../providers/user_provider.dart';
 
 /// Premium Minimal Animated Splash Screen for Sawariya Dairy
 class SplashScreen extends ConsumerStatefulWidget {
@@ -52,6 +53,21 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   Future<void> _navigateToNextScreen() async {
     await Future.delayed(const Duration(milliseconds: 2200));
     if (!mounted) return;
+
+    // If a session already exists, go straight to the relevant home screen
+    // (the login-on-every-launch bug). The router redirect also handles this,
+    // this branch is the deterministic splash-level decision.
+    final user = ref.read(userProvider);
+    if (user.id.isNotEmpty) {
+      if (user.isAdmin) {
+        context.go('/admin');
+      } else if (user.isDelivery) {
+        context.go('/delivery');
+      } else {
+        context.go('/home');
+      }
+      return;
+    }
 
     final onboardingService = ref.read(onboardingServiceProvider);
     final isCompleted = await onboardingService.isOnboardingCompleted();

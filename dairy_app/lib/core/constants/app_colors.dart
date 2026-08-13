@@ -123,4 +123,74 @@ abstract class AppColors {
       offset: const Offset(0, 4),
     ),
   ];
+
+  // ── Layered Premium Shadow System ──────────────────────────────────────────
+  static List<BoxShadow> get softShadow => [
+        BoxShadow(
+          color: const Color(0xFF0F172A).withValues(alpha: 0.05),
+          blurRadius: 12,
+          offset: const Offset(0, 4),
+        ),
+      ];
+
+  static List<BoxShadow> get cardShadowSm => [
+        BoxShadow(
+          color: const Color(0xFF0F172A).withValues(alpha: 0.06),
+          blurRadius: 8,
+          offset: const Offset(0, 2),
+        ),
+      ];
+
+  static List<BoxShadow> get cardShadowMd => [
+        BoxShadow(
+          color: const Color(0xFF0F172A).withValues(alpha: 0.08),
+          blurRadius: 16,
+          offset: const Offset(0, 6),
+        ),
+      ];
+
+  static List<BoxShadow> get cardShadowLg => [
+        BoxShadow(
+          color: const Color(0xFF0F172A).withValues(alpha: 0.10),
+          blurRadius: 24,
+          offset: const Offset(0, 10),
+        ),
+      ];
+
+  static List<BoxShadow> get navShadow => [
+        BoxShadow(
+          color: const Color(0xFF0F172A).withValues(alpha: 0.08),
+          blurRadius: 18,
+          offset: const Offset(0, -6),
+        ),
+      ];
+
+  static List<BoxShadow> get primaryShadow => [
+        BoxShadow(
+          color: primaryBlue.withValues(alpha: 0.28),
+          blurRadius: 14,
+          offset: const Offset(0, 6),
+        ),
+      ];
+
+  static List<BoxShadow> get primaryShadowSm => [
+        BoxShadow(
+          color: primaryBlue.withValues(alpha: 0.22),
+          blurRadius: 8,
+          offset: const Offset(0, 3),
+        ),
+      ];
+
+  // ── Brand Gradients ────────────────────────────────────────────────────────
+  static const LinearGradient brandGradient = LinearGradient(
+    colors: [primary, primaryBlue],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient brandGradientVertical = LinearGradient(
+    colors: [primary, primaryBlue],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
 }

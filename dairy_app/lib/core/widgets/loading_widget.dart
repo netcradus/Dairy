@@ -16,11 +16,26 @@ class LoadingWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
-            strokeWidth: 3.0,
+          Container(
+            height: 64,
+            width: 64,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              shape: BoxShape.circle,
+              boxShadow: AppColors.cardShadowSm,
+            ),
+            child: const Center(
+              child: SizedBox(
+                height: 28,
+                width: 28,
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+                  strokeWidth: 3.0,
+                ),
+              ),
+            ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           Text(
             message,
             style: const TextStyle(

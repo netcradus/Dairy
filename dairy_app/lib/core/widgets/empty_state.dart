@@ -29,21 +29,44 @@ class EmptyStateWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              height: 80,
-              width: 80,
-              decoration: const BoxDecoration(
-                color: AppColors.lightBlue,
+              height: 96,
+              width: 96,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primaryBlue.withValues(alpha: 0.12),
+                    AppColors.primaryBlue.withValues(alpha: 0.04),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.primaryBlue.withValues(alpha: 0.12),
+                  width: 1.5,
+                ),
               ),
-              child: Icon(icon, size: 40, color: AppColors.primaryBlue),
+              child: Center(
+                child: Container(
+                  height: 64,
+                  width: 64,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    shape: BoxShape.circle,
+                    boxShadow: AppColors.cardShadowSm,
+                  ),
+                  child: Icon(icon, size: 32, color: AppColors.primaryBlue),
+                ),
+              ),
             ),
-            const SizedBox(height: AppSizes.p20),
+            const SizedBox(height: AppSizes.p24),
             Text(
               title,
               style: const TextStyle(
-                fontSize: 18,
+                fontSize: 19,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
+                letterSpacing: -0.2,
               ),
               textAlign: TextAlign.center,
             ),
@@ -52,14 +75,15 @@ class EmptyStateWidget extends StatelessWidget {
               message,
               style: const TextStyle(
                 fontSize: 14,
+                height: 1.5,
                 color: AppColors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
             if (buttonText != null && onButtonPressed != null) ...[
-              const SizedBox(height: AppSizes.p24),
+              const SizedBox(height: AppSizes.p28),
               SizedBox(
-                width: 180,
+                width: 200,
                 child: AppButton(
                   text: buttonText!,
                   onPressed: onButtonPressed,

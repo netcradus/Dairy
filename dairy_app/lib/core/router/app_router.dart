@@ -26,17 +26,24 @@ import '../../features/shop/shop_screen.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../models/product.dart';
 import '../../providers/user_provider.dart';
+import 'auth_refresh.dart';
 
-/// Central GoRouter configuration provider for Sawariya Dairy
+/// Central GoRouter configuration provider for Sawariya Dairy.
+///
+/// The router is created ONCE (not rebuilt on every auth state change). Auth
+/// changes are observed via [refreshListenable] so redirection re-runs without
+/// disposing/recreating the router (which would reset navigation to
+/// [GoRouter.initialLocation] and can trigger mid-build constraint assertions).
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final user = ref.watch(userProvider);
-  final isLoggedIn = user.id.isNotEmpty;
-  final isAdmin = user.role == 'admin';
-  final isDelivery = user.role == 'delivery';
-
   return GoRouter(
     initialLocation: '/splash',
+    refreshListenable: authRefreshNotifier,
     redirect: (context, state) {
+      final user = ref.read(userProvider);
+      final isLoggedIn = user.id.isNotEmpty;
+      final isAdmin = user.role == 'admin';
+      final isDelivery = user.role == 'delivery';
+
       final path = state.matchedLocation;
       final isAuthPath = path == '/login' ||
                          path == '/register' ||

@@ -6,10 +6,11 @@ import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
 import '../../core/responsive/responsive_layout.dart';
 import '../../core/widgets/product_card.dart';
+import '../../core/widgets/empty_state.dart';
 import '../../providers/product_provider.dart';
 import '../product/product_details_screen.dart';
 
-/// Sawariya Dairy Phase 5 & 6 — Shop Catalog Screen
+/// Sawariya Dairy — Shop Catalog Screen
 class ShopScreen extends ConsumerStatefulWidget {
   const ShopScreen({super.key});
 
@@ -28,6 +29,14 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     super.dispose();
   }
 
+  void _resetFilters() {
+    _searchController.clear();
+    setState(() {
+      _searchQuery = '';
+      _selectedCategoryId = 'cat_all';
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final allProducts = ref.watch(allProductsProvider);
@@ -40,9 +49,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
           product.categoryId == _selectedCategoryId;
       final matchesSearch = _searchQuery.isEmpty ||
           product.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          product.categoryName
-              .toLowerCase()
-              .contains(_searchQuery.toLowerCase());
+          product.categoryName.toLowerCase().contains(_searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     }).toList();
 
@@ -51,6 +58,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       ...categories.map((c) => {'id': c.id, 'title': c.title}),
     ];
 
+    final isMobile = context.isMobile;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SingleChildScrollView(
@@ -58,35 +67,34 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: AppSizes.p16),
+              const SizedBox(height: AppSizes.p20),
 
               // Search Bar Header
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSizes.p16,
-                  vertical: AppSizes.p12,
+                  vertical: AppSizes.p6,
                 ),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   borderRadius: AppSizes.borderLarge,
                   border: Border.all(color: AppColors.border, width: 1.0),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: AppColors.shadow,
-                      blurRadius: 8,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
+                  boxShadow: AppColors.cardShadowSm,
                 ),
                 child: Row(
                   children: [
                     const Icon(Icons.search_rounded,
-                        color: AppColors.primaryBlue, size: 24),
+                        color: AppColors.primaryBlue, size: 22),
                     const SizedBox(width: AppSizes.p12),
                     Expanded(
                       child: TextField(
                         controller: _searchController,
                         onChanged: (val) => setState(() => _searchQuery = val),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w500,
+                        ),
                         decoration: const InputDecoration(
                           hintText:
                               'Search fresh milk, ghee, paneer, curd, sweets...',
@@ -98,6 +106,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                     if (_searchQuery.isNotEmpty)
                       IconButton(
                         icon: const Icon(Icons.clear_rounded, size: 20),
+                        color: AppColors.textSecondary,
                         onPressed: () {
                           _searchController.clear();
                           setState(() => _searchQuery = '');
@@ -133,7 +142,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                             : AppColors.textPrimary,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: AppSizes.borderLarge,
+                        borderRadius: AppSizes.borderMedium,
                         side: BorderSide(
                           color: isSelected
                               ? AppColors.primaryBlue
@@ -154,27 +163,43 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
               // Header & Count
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    _selectedCategoryId == 'cat_all'
-                        ? 'All Fresh Dairy Products'
-                        : categories
-                            .firstWhere(
+                  Expanded(
+                    child: Text(
+                      _selectedCategoryId == 'cat_all'
+                          ? 'All Fresh Dairy Products'
+                          : categories
+                              .firstWhere(
                                 (c) => c.id == _selectedCategoryId,
-                                orElse: () => categories.first)
-                            .title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+                                orElse: () => categories.first,
+                              )
+                              .title,
+                      style: const TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
+                        letterSpacing: -0.2,
+                      ),
                     ),
                   ),
-                  Text(
-                    '${filteredProducts.length} items found',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                      fontWeight: FontWeight.w500,
+                  const SizedBox(width: AppSizes.p12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.lightBlue,
+                      borderRadius: AppSizes.borderMedium,
+                    ),
+                    child: Text(
+                      '${filteredProducts.length} items',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.primaryBlue,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ],
@@ -184,34 +209,14 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
               // Product Grid Layout
               if (filteredProducts.isEmpty) ...[
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 40),
-                  child: Center(
-                    child: Column(
-                      children: [
-                        const Icon(Icons.search_off_rounded,
-                            size: 54, color: AppColors.textSecondary),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'No products match your search or filter.',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        TextButton(
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() {
-                              _searchQuery = '';
-                              _selectedCategoryId = 'cat_all';
-                            });
-                          },
-                          child: const Text('Reset All Filters'),
-                        ),
-                      ],
-                    ),
+                  padding: const EdgeInsets.symmetric(vertical: AppSizes.p40),
+                  child: EmptyStateWidget(
+                    icon: Icons.search_off_rounded,
+                    title: 'No products found',
+                    message:
+                        'No products match your search or filter. Try adjusting or reset to see everything.',
+                    buttonText: 'Reset Filters',
+                    onButtonPressed: _resetFilters,
                   ),
                 ),
               ] else ...[
@@ -220,9 +225,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                   physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: context.responsiveGridColumns,
-                    crossAxisSpacing: AppSizes.p14,
-                    mainAxisSpacing: AppSizes.p14,
-                    childAspectRatio: context.isMobile ? 0.70 : 0.74,
+                    crossAxisSpacing: AppSizes.p16,
+                    mainAxisSpacing: AppSizes.p16,
+                    childAspectRatio: isMobile ? 0.72 : 0.78,
                   ),
                   itemCount: filteredProducts.length,
                   itemBuilder: (context, index) {
@@ -242,20 +247,16 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                         );
                       },
                       onIncrement: () {
-                        ref
-                            .read(cartProvider.notifier)
-                            .increment(product);
+                        ref.read(cartProvider.notifier).increment(product);
                       },
                       onDecrement: () {
-                        ref
-                            .read(cartProvider.notifier)
-                            .decrement(product.id);
+                        ref.read(cartProvider.notifier).decrement(product.id);
                       },
                     );
                   },
                 ),
               ],
-              const SizedBox(height: AppSizes.p24),
+              const SizedBox(height: AppSizes.p40),
             ],
           ),
         ),
