@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
+import '../../core/widgets/category_image.dart';
 import '../../models/subscription.dart';
 import '../../providers/subscription_provider.dart';
 import '../subscription/edit_subscription_screen.dart';
@@ -244,9 +246,12 @@ class _SubscriptionCard extends ConsumerWidget {
                           color: AppColors.lightBlue,
                           borderRadius: AppSizes.borderSmall,
                         ),
-                        child: const Center(
-                          child: Icon(Icons.water_drop_rounded,
-                              color: AppColors.primaryBlue, size: 26),
+                        child: Center(
+                          child: CategoryImage(
+                            imageUrl: AppAssets.milkPlaceholder,
+                            size: 32,
+                            radius: 8,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),

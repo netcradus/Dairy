@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
+import '../../core/widgets/category_image.dart';
 import '../../providers/onboarding_provider.dart';
 import '../../providers/user_provider.dart';
 
@@ -144,11 +146,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                             ),
                           ],
                         ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.water_drop_rounded,
-                            size: 60,
-                            color: Colors.white,
+                        child: Center(
+                          child: CategoryImage(
+                            imageUrl: AppAssets.heroBannerPlaceholder,
+                            size: 104,
+                            radius: 52,
                           ),
                         ),
                       ),

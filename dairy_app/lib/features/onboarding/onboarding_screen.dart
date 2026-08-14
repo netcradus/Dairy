@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
+import '../../core/widgets/category_image.dart';
 import '../../providers/onboarding_provider.dart';
 
 /// Data Model for Onboarding Page Content
@@ -105,10 +107,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // Logo / Brand
-              const Row(
+              Row(
                 children: [
-                  Icon(Icons.water_drop_rounded,
-                      color: AppColors.primaryBlue, size: 24),
+                  CategoryImage(
+                    imageUrl: AppAssets.heroBannerPlaceholder,
+                    size: 26,
+                    radius: 7,
+                  ),
                   SizedBox(width: 6),
                   Text(
                     'Sawariya Dairy',
@@ -294,10 +299,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Row(
+                        Row(
                           children: [
-                            Icon(Icons.water_drop_rounded,
-                                color: AppColors.primaryBlue, size: 28),
+                            CategoryImage(
+                              imageUrl: AppAssets.heroBannerPlaceholder,
+                              size: 30,
+                              radius: 8,
+                            ),
                             SizedBox(width: 8),
                             Text(
                               'Sawariya Dairy',

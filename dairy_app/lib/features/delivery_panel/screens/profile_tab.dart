@@ -8,6 +8,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/responsive/responsive_layout.dart';
 import '../../../models/delivery_boy_model.dart';
 import '../../../providers/delivery_provider.dart';
+import '../../../providers/settings_provider.dart';
 import '../../../providers/user_provider.dart';
 
 /// Profile Tab - Delivery agent info, online/offline toggle
@@ -19,6 +20,8 @@ class ProfileTab extends ConsumerWidget {
     final isDesktop = ResponsiveLayout.isDesktop(context);
     final agent = ref.watch(deliveryAgentProvider);
     final isOnline = agent.status == DeliveryStatus.onDuty;
+    final settings = ref.watch(settingsProvider);
+    final settingsNotifier = ref.read(settingsProvider.notifier);
 
     final textPrimary = AppColors.textPrimaryOf(context);
     final textSecondary = AppColors.textSecondaryOf(context);
@@ -153,24 +156,39 @@ class ProfileTab extends ConsumerWidget {
           context,
           'App Settings',
           [
-            _buildSettingsRow(context, 'Notifications', 'Manage notification preferences', Icons.notifications_outlined, () {}),
-            _buildSettingsRow(context, 'Navigation', 'Default navigation app', Icons.navigation_outlined, () {}),
-            _buildSettingsRow(context, 'Language', 'English', Icons.language_outlined, () {}),
-            _buildSettingsRow(context, 'Theme', 'System Default', Icons.palette_outlined, () {}),
-          ],
-          isDesktop,
-        ),
-        const SizedBox(height: 16),
-
-        // Support & Legal
-        _buildSectionCard(
-          context,
-          'Support & Legal',
-          [
-            _buildSettingsRow(context, 'Help Center', 'FAQs and guides', Icons.help_outline, () {}),
-            _buildSettingsRow(context, 'Contact Support', 'Chat with support team', Icons.chat_bubble_outline, () {}),
-            _buildSettingsRow(context, 'Terms of Service', 'Read terms and conditions', Icons.description_outlined, () {}),
-            _buildSettingsRow(context, 'Privacy Policy', 'Data usage policy', Icons.privacy_tip_outlined, () {}),
+            _buildSettingsRow(
+              context,
+              'Notifications',
+              'Manage notification preferences',
+              Icons.notifications_outlined,
+              null,
+              trailing: Switch(
+                value: settings.notificationsEnabled,
+                activeColor: AppColors.primary,
+                onChanged: settingsNotifier.updateNotifications,
+              ),
+            ),
+            _buildSettingsRow(
+              context,
+              'Navigation',
+              _navLabel(settings.navigationApp),
+              Icons.navigation_outlined,
+              () => _showNavigationDialog(context, ref),
+            ),
+            _buildSettingsRow(
+              context,
+              'Language',
+              _languageLabel(settings.languageCode),
+              Icons.language_outlined,
+              () => _showLanguageDialog(context, ref),
+            ),
+            _buildSettingsRow(
+              context,
+              'Theme',
+              _themeLabel(settings.themeMode),
+              Icons.palette_outlined,
+              () => _showThemeDialog(context, ref),
+            ),
           ],
           isDesktop,
         ),
@@ -499,14 +517,17 @@ class ProfileTab extends ConsumerWidget {
     String title,
     String subtitle,
     IconData icon,
-    VoidCallback onTap,
-  ) {
+    VoidCallback? onTap, {
+    Widget? trailing,
+    bool enabled = true,
+  }) {
     final textPrimary = AppColors.textPrimaryOf(context);
     final textSecondary = AppColors.textSecondaryOf(context);
     final cardBorder = AppColors.cardBorderOf(context);
+    final muted = AppColors.textMutedOf(context);
 
     return InkWell(
-      onTap: onTap,
+      onTap: enabled ? onTap : null,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
@@ -517,10 +538,14 @@ class ProfileTab extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.textMutedOf(context).withValues(alpha: 0.1),
+                color: muted.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icon, size: 18, color: AppColors.textMutedOf(context)),
+              child: Icon(
+                icon,
+                size: 18,
+                color: enabled ? muted : muted.withValues(alpha: 0.5),
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -532,7 +557,7 @@ class ProfileTab extends ConsumerWidget {
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: textPrimary,
+                      color: enabled ? textPrimary : muted,
                     ),
                   ),
                   Text(
@@ -545,9 +570,178 @@ class ProfileTab extends ConsumerWidget {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded, color: AppColors.textMutedOf(context)),
+            trailing ??
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: enabled ? muted : muted.withValues(alpha: 0.5),
+                ),
           ],
         ),
+      ),
+    );
+  }
+
+  String _navLabel(NavigationApp app) {
+    switch (app) {
+      case NavigationApp.googleMaps:
+        return 'Google Maps';
+      case NavigationApp.appleMaps:
+        return 'Apple Maps';
+      case NavigationApp.waze:
+        return 'Waze';
+    }
+  }
+
+  String _languageLabel(String code) {
+    switch (code) {
+      case 'hi':
+        return 'हिंदी (Hindi)';
+      case 'en':
+      default:
+        return 'English';
+    }
+  }
+
+  String _themeLabel(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.light:
+        return 'Light';
+      case ThemeMode.dark:
+        return 'Dark';
+      case ThemeMode.system:
+      default:
+        return 'System Default';
+    }
+  }
+
+  void _showNavigationDialog(BuildContext context, WidgetRef ref) {
+    final current = ref.read(settingsProvider).navigationApp;
+    showDialog<NavigationApp>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          'Default Navigation App',
+          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: NavigationApp.values.map((app) {
+            return RadioListTile<NavigationApp>(
+              title: Text(_navLabel(app), style: GoogleFonts.plusJakartaSans()),
+              value: app,
+              groupValue: current,
+              activeColor: AppColors.primary,
+              onChanged: (value) {
+                if (value != null) {
+                  ref.read(settingsProvider.notifier).updateNavigationApp(value);
+                  Navigator.pop(ctx);
+                }
+              },
+            );
+          }).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.plusJakartaSans(
+                color: AppColors.textSecondaryOf(context),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLanguageDialog(BuildContext context, WidgetRef ref) {
+    final current = ref.read(settingsProvider).languageCode;
+    const options = [
+      ('en', 'English'),
+      ('hi', 'हिंदी (Hindi)'),
+    ];
+    showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          'Language',
+          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: options.map((option) {
+            return RadioListTile<String>(
+              title: Text(option.$2, style: GoogleFonts.plusJakartaSans()),
+              value: option.$1,
+              groupValue: current,
+              activeColor: AppColors.primary,
+              onChanged: (value) {
+                if (value != null) {
+                  ref.read(settingsProvider.notifier).updateLanguage(value);
+                  Navigator.pop(ctx);
+                }
+              },
+            );
+          }).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.plusJakartaSans(
+                color: AppColors.textSecondaryOf(context),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showThemeDialog(BuildContext context, WidgetRef ref) {
+    final current = ref.read(settingsProvider).themeMode;
+    const options = [
+      (ThemeMode.system, 'System Default'),
+      (ThemeMode.light, 'Light'),
+      (ThemeMode.dark, 'Dark'),
+    ];
+    showDialog<ThemeMode>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          'Theme',
+          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: options.map((option) {
+            return RadioListTile<ThemeMode>(
+              title: Text(option.$2, style: GoogleFonts.plusJakartaSans()),
+              value: option.$1,
+              groupValue: current,
+              activeColor: AppColors.primary,
+              onChanged: (value) {
+                if (value != null) {
+                  ref.read(settingsProvider.notifier).updateThemeMode(value);
+                  Navigator.pop(ctx);
+                }
+              },
+            );
+          }).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.plusJakartaSans(
+                color: AppColors.textSecondaryOf(context),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

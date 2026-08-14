@@ -198,19 +198,6 @@ class ProductRepository {
         reviewCount: 140,
         isBestSeller: true,
       ),
-      Product(
-        id: 'p9',
-        title: 'Sawariya Kesar Badam Milk',
-        categoryId: 'cat_flavored',
-        categoryName: 'Flavored Milk',
-        price: 40.0,
-        originalPrice: 45.0,
-        unit: '200 ml',
-        imageUrl: AppAssets.milkPlaceholder,
-        rating: 4.9,
-        reviewCount: 280,
-        isBestSeller: true,
-      ),
     ];
   }
 }

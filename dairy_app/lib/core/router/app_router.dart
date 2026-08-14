@@ -19,11 +19,11 @@ import '../../features/checkout/checkout_screen.dart';
 import '../../features/delivery_panel/delivery_panel_screen.dart';
 import '../../features/main_layout/main_layout_screen.dart';
 import '../../features/notifications/notifications_screen.dart';
-import '../../features/offers/offers_screen.dart';
 import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/product/product_details_screen.dart';
 import '../../features/shop/shop_screen.dart';
 import '../../features/splash/splash_screen.dart';
+import '../../screens/settings/settings_screen.dart';
 import '../../models/product.dart';
 import '../../providers/user_provider.dart';
 import 'auth_refresh.dart';
@@ -149,10 +149,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const NotificationsScreen(),
       ),
       GoRoute(
-        path: '/offers',
-        builder: (context, state) => const OffersScreen(),
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
       ),
-GoRoute(
+      GoRoute(
         path: '/admin',
         builder: (context, state) => provider.MultiProvider(
           providers: [

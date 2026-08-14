@@ -7,7 +7,6 @@ abstract class AppStrings {
   static const String navHome = 'Home';
   static const String navShop = 'Shop';
   static const String navOrders = 'Orders';
-  static const String navOffers = 'Offers';
   static const String navProfile = 'Profile';
 
   // Delivery Navigation
@@ -17,7 +16,6 @@ abstract class AppStrings {
 
   // Home Headers & Banners
   static const String categories = 'Categories';
-  static const String freshDeals = 'Fresh Deals';
   static const String bestSelling = 'Best Selling Products';
   static const String viewAll = 'View All';
   static const String searchHint = 'Search milk, curd, paneer, ghee...';

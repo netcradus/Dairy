@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../core/constants/app_assets.dart';
 import '../core/constants/app_colors.dart';
+import '../core/widgets/category_image.dart';
 import '../providers/admin_provider.dart';
+import '../providers/user_provider.dart';
 
 class NavItemData {
   final String title;
@@ -64,11 +68,11 @@ class SidebarNavigation extends StatelessWidget {
                   child: Image.asset(
                     'assets/images/sawariya_logo.png',
                     fit: BoxFit.contain,
-                    errorBuilder: (ctx, err, stack) => const Center(
-                      child: Icon(
-                        Icons.water_drop_rounded,
-                        color: AppColors.primary,
-                        size: 26,
+                    errorBuilder: (ctx, err, stack) => Center(
+                      child: CategoryImage(
+                        imageUrl: AppAssets.milkPlaceholder,
+                        size: 28,
+                        radius: 7,
                       ),
                     ),
                   ),
@@ -256,10 +260,33 @@ class SidebarNavigation extends StatelessWidget {
                   tooltip: 'Sign Out',
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Logged in as Super Admin — Sawariya Dairy')),
+                  onPressed: () async {
+                    final container = ProviderScope.containerOf(context);
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('Sign Out'),
+                        content: const Text(
+                          'Are you sure you want to log out of the admin panel?',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: const Text(
+                              'Sign Out',
+                              style: TextStyle(color: Colors.redAccent),
+                            ),
+                          ),
+                        ],
+                      ),
                     );
+                    if (confirm == true) {
+                      container.read(userProvider.notifier).clearSession();
+                    }
                   },
                 ),
               ],

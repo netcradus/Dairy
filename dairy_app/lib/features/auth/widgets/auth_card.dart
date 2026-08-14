@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/constants/app_assets.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/responsive/responsive.dart';
+import '../../../core/widgets/category_image.dart';
 
 /// Responsive Authentication Shell Container Card
 class AuthCard extends StatelessWidget {
@@ -81,11 +83,11 @@ class AuthCard extends StatelessWidget {
                                   ),
                                 ],
                               ),
-                              child: const Center(
-                                child: Icon(
-                                  Icons.water_drop_rounded,
-                                  size: 72,
-                                  color: AppColors.primaryBlue,
+                              child: Center(
+                                child: CategoryImage(
+                                  imageUrl: AppAssets.heroBannerPlaceholder,
+                                  size: 120,
+                                  radius: 60,
                                 ),
                               ),
                             ),

@@ -5,13 +5,14 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/responsive/responsive.dart';
-import '../../providers/navigation_provider.dart';
-import '../../providers/theme_provider.dart';
 import '../../providers/user_provider.dart';
 import '../address/address_screen.dart';
 import 'edit_profile_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../subscription/subscriptions_screen.dart';
+import 'about_screen.dart';
+import 'customer_support_screen.dart';
+import '../../screens/settings/settings_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -96,16 +97,6 @@ class ProfileScreen extends ConsumerWidget {
                 ),
                 buildTile(
                   context: context,
-                  icon: Icons.receipt_long_outlined,
-                  title: 'Order History & Status',
-                  subtitle: 'Track past and active milk orders',
-                  onTap: () {
-                    // Switch tab to Orders (Index 2)
-                    ref.read(navigationProvider.notifier).setIndex(2);
-                  },
-                ),
-                buildTile(
-                  context: context,
                   icon: Icons.repeat_rounded,
                   title: 'Daily Milk Subscriptions',
                   subtitle: 'Manage recurring morning/evening deliveries',
@@ -121,7 +112,20 @@ class ProfileScreen extends ConsumerWidget {
 
                 const SizedBox(height: 16),
                 buildSectionTitle('Preferences & Support'),
-                buildThemeToggleTile(context, ref),
+                buildTile(
+                  context: context,
+                  icon: Icons.settings_outlined,
+                  title: 'App Settings',
+                  subtitle: 'Notifications, navigation, language & theme',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const SettingsScreen(),
+                      ),
+                    );
+                  },
+                ),
                 buildTile(
                   context: context,
                   icon: Icons.notifications_none_rounded,
@@ -141,14 +145,28 @@ class ProfileScreen extends ConsumerWidget {
                   icon: Icons.headset_mic_outlined,
                   title: 'Customer Support',
                   subtitle: 'Contact Sawariya Dairy support team',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const CustomerSupportScreen(),
+                      ),
+                    );
+                  },
                 ),
                 buildTile(
                   context: context,
                   icon: Icons.info_outline_rounded,
                   title: 'About Sawariya Dairy',
                   subtitle: 'App version 1.0.0',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AboutScreen(),
+                      ),
+                    );
+                  },
                 ),
 
                 const SizedBox(height: 24),
@@ -307,49 +325,6 @@ class ProfileScreen extends ConsumerWidget {
             color: Colors.grey,
           ),
           onTap: onTap,
-        ),
-      ),
-    );
-  }
-
-  Widget buildThemeToggleTile(BuildContext context, WidgetRef ref) {
-    final isDark = ref.watch(themeProvider) == ThemeMode.dark;
-    final primaryColor = Theme.of(context).primaryColor;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
-        child: ListTile(
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: primaryColor.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
-              color: primaryColor,
-            ),
-          ),
-          title: const Text(
-            'Dark Mode',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-          ),
-          subtitle: Text(
-            isDark ? 'Switch to light theme' : 'Switch to dark theme',
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-          ),
-          trailing: Switch(
-            value: isDark,
-            activeThumbColor: AppColors.primaryBlue,
-            onChanged: (_) => ref.read(themeProvider.notifier).toggleTheme(),
-          ),
         ),
       ),
     );

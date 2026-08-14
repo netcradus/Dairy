@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../constants/app_assets.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
 import '../../models/product.dart';
+import 'category_image.dart';
 import 'price_text.dart';
 import 'quantity_selector.dart';
 
@@ -75,25 +77,34 @@ class _ProductCardState extends State<ProductCard> {
                               ? CachedNetworkImage(
                                   imageUrl: p.imageUrl,
                                   fit: BoxFit.cover,
-                                  placeholder: (context, url) => Container(
-                                    color: AppColors.lightBlue,
-                                    child: const Center(
-                                      child: Icon(Icons.water_drop_outlined,
-                                          color: AppColors.secondaryBlue, size: 32),
-                                    ),
-                                  ),
-                                  errorWidget: (context, url, error) => Container(
-                                    color: AppColors.lightBlue,
-                                    child: const Center(
-                                      child: Icon(Icons.opacity_rounded,
-                                          color: AppColors.primaryBlue, size: 36),
-                                    ),
-                                  ),
-                                )
-                              : const Center(
-                                  child: Icon(Icons.water_drop_outlined,
-                                      color: AppColors.secondaryBlue, size: 32),
-                                ),
+                                   placeholder: (context, url) => Container(
+                                     color: AppColors.lightBlue,
+                                     child: const Center(
+                                       child: CategoryImage(
+                                         imageUrl: AppAssets.milkPlaceholder,
+                                         size: 44,
+                                         radius: 10,
+                                       ),
+                                     ),
+                                   ),
+                                   errorWidget: (context, url, error) => Container(
+                                     color: AppColors.lightBlue,
+                                     child: const Center(
+                                       child: CategoryImage(
+                                         imageUrl: AppAssets.milkPlaceholder,
+                                         size: 48,
+                                         radius: 10,
+                                       ),
+                                     ),
+                                   ),
+                                 )
+                               : const Center(
+                                   child: CategoryImage(
+                                     imageUrl: AppAssets.milkPlaceholder,
+                                     size: 44,
+                                     radius: 10,
+                                   ),
+                                 ),
                         ),
                       ),
                     ),

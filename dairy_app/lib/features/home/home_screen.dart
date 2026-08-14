@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/responsive/responsive.dart';
 import '../../core/responsive/responsive_layout.dart';
 import '../../core/widgets/category_card.dart';
-import '../../core/widgets/deal_card.dart';
+import '../../core/widgets/category_image.dart';
 import '../../core/widgets/product_card.dart';
 import '../../core/widgets/promo_banner.dart';
+import '../../core/widgets/empty_state.dart';
 import '../../core/widgets/section_header.dart';
-import '../../models/product.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/navigation_provider.dart';
+import '../../models/product.dart';
 
 
 /// Sawariya Dairy — Home / Dashboard Discovery Screen
@@ -24,8 +26,6 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final heroBanners = ref.watch(heroBannersProvider);
     final categories = ref.watch(categoriesProvider);
-    final freshDeals = ref.watch(freshDealsProvider);
-    final a2Products = ref.watch(a2ProductsProvider);
     final bestSellers = ref.watch(bestSellersProvider);
     final cartQuantities = ref.watch(cartQuantitiesProvider);
 
@@ -92,55 +92,7 @@ class HomeScreen extends ConsumerWidget {
 
               const SizedBox(height: AppSizes.p24),
 
-              // ─── 3. Fresh Deals Section (Horizontal Carousel) ─────────
-              SectionHeader(
-                title: AppStrings.freshDeals,
-                subtitle: 'Limited time daily fresh discounts',
-                onViewAllTap: () {
-                  ref.read(navigationProvider.notifier).setIndex(1);
-                },
-              ),
-              const SizedBox(height: AppSizes.p12),
-              SizedBox(
-                height: 160,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: EdgeInsets.zero,
-                  itemCount: freshDeals.length,
-                  itemBuilder: (context, index) {
-                    final product = freshDeals[index];
-                    final qty = cartQuantities[product.id] ?? 0;
-                    return DealCard(
-                      product: product,
-                      quantity: qty,
-                      onIncrement: () {
-                        ref.read(cartProvider.notifier).addItem(product);
-                      },
-                      onDecrement: () {
-                        ref.read(cartProvider.notifier).decrement(product.id);
-                      },
-                    );
-                  },
-                ),
-              ),
-
-              const SizedBox(height: AppSizes.p24),
-
-              // ─── 4. A2 Gir Cow Milk Promotion Section ────────────────
-              _A2MilkPromotionSection(
-                products: a2Products,
-                cartQuantities: cartQuantities,
-                onIncrement: (p) => ref.read(cartProvider.notifier).addItem(p),
-                onDecrement: (id) => ref.read(cartProvider.notifier).decrement(id),
-                onShopTap: () =>
-                    ref.read(navigationProvider.notifier).setIndex(1),
-              ),
-
-              const SizedBox(height: AppSizes.p24),
-
-              // ─── 5. Track Order CTA ───────────────────────────────────
+              // ─── 3. Track Order CTA ───────────────────────────────────
               _TrackOrderCard(
                 onTrackTap: () =>
                     ref.read(navigationProvider.notifier).setIndex(2),
@@ -158,31 +110,42 @@ class HomeScreen extends ConsumerWidget {
               ),
               const SizedBox(height: AppSizes.p12),
 
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: context.responsiveGridColumns,
-                  crossAxisSpacing: AppSizes.p16,
-                  mainAxisSpacing: AppSizes.p16,
-                  childAspectRatio: isMobile ? 0.72 : 0.78,
+              if (bestSellers.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: AppSizes.p40),
+                  child: EmptyStateWidget(
+                    icon: Icons.shopping_bag_outlined,
+                    title: 'No products yet',
+                    message:
+                        'Our best sellers are being restocked. Please check back soon.',
+                  ),
+                )
+              else
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: context.responsiveGridColumns,
+                    crossAxisSpacing: AppSizes.p16,
+                    mainAxisSpacing: AppSizes.p16,
+                    childAspectRatio: isMobile ? 0.72 : 0.78,
+                  ),
+                  itemCount: bestSellers.length,
+                  itemBuilder: (context, index) {
+                    final product = bestSellers[index];
+                    final qty = cartQuantities[product.id] ?? 0;
+                    return ProductCard(
+                      product: product,
+                      quantity: qty,
+                      onIncrement: () {
+                        ref.read(cartProvider.notifier).addItem(product);
+                      },
+                      onDecrement: () {
+                        ref.read(cartProvider.notifier).decrement(product.id);
+                      },
+                    );
+                  },
                 ),
-                itemCount: bestSellers.length,
-                itemBuilder: (context, index) {
-                  final product = bestSellers[index];
-                  final qty = cartQuantities[product.id] ?? 0;
-                  return ProductCard(
-                    product: product,
-                    quantity: qty,
-                    onIncrement: () {
-                      ref.read(cartProvider.notifier).addItem(product);
-                    },
-                    onDecrement: () {
-                      ref.read(cartProvider.notifier).decrement(product.id);
-                    },
-                  );
-                },
-              ),
 
               const SizedBox(height: AppSizes.p40),
             ],
@@ -216,12 +179,16 @@ class _WelcomeHeader extends StatelessWidget {
           height: 46,
           width: 46,
           decoration: BoxDecoration(
-            gradient: AppColors.brandGradient,
+            color: AppColors.lightBlue,
             borderRadius: AppSizes.borderMedium,
             boxShadow: AppColors.primaryShadowSm,
           ),
           child: const Center(
-            child: Icon(Icons.water_drop_rounded, color: Colors.white, size: 26),
+            child: CategoryImage(
+              imageUrl: AppAssets.heroBannerPlaceholder,
+              size: 32,
+              radius: 10,
+            ),
           ),
         ),
         const SizedBox(width: AppSizes.p12),
@@ -414,6 +381,7 @@ class _TrackOrderCard extends StatelessWidget {
           const SizedBox(width: AppSizes.p12),
           SizedBox(
             height: 40,
+            width: 120,
             child: ElevatedButton(
               onPressed: onTrackTap,
               style: ElevatedButton.styleFrom(
@@ -439,8 +407,9 @@ class _TrackOrderCard extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// A2 Milk Promotion Section
+// (End of Home screen sections)
 // ─────────────────────────────────────────────────────────────────────────────
+
 
 class _A2MilkPromotionSection extends StatelessWidget {
   final List<Product> products;
@@ -657,3 +626,5 @@ class _A2FeaturePill extends StatelessWidget {
     );
   }
 }
+
+

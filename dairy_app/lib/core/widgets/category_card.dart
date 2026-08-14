@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
+import '../widgets/category_image.dart';
 import '../../models/category.dart';
 
 /// Reusable Category Card Component
@@ -64,10 +65,10 @@ class _CategoryCardState extends State<CategoryCard> {
                     color: cat.backgroundColor,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    cat.iconData ?? Icons.local_drink_rounded,
-                    color: AppColors.primaryBlue,
-                    size: 26,
+                  child: CategoryImage(
+                    imageUrl: cat.imageUrl,
+                    size: 44,
+                    radius: 22,
                   ),
                 ),
                 const SizedBox(height: AppSizes.p8),

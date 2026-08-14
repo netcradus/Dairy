@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
+import '../../core/widgets/category_image.dart';
 import '../../models/order.dart';
 import '../../providers/order_provider.dart';
 import 'order_tracking_screen.dart';
@@ -212,9 +214,12 @@ class OrderDetailsScreen extends ConsumerWidget {
                         color: AppColors.lightBlue,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Center(
-                        child: Icon(Icons.water_drop_rounded,
-                            color: AppColors.primaryBlue, size: 26),
+                      child: Center(
+                        child: CategoryImage(
+                          imageUrl: AppAssets.milkPlaceholder,
+                          size: 36,
+                          radius: 8,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),

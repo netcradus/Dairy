@@ -9,7 +9,7 @@ class CategoryRepository {
         id: 'cat_milk',
         title: 'Fresh Milk',
         imageUrl: AppAssets.milkPlaceholder,
-        iconData: Icons.water_drop_rounded,
+        iconData: Icons.local_drink_rounded,
         backgroundColor: Color(0xFFEAF3FF),
         itemCount: 8,
       ),
@@ -36,22 +36,6 @@ class CategoryRepository {
         iconData: Icons.opacity_rounded,
         backgroundColor: Color(0xFFFEF9C3),
         itemCount: 4,
-      ),
-      Category(
-        id: 'cat_sweets',
-        title: 'Dairy Sweets',
-        imageUrl: AppAssets.paneerPlaceholder,
-        iconData: Icons.cake_rounded,
-        backgroundColor: Color(0xFFFCE7F3),
-        itemCount: 10,
-      ),
-      Category(
-        id: 'cat_flavored',
-        title: 'Flavored Milk',
-        imageUrl: AppAssets.milkPlaceholder,
-        iconData: Icons.local_drink_rounded,
-        backgroundColor: Color(0xFFE0E7FF),
-        itemCount: 7,
       ),
     ];
   }

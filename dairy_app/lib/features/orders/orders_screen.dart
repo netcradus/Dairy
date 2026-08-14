@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
+import '../../core/widgets/category_image.dart';
 import '../../models/order.dart';
 import '../../providers/order_provider.dart';
 import 'order_details_screen.dart';
@@ -282,8 +284,11 @@ class _OrderCard extends ConsumerWidget {
                               border: Border.all(
                                   color: AppColors.surface, width: 2),
                             ),
-                            child: const Icon(Icons.water_drop_rounded,
-                                color: AppColors.primaryBlue, size: 22),
+                            child: CategoryImage(
+                              imageUrl: AppAssets.milkPlaceholder,
+                              size: 30,
+                              radius: 7,
+                            ),
                           ),
                         ),
                       ),

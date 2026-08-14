@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import '../constants/app_assets.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
 import '../constants/app_strings.dart';
+import 'category_image.dart';
 
 /// Desktop Left Sidebar Navigation Component
 class AppDesktopSidebar extends StatelessWidget {
@@ -37,15 +39,15 @@ class AppDesktopSidebar extends StatelessWidget {
                   height: 42,
                   width: 42,
                   decoration: BoxDecoration(
-                    gradient: AppColors.brandGradient,
+                    color: AppColors.lightBlue,
                     borderRadius: AppSizes.borderMedium,
                     boxShadow: AppColors.primaryShadowSm,
                   ),
                   child: const Center(
-                    child: Icon(
-                      Icons.water_drop_rounded,
-                      color: Colors.white,
-                      size: 26,
+                    child: CategoryImage(
+                      imageUrl: AppAssets.heroBannerPlaceholder,
+                      size: 30,
+                      radius: 8,
                     ),
                   ),
                 ),
@@ -113,19 +115,11 @@ class AppDesktopSidebar extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSizes.p8),
                   _SidebarNavItem(
-                    icon: Icons.local_offer_outlined,
-                    activeIcon: Icons.local_offer_rounded,
-                    label: AppStrings.navOffers,
-                    isSelected: currentIndex == 3,
-                    onTap: () => onTap(3),
-                  ),
-                  const SizedBox(height: AppSizes.p8),
-                  _SidebarNavItem(
                     icon: Icons.person_outline_rounded,
                     activeIcon: Icons.person_rounded,
                     label: AppStrings.navProfile,
-                    isSelected: currentIndex == 4,
-                    onTap: () => onTap(4),
+                    isSelected: currentIndex == 3,
+                    onTap: () => onTap(3),
                   ),
                 ],
               ),

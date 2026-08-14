@@ -6,6 +6,7 @@ import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
 import '../../core/utils/validators.dart';
 import '../../core/widgets/app_button.dart';
+import '../../core/widgets/category_image.dart';
 import '../../core/widgets/app_text_field.dart';
 import '../../models/product.dart';
 import '../../models/subscription.dart';
@@ -255,8 +256,11 @@ class _EditSubscriptionScreenState extends ConsumerState<EditSubscriptionScreen>
                         value: p,
                         child: Row(
                           children: [
-                            const Icon(Icons.water_drop_rounded,
-                                color: AppColors.primaryBlue, size: 18),
+                            CategoryImage(
+                              imageUrl: p.imageUrl,
+                              size: 22,
+                              radius: 5,
+                            ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(

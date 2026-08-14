@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../core/constants/app_assets.dart';
 import '../core/constants/app_colors.dart';
 import '../core/responsive/responsive_layout.dart';
+import '../core/widgets/category_image.dart';
 import '../providers/admin_provider.dart';
 
 class AppHeader extends StatelessWidget {
@@ -220,10 +222,10 @@ class AppHeader extends StatelessWidget {
               child: Image.asset(
                 'assets/images/sawariya_logo.png',
                 fit: BoxFit.contain,
-                errorBuilder: (ctx, err, stack) => const Icon(
-                  Icons.water_drop_rounded,
-                  color: AppColors.primary,
+                errorBuilder: (ctx, err, stack) => CategoryImage(
+                  imageUrl: AppAssets.milkPlaceholder,
                   size: 20,
+                  radius: 5,
                 ),
               ),
             ),

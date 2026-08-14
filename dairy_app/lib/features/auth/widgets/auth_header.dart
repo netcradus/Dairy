@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/constants/app_assets.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
+import '../../../core/widgets/category_image.dart';
 
 /// Reusable Sawariya Dairy Brand Auth Header Component
 class AuthHeader extends StatelessWidget {
@@ -37,11 +39,11 @@ class AuthHeader extends StatelessWidget {
                   ),
                 ],
               ),
-              child: const Center(
-                child: Icon(
-                  Icons.water_drop_rounded,
-                  color: Colors.white,
-                  size: 26,
+              child: Center(
+                child: CategoryImage(
+                  imageUrl: AppAssets.milkPlaceholder,
+                  size: 30,
+                  radius: 8,
                 ),
               ),
             ),

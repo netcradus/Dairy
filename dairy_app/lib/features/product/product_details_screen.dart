@@ -5,6 +5,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
 import '../../core/responsive/responsive_layout.dart';
+import '../../core/widgets/category_image.dart';
 import '../../core/widgets/price_text.dart';
 import '../../core/widgets/quantity_selector.dart';
 import '../../models/product.dart';
@@ -145,11 +146,11 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                     color: AppColors.lightBlue,
                     shape: BoxShape.circle,
                   ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.water_drop_rounded,
-                      color: AppColors.primaryBlue,
-                      size: 64,
+                  child: Center(
+                    child: CategoryImage(
+                      imageUrl: widget.product.imageUrl,
+                      size: 110,
+                      radius: 55,
                     ),
                   ),
                 ),

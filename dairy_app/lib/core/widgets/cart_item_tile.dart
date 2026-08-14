@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
 import '../../models/cart_item.dart';
+import 'category_image.dart';
 import 'price_text.dart';
 import 'quantity_selector.dart';
 
@@ -52,11 +53,11 @@ class CartItemTile extends StatelessWidget {
               color: AppColors.lightBlue,
               borderRadius: AppSizes.borderSmall,
             ),
-            child: const Center(
-              child: Icon(
-                Icons.water_drop_rounded,
-                color: AppColors.primaryBlue,
-                size: 28,
+            child: Center(
+              child: CategoryImage(
+                imageUrl: cartItem.product.imageUrl,
+                size: isCompact ? 56 : 68,
+                radius: AppSizes.radiusSmall,
               ),
             ),
           ),

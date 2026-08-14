@@ -10,7 +10,6 @@ import '../../providers/navigation_provider.dart';
 import '../cart/cart_screen.dart';
 import '../home/home_screen.dart';
 import '../notifications/notifications_screen.dart';
-import '../offers/offers_screen.dart';
 import '../orders/orders_screen.dart';
 import '../profile/profile_screen.dart';
 import '../shop/shop_screen.dart';
@@ -29,8 +28,7 @@ class MainLayoutScreen extends ConsumerWidget {
       const HomeScreen(),         // 0 – Home
       const ShopScreen(),         // 1 – Shop
       const OrdersScreen(),       // 2 – Orders
-      const OffersScreen(),       // 3 – Offers
-      const ProfileScreen(),      // 4 – Profile
+      const ProfileScreen(),      // 3 – Profile
     ];
 
     if (isDesktop) {

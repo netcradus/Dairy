@@ -11,14 +11,12 @@ import '../models/product_model.dart';
 class AdminProvider extends ChangeNotifier {
   int _selectedNavIndex = 0;
   String _searchQuery = '';
-  String _revenueTimeFilter = 'This Week';
   String _orderStatusTimeFilter = 'Today';
   int _unreadNotifications = 5;
   bool _isDarkMode = false;
 
   int get selectedNavIndex => _selectedNavIndex;
   String get searchQuery => _searchQuery;
-  String get revenueTimeFilter => _revenueTimeFilter;
   String get orderStatusTimeFilter => _orderStatusTimeFilter;
   int get unreadNotifications => _unreadNotifications;
   bool get isDarkMode => _isDarkMode;
@@ -40,11 +38,6 @@ class AdminProvider extends ChangeNotifier {
 
   void setSearchQuery(String query) {
     _searchQuery = query;
-    notifyListeners();
-  }
-
-  void setRevenueTimeFilter(String filter) {
-    _revenueTimeFilter = filter;
     notifyListeners();
   }
 
@@ -86,15 +79,6 @@ class AdminProvider extends ChangeNotifier {
       icon: Icons.people_outline_rounded,
       themeColor: AppColors.customersOrange,
       themeBgColor: AppColors.customersOrangeBg,
-    ),
-    const KpiMetric(
-      title: "Today's Deliveries",
-      value: '486',
-      growthText: '↑ 10.1% vs Yesterday',
-      isPositive: true,
-      icon: Icons.local_shipping_outlined,
-      themeColor: AppColors.deliveriesPurple,
-      themeBgColor: AppColors.deliveriesPurpleBg,
     ),
   ];
 
@@ -496,7 +480,7 @@ class AdminProvider extends ChangeNotifier {
       name: 'Milk & Creams',
       description: 'Farm-fresh pure cow milk, buffalo milk & pasteurized full cream',
       productCount: 6,
-      icon: Icons.water_drop_outlined,
+      icon: Icons.local_drink_rounded,
       color: Color(0xFF1E6BFF),
       emoji: '🥛',
     ),
@@ -517,24 +501,6 @@ class AdminProvider extends ChangeNotifier {
       icon: Icons.local_fire_department_outlined,
       color: Color(0xFFF97316),
       emoji: '🍯',
-    ),
-    const DairyCategory(
-      id: 'CAT-04',
-      name: 'Beverages & Chaas',
-      description: 'Spiced buttermilk, kesar badam milk, and lassi',
-      productCount: 3,
-      icon: Icons.emoji_food_beverage_outlined,
-      color: Color(0xFF8B5CF6),
-      emoji: '🥤',
-    ),
-    const DairyCategory(
-      id: 'CAT-05',
-      name: 'Organic Sweets & Mawa',
-      description: 'Fresh khoya, peda, rasgulla & festive dairy treats',
-      productCount: 4,
-      icon: Icons.cake_outlined,
-      color: Color(0xFFEC4899),
-      emoji: '🍬',
     ),
   ];
 

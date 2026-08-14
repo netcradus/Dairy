@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_strings.dart';
 
-/// Mobile Bottom Navigation Bar (Home, Shop, Orders, Offers, Profile)
+/// Mobile Bottom Navigation Bar (Home, Shop, Orders, Profile)
 class AppBottomNavigation extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -48,11 +48,6 @@ class AppBottomNavigation extends StatelessWidget {
             icon: Icon(Icons.local_shipping_outlined),
             activeIcon: Icon(Icons.local_shipping_rounded),
             label: AppStrings.navOrders,
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.local_offer_outlined),
-            activeIcon: Icon(Icons.local_offer_rounded),
-            label: AppStrings.navOffers,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline_rounded),

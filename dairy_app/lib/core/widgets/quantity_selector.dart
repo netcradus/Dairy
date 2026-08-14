@@ -24,13 +24,14 @@ class QuantitySelector extends StatelessWidget {
     if (quantity == 0) {
       return SizedBox(
         height: height,
+        width: width,
         child: ElevatedButton(
           onPressed: onIncrement,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.lightBlue,
             foregroundColor: AppColors.primaryBlue,
             elevation: 0,
-            padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16),
+            padding: const EdgeInsets.symmetric(horizontal: AppSizes.p8),
             shape: const RoundedRectangleBorder(borderRadius: AppSizes.borderMedium),
           ),
           child: const Row(

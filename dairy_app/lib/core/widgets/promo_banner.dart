@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../constants/app_assets.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
 import '../../models/banner_item.dart';
+import 'category_image.dart';
 
 // ---------------------------------------------------------------------------
 // HeroBannerCarousel — Auto-scrolling PageView with animated dot indicators
@@ -155,14 +157,14 @@ class PromoBanner extends StatelessWidget {
     }
   }
 
-  IconData get _bannerIcon {
+  String get _bannerImage {
     switch (banner.id) {
       case 'b2':
-        return Icons.kitchen_rounded;
+        return AppAssets.paneerPlaceholder;
       case 'b3':
-        return Icons.local_fire_department_rounded;
+        return AppAssets.gheePlaceholder;
       default:
-        return Icons.water_drop_rounded;
+        return AppAssets.milkPlaceholder;
     }
   }
 
@@ -311,10 +313,10 @@ class PromoBanner extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Center(
-                    child: Icon(
-                      _bannerIcon,
-                      color: Colors.white,
-                      size: 44,
+                    child: CategoryImage(
+                      imageUrl: _bannerImage,
+                      size: 52,
+                      radius: 26,
                     ),
                   ),
                 ),

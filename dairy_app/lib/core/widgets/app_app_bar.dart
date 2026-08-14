@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import '../constants/app_assets.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
 import '../responsive/responsive.dart';
+import 'category_image.dart';
 
 /// Clean Production Header Bar for Mobile, Tablet & Desktop
 class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -49,15 +51,15 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
                   height: 38,
                   width: 38,
                   decoration: BoxDecoration(
-                    gradient: AppColors.brandGradient,
+                    color: AppColors.lightBlue,
                     borderRadius: AppSizes.borderSmall,
                     boxShadow: AppColors.primaryShadowSm,
                   ),
                   child: const Center(
-                    child: Icon(
-                      Icons.water_drop_rounded,
-                      color: Colors.white,
-                      size: 22,
+                    child: CategoryImage(
+                      imageUrl: AppAssets.milkPlaceholder,
+                      size: 26,
+                      radius: 6,
                     ),
                   ),
                 ),
