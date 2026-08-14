@@ -33,7 +33,7 @@ class ProfileTab extends ConsumerWidget {
         Container(
           padding: EdgeInsets.all(isDesktop ? 24 : 20),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               colors: [AppColors.primary, AppColors.primaryDark],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -185,7 +185,7 @@ class ProfileTab extends ConsumerWidget {
             label: const Text('Logout'),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.error,
-              side: BorderSide(color: AppColors.error),
+              side: const BorderSide(color: AppColors.error),
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
@@ -233,7 +233,7 @@ class ProfileTab extends ConsumerWidget {
                 color: AppColors.warning.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(Icons.swap_horiz_rounded, color: AppColors.warning),
+              child: const Icon(Icons.swap_horiz_rounded, color: AppColors.warning),
             ),
             title: Text(
               'Simulate Customer Role',
@@ -367,7 +367,7 @@ class ProfileTab extends ConsumerWidget {
                 child: Switch(
                   value: isOnline,
                   onChanged: (_) => ref.read(deliveryAgentProvider.notifier).toggleDuty(),
-                  activeColor: AppColors.success,
+                  activeThumbColor: AppColors.success,
                   activeTrackColor: AppColors.success.withValues(alpha: 0.3),
                   inactiveThumbColor: AppColors.error,
                   inactiveTrackColor: AppColors.error.withValues(alpha: 0.3),
@@ -386,7 +386,7 @@ class ProfileTab extends ConsumerWidget {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.info_outline_rounded, color: AppColors.info, size: 20),
+                  const Icon(Icons.info_outline_rounded, color: AppColors.info, size: 20),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(

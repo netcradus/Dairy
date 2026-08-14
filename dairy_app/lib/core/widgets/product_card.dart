@@ -61,9 +61,9 @@ class _ProductCardState extends State<ProductCard> {
                   children: [
                     Positioned.fill(
                       child: Container(
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: AppColors.lightBlue,
-                          borderRadius: const BorderRadius.vertical(
+                          borderRadius: BorderRadius.vertical(
                             top: Radius.circular(AppSizes.radiusLarge - 1),
                           ),
                         ),
@@ -167,7 +167,7 @@ class _ProductCardState extends State<ProductCard> {
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: AppColors.lightBlue,
                         borderRadius: AppSizes.borderSmall,
                       ),

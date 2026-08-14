@@ -18,7 +18,7 @@ class AppBottomNavigation extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        border: Border(
+        border: const Border(
           top: BorderSide(color: AppColors.border, width: 1.0),
         ),
         boxShadow: AppColors.navShadow,

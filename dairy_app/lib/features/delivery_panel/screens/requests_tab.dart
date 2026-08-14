@@ -107,7 +107,7 @@ class _RequestsTabState extends ConsumerState<RequestsTab> {
                 color: AppColors.primaryLight.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.wifi_off_rounded,
                 size: 64,
                 color: AppColors.primary,
@@ -165,7 +165,7 @@ class _RequestsTabState extends ConsumerState<RequestsTab> {
                 color: AppColors.success.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.check_circle_outline_rounded,
                 size: 64,
                 color: AppColors.success,
@@ -297,7 +297,7 @@ class _RequestsTabState extends ConsumerState<RequestsTab> {
                         style: GoogleFonts.plusJakartaSans(fontSize: 11),
                       ),
                       backgroundColor: AppColors.primaryLight.withValues(alpha: 0.1),
-                      side: BorderSide(color: AppColors.primaryLight),
+                      side: const BorderSide(color: AppColors.primaryLight),
                       visualDensity: VisualDensity.compact,
                     ))
                 .toList(),
@@ -313,7 +313,7 @@ class _RequestsTabState extends ConsumerState<RequestsTab> {
                     label: const Text('Decline'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.error,
-                      side: BorderSide(color: AppColors.error),
+                      side: const BorderSide(color: AppColors.error),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
@@ -427,8 +427,8 @@ class _RequestsTabState extends ConsumerState<RequestsTab> {
   void _handleDecline(String requestId) {
     ref.read(deliveryRequestsProvider.notifier).declineRequest(requestId);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Order declined'),
+      const SnackBar(
+        content: Text('Order declined'),
         backgroundColor: AppColors.error,
       ),
     );

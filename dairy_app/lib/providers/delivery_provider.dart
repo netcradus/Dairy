@@ -163,7 +163,7 @@ final deliveryOrdersProvider = StateNotifierProvider<DeliveryOrdersNotifier, Lis
 
 class DeliveryRequestsNotifier extends StateNotifier<List<DeliveryRequest>> {
   Timer? _timer;
-  int _countdown = 30;
+  final int _countdown = 30;
 
   DeliveryRequestsNotifier() : super(_getMockRequests()) {
     _startTimer();

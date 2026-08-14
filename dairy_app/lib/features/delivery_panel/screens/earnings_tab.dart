@@ -44,7 +44,7 @@ class EarningsTab extends ConsumerWidget {
           title: "Today's Earnings",
           amount: todayEarnings,
           deliveries: todayDeliveries,
-          subtitle: '${todayDeliveries} deliveries completed',
+          subtitle: '$todayDeliveries deliveries completed',
           icon: Icons.today_rounded,
           iconColor: AppColors.primary,
           isDesktop: isDesktop,
@@ -57,7 +57,7 @@ class EarningsTab extends ConsumerWidget {
           title: 'This Week',
           amount: weekEarnings,
           deliveries: weekDeliveries,
-          subtitle: '${weekDeliveries} deliveries completed',
+          subtitle: '$weekDeliveries deliveries completed',
           icon: Icons.date_range_rounded,
           iconColor: AppColors.info,
           isDesktop: isDesktop,
@@ -94,7 +94,7 @@ class EarningsTab extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 12),
-        ...earnings.map((e) => _buildDailyEarningsItem(context, e, isDesktop)).toList(),
+        ...earnings.map((e) => _buildDailyEarningsItem(context, e, isDesktop)),
       ],
     );
   }

@@ -51,7 +51,7 @@ class ErrorStateWidget extends StatelessWidget {
                     shape: BoxShape.circle,
                     boxShadow: AppColors.cardShadowSm,
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.error_outline_rounded,
                     size: 32,
                     color: AppColors.error,
@@ -80,7 +80,8 @@ class ErrorStateWidget extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: AppSizes.p28),
+            const SizedBox(height: 28),
+            
             SizedBox(
               width: 170,
               child: AppButton(

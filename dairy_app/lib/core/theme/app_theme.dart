@@ -48,7 +48,7 @@ abstract class AppTheme {
         elevation: 2,
         shadowColor: const Color(0xFF0F172A).withValues(alpha: 0.08),
         margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: AppSizes.borderLarge,
           side: BorderSide(color: AppColors.border, width: 1.0),
         ),

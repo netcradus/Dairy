@@ -641,7 +641,7 @@ class _A2FeaturePill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.check_circle_rounded,
+          const Icon(Icons.check_circle_rounded,
               size: 11, color: AppColors.freshGreen),
           const SizedBox(width: 4),
           Text(

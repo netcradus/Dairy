@@ -84,7 +84,7 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
                 color: AppColors.primaryLight.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.wifi_off_rounded,
                 size: 64,
                 color: AppColors.primary,
@@ -142,7 +142,7 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
                 color: AppColors.info.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.local_shipping_outlined,
                 size: 64,
                 color: AppColors.info,
@@ -272,7 +272,7 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
                         style: GoogleFonts.plusJakartaSans(fontSize: 11),
                       ),
                       backgroundColor: AppColors.primaryLight.withValues(alpha: 0.1),
-                      side: BorderSide(color: AppColors.primaryLight),
+                      side: const BorderSide(color: AppColors.primaryLight),
                       visualDensity: VisualDensity.compact,
                     ))
                 .toList(),
@@ -356,7 +356,7 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
                 label: const Text('Call Customer'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.info,
-                  side: BorderSide(color: AppColors.info),
+                  side: const BorderSide(color: AppColors.info),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -402,7 +402,7 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
                 label: const Text('Call Customer'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.info,
-                  side: BorderSide(color: AppColors.info),
+                  side: const BorderSide(color: AppColors.info),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -448,7 +448,7 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
                 label: const Text('Call Customer'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.info,
-                  side: BorderSide(color: AppColors.info),
+                  side: const BorderSide(color: AppColors.info),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -686,7 +686,7 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not launch dialer'), backgroundColor: AppColors.error),
+          const SnackBar(content: Text('Could not launch dialer'), backgroundColor: AppColors.error),
         );
       }
     }

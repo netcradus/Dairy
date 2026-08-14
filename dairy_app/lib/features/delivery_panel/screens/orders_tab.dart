@@ -71,7 +71,7 @@ class OrdersTab extends ConsumerWidget {
                 color: AppColors.info.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.history_rounded,
                 size: 64,
                 color: AppColors.info,
@@ -125,7 +125,7 @@ class OrdersTab extends ConsumerWidget {
               color: AppColors.success.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
+            child: const Icon(
               Icons.check_circle_rounded,
               color: AppColors.success,
               size: 24,

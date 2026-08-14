@@ -189,7 +189,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                       horizontal: 10,
                       vertical: 5,
                     ),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AppColors.lightBlue,
                       borderRadius: AppSizes.borderMedium,
                     ),

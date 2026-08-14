@@ -142,10 +142,10 @@ class _DeliveryPanelScreenState extends ConsumerState<DeliveryPanelScreen> {
               color: cardBg,
               border: Border(bottom: BorderSide(color: cardBorder)),
             ),
-            child: Column(
+            child: const Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 32,
                   backgroundColor: AppColors.primaryLight,
                   child: Icon(Icons.person, size: 32, color: AppColors.primary),
