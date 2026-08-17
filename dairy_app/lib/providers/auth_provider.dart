@@ -1,12 +1,13 @@
+import 'dart:async'; // Add this import for Completer
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../core/services/mock_otp_service.dart';
 import '../models/user.dart';
 import 'user_provider.dart';
 
-/// Provider for MockOtpService instance
-final mockOtpServiceProvider = Provider<MockOtpService>((ref) {
-  return MockOtpService();
-});
+/// Provider for FirebaseAuth instance
+final firebaseAuthProvider = Provider<fb.FirebaseAuth>(
+  (ref) => fb.FirebaseAuth.instance,
+);
 
 /// State containing status of the auth requests
 class AuthState {
@@ -39,12 +40,13 @@ class AuthState {
   }
 }
 
-/// Auth State Notifier for managing loading, mobile, temp signup state and verification
+/// Auth State Notifier for managing Firebase Phone Auth
 class AuthNotifier extends StateNotifier<AuthState> {
-  final MockOtpService _otpService;
+  final fb.FirebaseAuth _auth;
 
-  AuthNotifier(this._otpService)
-      : super(AuthState(status: const AsyncData(null)));
+  AuthNotifier(this._auth) : super(AuthState(status: const AsyncData(null)));
+
+  String? _verificationId;
 
   /// Compatibility stub for forgot password flow
   Future<bool> sendOtp(String mobileNumber) async {
@@ -59,44 +61,94 @@ class AuthNotifier extends StateNotifier<AuthState> {
     return true;
   }
 
-  /// Initiates OTP sending for Sign In
+  /// Initiates Firebase OTP sending for Sign In (Fixed with Completer)
   Future<bool> startSignIn(String mobileNumber) async {
     state = state.copyWith(status: const AsyncLoading());
+    final completer = Completer<bool>();
+
     try {
-      final success = await _otpService.sendOtp(mobileNumber);
-      if (success) {
-        state = state.copyWith(
-          status: const AsyncData(null),
-          mobileNumber: mobileNumber,
-          isSignUpFlow: false,
-        );
-        return true;
-      }
-      throw Exception('Failed to send OTP. Please try again.');
+      final formattedPhone = mobileNumber.startsWith('+')
+          ? mobileNumber
+          : '+91$mobileNumber';
+
+      await _auth.verifyPhoneNumber(
+        phoneNumber: formattedPhone,
+        verificationCompleted: (fb.PhoneAuthCredential credential) async {
+          await _auth.signInWithCredential(credential);
+          if (!completer.isCompleted) completer.complete(true);
+        },
+        verificationFailed: (fb.FirebaseAuthException e) {
+          state = state.copyWith(
+            status: AsyncError(
+              Exception(e.message ?? 'Verification failed'),
+              StackTrace.current,
+            ),
+          );
+          if (!completer.isCompleted) completer.complete(false);
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          _verificationId = verificationId;
+          state = state.copyWith(
+            status: const AsyncData(null),
+            mobileNumber: mobileNumber,
+            isSignUpFlow: false,
+          );
+          if (!completer.isCompleted) completer.complete(true);
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {
+          _verificationId = verificationId;
+        },
+      );
+      return await completer.future;
     } catch (e, st) {
       state = state.copyWith(status: AsyncError(e, st));
       return false;
     }
   }
 
-  /// Initiates OTP sending for Sign Up
+  /// Initiates Firebase OTP sending for Sign Up (Fixed with Completer)
   Future<bool> startSignUp({
     required String fullName,
     required String mobileNumber,
   }) async {
     state = state.copyWith(status: const AsyncLoading());
+    final completer = Completer<bool>();
+
     try {
-      final success = await _otpService.sendOtp(mobileNumber);
-      if (success) {
-        state = state.copyWith(
-          status: const AsyncData(null),
-          mobileNumber: mobileNumber,
-          tempFullName: fullName,
-          isSignUpFlow: true,
-        );
-        return true;
-      }
-      throw Exception('Failed to send OTP. Please try again.');
+      final formattedPhone = mobileNumber.startsWith('+')
+          ? mobileNumber
+          : '+91$mobileNumber';
+
+      await _auth.verifyPhoneNumber(
+        phoneNumber: formattedPhone,
+        verificationCompleted: (fb.PhoneAuthCredential credential) async {
+          await _auth.signInWithCredential(credential);
+          if (!completer.isCompleted) completer.complete(true);
+        },
+        verificationFailed: (fb.FirebaseAuthException e) {
+          state = state.copyWith(
+            status: AsyncError(
+              Exception(e.message ?? 'Verification failed'),
+              StackTrace.current,
+            ),
+          );
+          if (!completer.isCompleted) completer.complete(false);
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          _verificationId = verificationId;
+          state = state.copyWith(
+            status: const AsyncData(null),
+            mobileNumber: mobileNumber,
+            tempFullName: fullName,
+            isSignUpFlow: true,
+          );
+          if (!completer.isCompleted) completer.complete(true);
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {
+          _verificationId = verificationId;
+        },
+      );
+      return await completer.future;
     } catch (e, st) {
       state = state.copyWith(status: AsyncError(e, st));
       return false;
@@ -107,65 +159,73 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> resendOtp() async {
     final mobile = state.mobileNumber;
     if (mobile == null) return false;
-    
-    state = state.copyWith(status: const AsyncLoading());
-    try {
-      final success = await _otpService.sendOtp(mobile);
-      state = state.copyWith(status: const AsyncData(null));
-      return success;
-    } catch (e, st) {
-      state = state.copyWith(status: AsyncError(e, st));
-      return false;
-    }
+    return startSignIn(mobile);
   }
 
-  /// Verifies the OTP and completes the Sign In / Sign Up process
+  /// Verifies the OTP via Firebase and completes the session
   Future<bool> verifyOtp(String otp, WidgetRef ref) async {
-    final mobile = state.mobileNumber;
-    if (mobile == null) {
+    if (_verificationId == null) {
       state = state.copyWith(
-        status: AsyncError(Exception('No active mobile number found for verification.'), StackTrace.current),
+        status: AsyncError(
+          Exception('Verification ID not found. Please request OTP again.'),
+          StackTrace.current,
+        ),
       );
       return false;
     }
 
     state = state.copyWith(status: const AsyncLoading());
     try {
-      final verified = await _otpService.verifyOtp(mobile, otp);
-      if (verified) {
-        // Create user session details
+      fb.PhoneAuthCredential credential = fb.PhoneAuthProvider.credential(
+        verificationId: _verificationId!,
+        smsCode: otp,
+      );
+
+      fb.UserCredential userCredential = await _auth.signInWithCredential(
+        credential,
+      );
+      final firebaseUser = userCredential.user;
+
+      if (firebaseUser != null) {
+        final mobile = state.mobileNumber ?? firebaseUser.phoneNumber ?? '';
+
         String role;
         String name;
         String? email;
-        if (mobile == '9999999999') {
+        if (mobile.contains('9999999999')) {
           role = 'admin';
-          name = state.isSignUpFlow ? (state.tempFullName ?? 'Sawariya Admin') : 'Sawariya Admin';
-          email = state.isSignUpFlow ? null : 'admin@sawariyadairy.com';
-        } else if (mobile == '7777777777') {
+          name = state.isSignUpFlow
+              ? (state.tempFullName ?? 'Sawariya Admin')
+              : 'Sawariya Admin';
+          email = 'admin@sawariyadairy.com';
+        } else if (mobile.contains('7777777777')) {
           role = 'delivery';
-          name = state.isSignUpFlow ? (state.tempFullName ?? 'Delivery Partner') : 'Rajesh Kumar';
-          email = state.isSignUpFlow ? null : 'delivery@sawariyadairy.com';
+          name = state.isSignUpFlow
+              ? (state.tempFullName ?? 'Delivery Partner')
+              : 'Rajesh Kumar';
+          email = 'delivery@sawariyadairy.com';
         } else {
           role = 'customer';
-          name = state.isSignUpFlow ? (state.tempFullName ?? 'Sawariya Customer') : 'Sawariya Customer';
-          email = state.isSignUpFlow ? null : 'customer@sawariyadairy.com';
+          name = state.isSignUpFlow
+              ? (state.tempFullName ?? 'Sawariya Customer')
+              : 'Sawariya Customer';
+          email = 'customer@sawariyadairy.com';
         }
 
         final user = User(
-          id: 'user_${DateTime.now().millisecondsSinceEpoch}',
+          id: firebaseUser.uid,
           name: name,
           phone: mobile,
           email: email,
           role: role,
         );
 
-        // Save session in UserNotifier
         await ref.read(userProvider.notifier).setSession(user);
 
-        state = AuthState(status: const AsyncData(null)); // reset state
+        state = AuthState(status: const AsyncData(null));
         return true;
       }
-      throw Exception('Invalid OTP. Please check the code and try again.');
+      throw Exception('Failed to sign in with Firebase.');
     } catch (e, st) {
       state = state.copyWith(status: AsyncError(e, st));
       return false;
@@ -174,5 +234,5 @@ class AuthNotifier extends StateNotifier<AuthState> {
 }
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  return AuthNotifier(ref.watch(mockOtpServiceProvider));
+  return AuthNotifier(ref.watch(firebaseAuthProvider));
 });
