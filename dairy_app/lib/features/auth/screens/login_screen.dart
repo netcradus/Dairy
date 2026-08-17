@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/utils/validators.dart';
-import '../../../core/widgets/app_text_field.dart';
 import '../../../providers/auth_provider.dart';
 import '../widgets/auth_card.dart';
 import '../widgets/auth_header.dart';
-import '../widgets/loading_button.dart';
 
-/// Sawariya Dairy Mobile Sign In Screen
+/// Sawariya Dairy Mobile Sign In Screen matching reference image
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -45,11 +44,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           backgroundColor: AppColors.freshGreen,
         ),
       );
-      // Navigate to OTP screen
       context.push('/otp', extra: mobile);
     } else {
       final errorState = ref.read(authProvider);
-      final errorMsg = errorState.status.error?.toString() ?? 'Failed to send OTP. Please try again.';
+      final errorMsg = errorState.status.error?.toString() ??
+          'Failed to send OTP. Please try again.';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(errorMsg.replaceAll('Exception: ', '')),
@@ -65,7 +64,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final isLoading = authState.status.isLoading;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFFFAF7F0),
       body: SafeArea(
         child: AuthCard(
           featureTitle: 'Pure Dairy at Your Doorstep',
@@ -85,48 +84,148 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                 const SizedBox(height: AppSizes.p24),
 
-                // Mobile Number Input
-                AppTextField(
-                  label: 'Mobile Number',
-                  hint: 'Enter 10-digit mobile number',
+                // Mobile Number Input Field
+                Text(
+                  'Mobile Number',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF1E293B),
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                TextFormField(
                   controller: _mobileController,
                   keyboardType: TextInputType.phone,
-                  prefixIcon: const Icon(Icons.phone_outlined, size: 20),
                   validator: AppValidators.validatePhone,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF0F172A),
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Enter 10-digit mobile number',
+                    hintStyle: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: const Color(0xFF64748B),
+                    ),
+                    prefixIcon: const Icon(
+                      Icons.phone_outlined,
+                      size: 20,
+                      color: Color(0xFF1E5BB4),
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFFF0F4FA),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF1E5BB4),
+                        width: 1.2,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF0D47A1),
+                        width: 1.8,
+                      ),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: AppColors.error,
+                        width: 1.2,
+                      ),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: AppColors.error,
+                        width: 1.8,
+                      ),
+                    ),
+                  ),
                 ),
 
                 const SizedBox(height: AppSizes.p24),
 
-                // Send OTP Button
-                LoadingButton(
-                  text: 'Send OTP',
-                  isLoading: isLoading,
-                  onPressed: _handleSendOtp,
+                // Send OTP Primary Button
+                Container(
+                  width: double.infinity,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF0D47A1), Color(0xFF0A3475)],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF0D47A1).withValues(alpha: 0.35),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ElevatedButton(
+                    onPressed: isLoading ? null : _handleSendOtp,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: isLoading
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : Text(
+                            'Send OTP',
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                  ),
                 ),
 
                 const SizedBox(height: AppSizes.p24),
 
-                // Register Link
+                // Register Link Footer
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
+                    Text(
                       "Don't have an account? ",
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         fontSize: 14,
-                        color: AppColors.textSecondary,
+                        color: const Color(0xFF4A5568),
                       ),
                     ),
                     GestureDetector(
                       onTap: () {
                         context.push('/register');
                       },
-                      child: const Text(
+                      child: Text(
                         'Register',
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primaryBlue,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF0D47A1),
                         ),
                       ),
                     ),

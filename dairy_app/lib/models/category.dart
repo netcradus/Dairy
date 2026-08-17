@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 class Category {
   final String id;
   final String title;
+  final String subtitle;
   final String imageUrl;
   final IconData? iconData;
   final Color backgroundColor;
@@ -12,6 +13,7 @@ class Category {
   const Category({
     required this.id,
     required this.title,
+    this.subtitle = '',
     required this.imageUrl,
     this.iconData,
     this.backgroundColor = const Color(0xFFEAF3FF),

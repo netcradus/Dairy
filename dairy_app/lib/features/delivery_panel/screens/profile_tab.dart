@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -209,16 +208,14 @@ class ProfileTab extends ConsumerWidget {
             ),
           ),
         ),
-        if (kDebugMode) ...[
-          const SizedBox(height: 16),
-          _buildDevTools(context, ref),
-        ],
+        const SizedBox(height: 16),
+        _buildDeliveryTools(context, ref),
         const SizedBox(height: 32),
       ],
     );
   }
 
-  Widget _buildDevTools(BuildContext context, WidgetRef ref) {
+  Widget _buildDeliveryTools(BuildContext context, WidgetRef ref) {
     final textPrimary = AppColors.textPrimaryOf(context);
     final cardBg = AppColors.cardBgOf(context);
     final cardBorder = AppColors.cardBorderOf(context);
@@ -236,7 +233,7 @@ class ProfileTab extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.all(16),
             child: Text(
-              'Developer Tools (Debug Only)',
+              'Switch Role',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,

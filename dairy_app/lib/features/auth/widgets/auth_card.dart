@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_assets.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_sizes.dart';
 import '../../../core/responsive/responsive.dart';
-import '../../../core/widgets/category_image.dart';
 
-/// Responsive Authentication Shell Container Card
+/// Responsive Luxury Authentication Shell Container Card for Sawariya Dairy
 class AuthCard extends StatelessWidget {
   final Widget child;
   final String? featureTitle;
@@ -15,167 +12,243 @@ class AuthCard extends StatelessWidget {
   const AuthCard({
     super.key,
     required this.child,
-    this.featureTitle = 'Freshness & Purity Guaranteed',
-    this.featureSubtitle = 'Pure A2 milk, organic curd, paneer, and butter delivered fresh every morning.',
+    this.featureTitle = 'Pure Dairy at Your Doorstep',
+    this.featureSubtitle =
+        'Order farm-fresh A2 milk, ghee, paneer, and butter with daily morning delivery.',
   });
 
   @override
   Widget build(BuildContext context) {
     final isDesktop = context.isDesktop;
-    final isTablet = context.isTablet;
+    final size = MediaQuery.of(context).size;
 
-    return Center(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(
-          horizontal: isDesktop
-              ? AppSizes.p32
-              : isTablet
-                  ? AppSizes.p32
-                  : AppSizes.p16,
-          vertical: AppSizes.p24,
-        ),
-        child: Container(
-          constraints: BoxConstraints(
-            maxWidth: isDesktop ? 960 : 480,
-          ),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: AppSizes.borderXLarge,
-            border: Border.all(color: AppColors.border, width: 1.0),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primaryBlue.withValues(alpha: 0.08),
-                blurRadius: 32,
-                offset: const Offset(0, 10),
+    return Scaffold(
+      backgroundColor: const Color(0xFFFAF7F0), // Soft Parchment / Off-White
+      body: Stack(
+        children: [
+          // 1. Background Watermark Graphics
+          // Bottom-Left Watermark (Milk drops & Reeds)
+          Positioned(
+            left: -30,
+            bottom: -20,
+            child: Opacity(
+              opacity: 0.08,
+              child: CustomPaint(
+                size: const Size(260, 260),
+                painter: _WatermarkDropsPainter(),
               ),
-            ],
+            ),
           ),
-          child: isDesktop
-              ? Row(
-                  children: [
-                    // Left Column: Desktop Brand Illustration Panel
-                    Expanded(
-                      flex: 5,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.lightBlue.withValues(alpha: 0.5),
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(20),
-                            bottomLeft: Radius.circular(20),
-                          ),
-                        ),
-                        padding: const EdgeInsets.all(AppSizes.p40),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // Dairy Emblem Graphics
-                            Container(
-                              width: 140,
-                              height: 140,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: AppColors.surface,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppColors.shadow,
-                                    blurRadius: 20,
-                                    offset: Offset(0, 8),
-                                  ),
-                                ],
-                              ),
-                              child: Center(
-                                child: CategoryImage(
-                                  imageUrl: AppAssets.heroBannerPlaceholder,
-                                  size: 120,
-                                  radius: 60,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: AppSizes.p32),
-                            Text(
-                              featureTitle!,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.primaryBlue,
-                              ),
-                            ),
-                            const SizedBox(height: AppSizes.p12),
-                            Text(
-                              featureSubtitle!,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppColors.textSecondary,
-                                height: 1.5,
-                              ),
-                            ),
-                            const SizedBox(height: AppSizes.p32),
-                            // Quality Badges
-                            const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+
+          // Right Watermark (Vintage Milk Can Line Art)
+          Positioned(
+            right: size.width * 0.02,
+            bottom: size.height * 0.05,
+            child: Opacity(
+              opacity: 0.07,
+              child: CustomPaint(
+                size: Size(size.height * 0.55, size.height * 0.75),
+                painter: _MilkCanWatermarkPainter(),
+              ),
+            ),
+          ),
+
+          // 2. Main Centered Gold-Bordered Container Card
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: EdgeInsets.symmetric(
+                  horizontal: isDesktop ? 36.0 : 16.0,
+                  vertical: isDesktop ? 28.0 : 16.0,
+                ),
+                child: Container(
+                  constraints: BoxConstraints(
+                    maxWidth: isDesktop ? 960 : 460,
+                  ),
+                  // Outer Gold Frame
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color(0xFFF5E4B5),
+                        Color(0xFFC5A059),
+                        Color(0xFF8C6D2B),
+                        Color(0xFFF5E4B5),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.18),
+                        blurRadius: 32,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 12),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(2.5), // Gold Border Thickness
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFAF7EE), // Inner Cream Parchment Surface
+                      borderRadius: BorderRadius.circular(21.5),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(21.5),
+                      child: isDesktop
+                          ? Row(
                               children: [
-                                _FeatureChip(icon: Icons.verified, label: '100% Pure'),
-                                SizedBox(width: 8),
-                                _FeatureChip(icon: Icons.local_shipping, label: 'Fast Delivery'),
+                                // Left Column: Dairy Mascot Visual Panel (4:5 full ratio)
+                                Expanded(
+                                  flex: 5,
+                                  child: Container(
+                                    height: 520,
+                                    decoration: const BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [Color(0xFFFFF8F0), Color(0xFFFAF0DC)],
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                      ),
+                                    ),
+                                    child: Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(20),
+                                        child: AspectRatio(
+                                          aspectRatio: 4 / 5,
+                                          child: Image.asset(
+                                            AppAssets.dairyMascot,
+                                            fit: BoxFit.contain,
+                                            errorBuilder: (context, error, stackTrace) =>
+                                                const Center(
+                                              child: Icon(
+                                                Icons.image_outlined,
+                                                size: 64,
+                                                color: Color(0xFFD4AF37),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                // Right Column: Form Content Child
+                                Expanded(
+                                  flex: 6,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(36),
+                                    child: child,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  height: 240,
+                                  decoration: const BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [Color(0xFFFFF8F0), Color(0xFFFAF0DC)],
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                      child: AspectRatio(
+                                        aspectRatio: 4 / 5,
+                                        child: Image.asset(
+                                          AppAssets.dairyMascot,
+                                          fit: BoxFit.contain,
+                                          errorBuilder: (context, error, stackTrace) =>
+                                              const Center(
+                                            child: Icon(
+                                              Icons.image_outlined,
+                                              size: 48,
+                                              color: Color(0xFFD4AF37),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(24),
+                                  child: child,
+                                ),
                               ],
                             ),
-                          ],
-                        ),
-                      ),
                     ),
-
-                    // Right Column: Form Child Content
-                    Expanded(
-                      flex: 6,
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppSizes.p40),
-                        child: child,
-                      ),
-                    ),
-                  ],
-                )
-              : Padding(
-                  padding: const EdgeInsets.all(AppSizes.p24),
-                  child: child,
+                  ),
                 ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FeatureChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const _FeatureChip({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: AppSizes.borderSmall,
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: AppColors.primaryBlue, size: 14),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
+              ),
             ),
           ),
         ],
       ),
     );
   }
+}
+
+// Custom Painter for Bottom-Left Watermark Drops
+class _WatermarkDropsPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFF8C6D2B)
+      ..style = PaintingStyle.fill;
+
+    // Draw milk drops
+    canvas.drawCircle(Offset(size.width * 0.3, size.height * 0.4), 14, paint);
+    canvas.drawCircle(Offset(size.width * 0.55, size.height * 0.3), 10, paint);
+    canvas.drawCircle(Offset(size.width * 0.45, size.height * 0.65), 18, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// Custom Painter for Right Watermark Vintage Milk Can
+class _MilkCanWatermarkPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFF786236)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0;
+
+    final w = size.width;
+    final h = size.height;
+
+    // Milk Can Outer Contour
+    final path = Path();
+    path.moveTo(w * 0.3, h * 0.1);
+    path.lineTo(w * 0.7, h * 0.1);
+    path.lineTo(w * 0.75, h * 0.22);
+    path.lineTo(w * 0.85, h * 0.35);
+    path.lineTo(w * 0.85, h * 0.9);
+    path.lineTo(w * 0.15, h * 0.9);
+    path.lineTo(w * 0.15, h * 0.35);
+    path.lineTo(w * 0.25, h * 0.22);
+    path.close();
+
+    canvas.drawPath(path, paint);
+
+    // Can lid handle
+    canvas.drawArc(
+      Rect.fromLTWH(w * 0.35, h * 0.02, w * 0.3, h * 0.12),
+      3.14,
+      3.14,
+      false,
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

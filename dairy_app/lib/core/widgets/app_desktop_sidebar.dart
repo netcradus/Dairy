@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import '../constants/app_assets.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
 import '../constants/app_strings.dart';
-import 'category_image.dart';
 
 /// Desktop Left Sidebar Navigation Component
 class AppDesktopSidebar extends StatelessWidget {
@@ -32,62 +30,80 @@ class AppDesktopSidebar extends StatelessWidget {
         children: [
           // Header Brand Logo
           Padding(
-            padding: const EdgeInsets.all(AppSizes.p24),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             child: Row(
               children: [
                 Container(
-                  height: 42,
-                  width: 42,
+                  height: 44,
+                  width: 44,
                   decoration: BoxDecoration(
-                    color: AppColors.lightBlue,
-                    borderRadius: AppSizes.borderMedium,
-                    boxShadow: AppColors.primaryShadowSm,
+                    color: AppColors.primaryBlue.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Center(
-                    child: CategoryImage(
-                      imageUrl: AppAssets.heroBannerPlaceholder,
-                      size: 30,
-                      radius: 8,
+                    child: Icon(
+                      Icons.pets_rounded,
+                      color: AppColors.primaryBlue,
+                      size: 26,
                     ),
                   ),
                 ),
-                const SizedBox(width: AppSizes.p12),
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'SAWARIYA',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.primaryBlue,
-                        letterSpacing: 1.0,
-                        height: 1.0,
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'SAWARIYA',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.primaryBlue,
+                          letterSpacing: 0.8,
+                          height: 1.0,
+                        ),
                       ),
-                    ),
-                    Text(
-                      'DAIRY',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                        letterSpacing: 2.0,
-                        height: 1.2,
+                      Text(
+                        'DAIRY',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                          letterSpacing: 1.5,
+                          height: 1.15,
+                        ),
                       ),
-                    ),
-                  ],
+                      Text(
+                        'Pure Milk. Pure Trust.',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.primaryBlue,
+                          letterSpacing: 0.2,
+                          height: 1.2,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
 
-          const Divider(height: 1),
+          const Divider(height: 1, color: AppColors.border),
           const SizedBox(height: AppSizes.p16),
 
           // Navigation Links List
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
               child: Column(
                 children: [
                   _SidebarNavItem(
@@ -97,7 +113,7 @@ class AppDesktopSidebar extends StatelessWidget {
                     isSelected: currentIndex == 0,
                     onTap: () => onTap(0),
                   ),
-                  const SizedBox(height: AppSizes.p8),
+                  const SizedBox(height: 6),
                   _SidebarNavItem(
                     icon: Icons.grid_view_outlined,
                     activeIcon: Icons.grid_view_rounded,
@@ -105,7 +121,7 @@ class AppDesktopSidebar extends StatelessWidget {
                     isSelected: currentIndex == 1,
                     onTap: () => onTap(1),
                   ),
-                  const SizedBox(height: AppSizes.p8),
+                  const SizedBox(height: 6),
                   _SidebarNavItem(
                     icon: Icons.local_shipping_outlined,
                     activeIcon: Icons.local_shipping_rounded,
@@ -113,7 +129,7 @@ class AppDesktopSidebar extends StatelessWidget {
                     isSelected: currentIndex == 2,
                     onTap: () => onTap(2),
                   ),
-                  const SizedBox(height: AppSizes.p8),
+                  const SizedBox(height: 6),
                   _SidebarNavItem(
                     icon: Icons.person_outline_rounded,
                     activeIcon: Icons.person_rounded,
@@ -128,13 +144,13 @@ class AppDesktopSidebar extends StatelessWidget {
 
           // Bottom Desktop Footer Profile Widget
           Padding(
-            padding: const EdgeInsets.all(AppSizes.p16),
+            padding: const EdgeInsets.all(16),
             child: Container(
-              padding: const EdgeInsets.all(AppSizes.p12),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.lightBlue.withValues(alpha: 0.6),
-                borderRadius: AppSizes.borderMedium,
-                border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.2)),
+                color: const Color(0xFFF3F7FC),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppColors.border, width: 0.8),
               ),
               child: const Row(
                 children: [
@@ -143,7 +159,7 @@ class AppDesktopSidebar extends StatelessWidget {
                     radius: 18,
                     child: Icon(Icons.person, color: Colors.white, size: 20),
                   ),
-                  SizedBox(width: AppSizes.p12),
+                  SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,7 +167,7 @@ class AppDesktopSidebar extends StatelessWidget {
                         Text(
                           'Sawariya Customer',
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 12.5,
                             fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
                           ),
@@ -166,6 +182,11 @@ class AppDesktopSidebar extends StatelessWidget {
                         ),
                       ],
                     ),
+                  ),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.textSecondary,
+                    size: 18,
                   ),
                 ],
               ),
@@ -214,25 +235,29 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
               : (_isHovered ? AppColors.lightBlue : Colors.transparent),
           borderRadius: AppSizes.borderMedium,
         ),
-        child: ListTile(
-          onTap: widget.onTap,
-          shape: const RoundedRectangleBorder(borderRadius: AppSizes.borderMedium),
-          contentPadding: const EdgeInsets.symmetric(horizontal: AppSizes.p16, vertical: 2),
-          leading: Icon(
-            active ? widget.activeIcon : widget.icon,
-            color: active
-                ? Colors.white
-                : (_isHovered ? AppColors.primaryBlue : AppColors.textSecondary),
-            size: 22,
-          ),
-          title: Text(
-            widget.label,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: AppSizes.borderMedium,
+          child: ListTile(
+            onTap: widget.onTap,
+            shape: const RoundedRectangleBorder(borderRadius: AppSizes.borderMedium),
+            contentPadding: const EdgeInsets.symmetric(horizontal: AppSizes.p16, vertical: 2),
+            leading: Icon(
+              active ? widget.activeIcon : widget.icon,
               color: active
                   ? Colors.white
-                  : (_isHovered ? AppColors.primaryBlue : AppColors.textPrimary),
+                  : (_isHovered ? AppColors.primaryBlue : AppColors.textSecondary),
+              size: 22,
+            ),
+            title: Text(
+              widget.label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                color: active
+                    ? Colors.white
+                    : (_isHovered ? AppColors.primaryBlue : AppColors.textPrimary),
+              ),
             ),
           ),
         ),

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -14,12 +13,18 @@ import 'about_screen.dart';
 import 'customer_support_screen.dart';
 import '../../screens/settings/settings_screen.dart';
 
+/// Demo delivery-partner account. The delivery panel is only reachable for this
+/// account (and only from the delivery panel itself once a role is simulated),
+/// never exposed to ordinary customers. Keep in sync with [AuthProvider].
+const String _deliveryAccountPhone = '7777777777';
+
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDesktop = context.isDesktop;
+    final user = ref.watch(userProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -56,24 +61,20 @@ class ProfileScreen extends ConsumerWidget {
             child: Column(
               children: [
                 // User Info Header
-                if (kDebugMode)
-                  _SecretDevGesture(
-                    onTriggered: () => _openDeliveryPanel(context, ref),
-                    child: buildProfileHeader(context, ref),
-                  )
-                else
-                  buildProfileHeader(context, ref),
+                buildProfileHeader(context, ref),
                 const SizedBox(height: 24),
 
-                // Developer-only access (stripped from release builds)
-                if (kDebugMode) ...[
-                  buildSectionTitle('Developer (Debug Only)'),
+                // Delivery-boy access only: the customer app never exposes the
+                // delivery panel to regular users. It is shown here solely so a
+                // delivery account can return to the panel after switching to the
+                // customer view from within the delivery panel.
+                if (user.phone == _deliveryAccountPhone) ...[
+                  buildSectionTitle('Delivery Partner'),
                   buildTile(
                     context: context,
-                    icon: Icons.developer_mode_rounded,
+                    icon: Icons.local_shipping_rounded,
                     title: 'Open Delivery Panel',
-                    subtitle:
-                        'Triple-tap the avatar above, or tap here, to test the delivery experience',
+                    subtitle: 'Switch back to the delivery partner experience',
                     onTap: () => _openDeliveryPanel(context, ref),
                   ),
                   const SizedBox(height: 16),
@@ -353,50 +354,10 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  /// Developer-only shortcut: switch the current user to the delivery role so
-  /// the router redirects into the Delivery Panel, then navigate to it.
-  /// Only ever invoked from widgets guarded by [kDebugMode].
+  /// Switch the current user to the delivery role so the router redirects into
+  /// the Delivery Panel, then navigate to it.
   void _openDeliveryPanel(BuildContext context, WidgetRef ref) {
     ref.read(userProvider.notifier).setRole('delivery');
     context.push('/delivery');
-  }
-}
-
-/// Hidden secret gesture: triggers [onTriggered] after three quick taps on its
-/// child. Intended to be wrapped in [kDebugMode] so it is absent in release.
-class _SecretDevGesture extends StatefulWidget {
-  final Widget child;
-  final VoidCallback onTriggered;
-
-  const _SecretDevGesture({
-    required this.child,
-    required this.onTriggered,
-  });
-
-  @override
-  State<_SecretDevGesture> createState() => _SecretDevGestureState();
-}
-
-class _SecretDevGestureState extends State<_SecretDevGesture> {
-  int _tapCount = 0;
-  DateTime? _lastTap;
-
-  void _handleTap() {
-    final now = DateTime.now();
-    if (_lastTap != null &&
-        now.difference(_lastTap!) > const Duration(milliseconds: 600)) {
-      _tapCount = 0;
-    }
-    _lastTap = now;
-    _tapCount++;
-    if (_tapCount >= 3) {
-      _tapCount = 0;
-      widget.onTriggered();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(onTap: _handleTap, child: widget.child);
   }
 }
