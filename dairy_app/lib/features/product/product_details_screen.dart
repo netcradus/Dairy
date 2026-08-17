@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -5,7 +6,6 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
 import '../../core/responsive/responsive_layout.dart';
-import '../../core/widgets/category_image.dart';
 import '../../core/widgets/price_text.dart';
 import '../../core/widgets/quantity_selector.dart';
 import '../../models/product.dart';
@@ -119,7 +119,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
 
   Widget _buildImageSection(Product product) {
     return Container(
-      height: 320,
+      height: 340,
       width: double.infinity,
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -133,79 +133,165 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
           ),
         ],
       ),
-      child: Stack(
-        children: [
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 120,
-                  height: 120,
-                  decoration: const BoxDecoration(
-                    color: AppColors.lightBlue,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: CategoryImage(
-                      imageUrl: widget.product.imageUrl,
-                      size: 110,
-                      radius: 55,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 4),
-                  decoration: const BoxDecoration(
-                    color: AppColors.lightBlue,
-                    borderRadius: AppSizes.borderSmall,
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.verified_rounded,
-                          size: 14, color: AppColors.primaryBlue),
-                      SizedBox(width: 4),
-                      Text(
-                        '100% Farm Fresh Guaranteed',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primaryBlue,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Discount Tag
-          if (product.hasDiscount)
-            Positioned(
-              top: 16,
-              left: 16,
+      child: ClipRRect(
+        borderRadius: AppSizes.borderLarge,
+        child: Stack(
+          children: [
+            // Full ratio product image occupying the image section (4:5 ratio)
+            Positioned.fill(
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: const BoxDecoration(
-                  color: AppColors.discountTag,
-                  borderRadius: AppSizes.borderSmall,
-                ),
-                child: Text(
-                  '${product.discountPercentage}% OFF',
-                  style: const TextStyle(
-                    color: AppColors.textOnPrimary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
+                color: AppColors.lightBlue.withValues(alpha: 0.15),
+                child: Center(
+                  child: AspectRatio(
+                    aspectRatio: 4 / 5,
+                    child: product.imageUrl.isNotEmpty
+                        ? (product.imageUrl.startsWith('http')
+                            ? CachedNetworkImage(
+                                imageUrl: product.imageUrl,
+                                fit: BoxFit.contain,
+                                placeholder: (context, url) => Container(
+                                  color: AppColors.lightBlue,
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.image_outlined,
+                                      size: 40,
+                                      color: AppColors.primaryBlue,
+                                    ),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  color: AppColors.lightBlue,
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.image_not_supported_rounded,
+                                      size: 48,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : Image.asset(
+                                product.imageUrl,
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Container(
+                                  color: AppColors.lightBlue,
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.image_not_supported_rounded,
+                                      size: 48,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                              ))
+                        : Container(
+                            color: AppColors.lightBlue,
+                            child: const Center(
+                              child: Icon(
+                                Icons.image_outlined,
+                                size: 48,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
                   ),
                 ),
               ),
             ),
-        ],
+
+            // Top Badges Row
+            Positioned(
+              top: 16,
+              left: 16,
+              right: 16,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  if (product.hasDiscount)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.discountTag,
+                        borderRadius: AppSizes.borderSmall,
+                        boxShadow: AppColors.cardShadowSm,
+                      ),
+                      child: Text(
+                        '${product.discountPercentage}% OFF',
+                        style: const TextStyle(
+                          color: AppColors.textOnPrimary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    )
+                  else
+                    const SizedBox.shrink(),
+
+                  if (product.isA2CowMilk)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.freshGreen,
+                        borderRadius: AppSizes.borderSmall,
+                        boxShadow: AppColors.cardShadowSm,
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.verified_rounded,
+                              size: 14, color: AppColors.textOnPrimary),
+                          SizedBox(width: 4),
+                          Text(
+                            'A2 PURE',
+                            style: TextStyle(
+                              color: AppColors.textOnPrimary,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+
+            // Bottom Guaranteed Fresh Floating Badge
+            Positioned(
+              bottom: 12,
+              left: 16,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.surface.withValues(alpha: 0.92),
+                  borderRadius: AppSizes.borderSmall,
+                  border: Border.all(color: AppColors.border, width: 0.8),
+                  boxShadow: AppColors.cardShadowSm,
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.verified_rounded,
+                        size: 14, color: AppColors.primaryBlue),
+                    SizedBox(width: 5),
+                    Text(
+                      '100% Farm Fresh Guaranteed',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryBlue,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

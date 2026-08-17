@@ -163,8 +163,8 @@ class PromoBanner extends StatelessWidget {
         return AppAssets.paneerPlaceholder;
       case 'b3':
         return AppAssets.gheePlaceholder;
-      default:
-        return AppAssets.milkPlaceholder;
+      default: // b1 — milk
+        return AppAssets.milkPng;
     }
   }
 

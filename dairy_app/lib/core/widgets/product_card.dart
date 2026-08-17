@@ -73,38 +73,49 @@ class _ProductCardState extends State<ProductCard> {
                           borderRadius: const BorderRadius.vertical(
                             top: Radius.circular(AppSizes.radiusLarge - 1),
                           ),
-                          child: p.imageUrl.isNotEmpty
-                              ? CachedNetworkImage(
-                                  imageUrl: p.imageUrl,
-                                  fit: BoxFit.cover,
-                                   placeholder: (context, url) => Container(
-                                     color: AppColors.lightBlue,
-                                     child: const Center(
-                                       child: CategoryImage(
-                                         imageUrl: AppAssets.milkPlaceholder,
-                                         size: 44,
-                                         radius: 10,
-                                       ),
-                                     ),
-                                   ),
-                                   errorWidget: (context, url, error) => Container(
-                                     color: AppColors.lightBlue,
-                                     child: const Center(
-                                       child: CategoryImage(
-                                         imageUrl: AppAssets.milkPlaceholder,
-                                         size: 48,
-                                         radius: 10,
-                                       ),
-                                     ),
-                                   ),
-                                 )
-                               : const Center(
-                                   child: CategoryImage(
-                                     imageUrl: AppAssets.milkPlaceholder,
-                                     size: 44,
-                                     radius: 10,
-                                   ),
-                                 ),
+                          child: Center(
+                            child: AspectRatio(
+                              aspectRatio: 4 / 5,
+                              child: p.imageUrl.isNotEmpty
+                                  ? (p.imageUrl.startsWith('http')
+                                      ? CachedNetworkImage(
+                                          imageUrl: p.imageUrl,
+                                          fit: BoxFit.cover,
+                                          placeholder: (context, url) => Container(
+                                            color: AppColors.lightBlue,
+                                            child: const Center(
+                                              child: Icon(Icons.image_outlined,
+                                                  size: 32, color: AppColors.primaryBlue),
+                                            ),
+                                          ),
+                                          errorWidget: (context, url, error) => Container(
+                                            color: AppColors.lightBlue,
+                                            child: const Center(
+                                              child: Icon(Icons.image_outlined,
+                                                  size: 32, color: AppColors.textSecondary),
+                                            ),
+                                          ),
+                                        )
+                                      : Image.asset(
+                                          p.imageUrl,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (context, error, stackTrace) => Container(
+                                            color: AppColors.lightBlue,
+                                            child: const Center(
+                                              child: Icon(Icons.image_outlined,
+                                                  size: 32, color: AppColors.textSecondary),
+                                            ),
+                                          ),
+                                        ))
+                                  : Container(
+                                      color: AppColors.lightBlue,
+                                      child: const Center(
+                                        child: Icon(Icons.image_outlined,
+                                            size: 32, color: AppColors.textSecondary),
+                                      ),
+                                    ),
+                            ),
+                          ),
                         ),
                       ),
                     ),

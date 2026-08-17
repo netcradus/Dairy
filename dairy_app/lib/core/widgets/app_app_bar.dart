@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import '../constants/app_assets.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
 import '../responsive/responsive.dart';
-import 'category_image.dart';
 
 /// Clean Production Header Bar for Mobile, Tablet & Desktop
 class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -23,7 +21,14 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(64.0);
+  Size get preferredSize => const Size.fromHeight(72.0);
+
+  static String _greeting() {
+    final h = DateTime.now().hour;
+    if (h < 12) return 'Good morning, 👋';
+    if (h < 17) return 'Good afternoon, 👋';
+    return 'Good evening, 👋';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,108 +38,135 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
       height: preferredSize.height,
       padding: EdgeInsets.symmetric(
         horizontal: context.responsiveHorizontalPadding,
+        vertical: 10,
       ),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.surface,
-        border: const Border(
+        border: Border(
           bottom: BorderSide(color: AppColors.border, width: 1.0),
         ),
-        boxShadow: AppColors.softShadow,
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Left: Logo / Location Tag
-          Row(
-            children: [
-              if (!isDesktop) ...[
-                Container(
-                  height: 38,
-                  width: 38,
-                  decoration: BoxDecoration(
-                    color: AppColors.lightBlue,
-                    borderRadius: AppSizes.borderSmall,
-                    boxShadow: AppColors.primaryShadowSm,
-                  ),
-                  child: const Center(
-                    child: CategoryImage(
-                      imageUrl: AppAssets.milkPlaceholder,
-                      size: 26,
-                      radius: 6,
-                    ),
+          // Left: Greeting and Headline
+          Flexible(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _greeting(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textSecondary,
                   ),
                 ),
-                const SizedBox(width: AppSizes.p12),
-              ],
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      const Icon(
-                        Icons.verified_rounded,
-                        color: AppColors.primaryBlue,
-                        size: 16,
-                      ),
-                    ],
+                const SizedBox(height: 2),
+                const Text(
+                  'Fresh dairy, delivered daily!',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                    letterSpacing: -0.3,
                   ),
-                  const Row(
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 12),
+
+          // Location Pill (Deliver to Jaipur, 302001)
+          if (isDesktop) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.border, width: 1.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.location_on_outlined,
+                    size: 16,
+                    color: AppColors.primaryBlue,
+                  ),
+                  SizedBox(width: 6),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.location_on_outlined,
-                        size: 12,
-                        color: AppColors.primaryBlue,
-                      ),
-                      SizedBox(width: 2),
                       Text(
-                        'Deliver to Jaipur, 302001',
+                        'Deliver to',
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: 9.5,
                           fontWeight: FontWeight.w500,
                           color: AppColors.textSecondary,
                         ),
                       ),
-                      Icon(
-                        Icons.keyboard_arrow_down_rounded,
-                        size: 14,
-                        color: AppColors.textSecondary,
+                      Text(
+                        'Jaipur, 302001',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                     ],
                   ),
+                  SizedBox(width: 6),
+                  Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    size: 16,
+                    color: AppColors.textSecondary,
+                  ),
                 ],
               ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 12),
+          ],
 
-          const Spacer(),
-
-          // Search Field or Icon Button
+          // Search Field
           if (isDesktop)
-            SizedBox(
-              width: 380,
-              height: 40,
-              child: TextField(
-                readOnly: true,
-                onTap: onSearchTap,
-                decoration: const InputDecoration(
-                  hintText: 'Search milk, curd, paneer, ghee...',
-                  hintStyle: TextStyle(fontSize: 13, color: AppColors.textMuted),
-                  prefixIcon: Icon(Icons.search_rounded, size: 20, color: AppColors.primaryBlue),
-                  filled: true,
-                  fillColor: AppColors.inputBackground,
-                  contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 12),
-                  border: OutlineInputBorder(
-                    borderRadius: AppSizes.borderMedium,
-                    borderSide: BorderSide.none,
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 260, minWidth: 140),
+              child: SizedBox(
+                height: 40,
+                child: TextField(
+                  readOnly: true,
+                  onTap: onSearchTap,
+                  decoration: InputDecoration(
+                    hintText: 'Search milk, curd, paneer...',
+                    hintStyle: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                    prefixIcon: const Icon(Icons.search_rounded, size: 18, color: AppColors.textSecondary),
+                    filled: true,
+                    fillColor: const Color(0xFFF6F8FA),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.border, width: 0.8),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.border, width: 0.8),
+                    ),
                   ),
                 ),
               ),
@@ -149,7 +181,7 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
 
           // Notification Button
           IconButton(
-            icon: const Icon(Icons.notifications_none_rounded, color: AppColors.textPrimary),
+            icon: const Icon(Icons.notifications_none_rounded, color: AppColors.textPrimary, size: 23),
             onPressed: onNotificationTap,
           ),
 
@@ -157,30 +189,31 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
 
           // Cart Button with Badge
           Stack(
+            clipBehavior: Clip.none,
             children: [
               IconButton(
-                icon: const Icon(Icons.shopping_bag_outlined, color: AppColors.primaryBlue),
+                icon: const Icon(Icons.shopping_cart_outlined, color: AppColors.textPrimary, size: 23),
                 onPressed: onCartTap,
               ),
               if (cartItemCount > 0)
                 Positioned(
-                  top: 6,
-                  right: 6,
+                  top: 4,
+                  right: 4,
                   child: Container(
-                    padding: const EdgeInsets.all(4),
+                    padding: const EdgeInsets.all(3),
                     decoration: const BoxDecoration(
-                      color: AppColors.error,
+                      color: AppColors.primaryBlue,
                       shape: BoxShape.circle,
                     ),
                     constraints: const BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
+                      minWidth: 17,
+                      minHeight: 17,
                     ),
                     child: Text(
                       '$cartItemCount',
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 9,
+                        fontSize: 9.5,
                         fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,

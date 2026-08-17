@@ -1,18 +1,21 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
-import '../constants/app_sizes.dart';
-import '../widgets/category_image.dart';
 import '../../models/category.dart';
 
-/// Reusable Category Card Component
+/// Reusable Category Card Component matching Sawariya Dairy Discovery Screen
 class CategoryCard extends StatefulWidget {
   final Category category;
   final VoidCallback? onTap;
+  final double? width;
+  final double? height;
 
   const CategoryCard({
     super.key,
     required this.category,
     this.onTap,
+    this.width = 195,
+    this.height = 205,
   });
 
   @override
@@ -31,58 +34,124 @@ class _CategoryCardState extends State<CategoryCard> {
       onExit: (_) => setState(() => _isHovered = false),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        width: 100,
+        width: widget.width,
+        height: widget.height,
         decoration: BoxDecoration(
-          color: _isHovered ? AppColors.lightBlue : AppColors.surface,
-          borderRadius: AppSizes.borderLarge,
+          color: cat.backgroundColor,
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: _isHovered ? AppColors.primaryBlue : AppColors.border,
+            color: _isHovered ? AppColors.primaryBlue.withValues(alpha: 0.5) : AppColors.border.withValues(alpha: 0.6),
             width: _isHovered ? 1.5 : 1.0,
           ),
           boxShadow: [
             BoxShadow(
-              color: _isHovered ? AppColors.primaryBlue.withValues(alpha: 0.1) : AppColors.shadow,
-              blurRadius: _isHovered ? 12 : 6,
-              offset: const Offset(0, 3),
+              color: _isHovered
+                  ? AppColors.primaryBlue.withValues(alpha: 0.12)
+                  : Colors.black.withValues(alpha: 0.03),
+              blurRadius: _isHovered ? 14 : 6,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: InkWell(
           onTap: widget.onTap,
-          borderRadius: AppSizes.borderLarge,
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              vertical: AppSizes.p12,
-              horizontal: AppSizes.p8,
-            ),
+            padding: const EdgeInsets.all(12),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  height: 52,
-                  width: 52,
-                  decoration: BoxDecoration(
-                    color: cat.backgroundColor,
-                    shape: BoxShape.circle,
-                  ),
-                  child: CategoryImage(
-                    imageUrl: cat.imageUrl,
-                    size: 44,
-                    radius: 22,
+                // Top: Product Image
+                Expanded(
+                  child: Center(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: cat.imageUrl.isNotEmpty
+                          ? (cat.imageUrl.startsWith('http')
+                              ? CachedNetworkImage(
+                                  imageUrl: cat.imageUrl,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => const Center(
+                                    child: Icon(Icons.image_outlined, color: AppColors.textMuted, size: 36),
+                                  ),
+                                  errorWidget: (context, url, error) => const Center(
+                                    child: Icon(Icons.image_outlined, color: AppColors.textMuted, size: 36),
+                                  ),
+                                )
+                              : Image.asset(
+                                  cat.imageUrl,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) => const Center(
+                                    child: Icon(Icons.image_outlined, color: AppColors.textMuted, size: 36),
+                                  ),
+                                ))
+                          : const Center(
+                              child: Icon(Icons.image_outlined, color: AppColors.textMuted, size: 36),
+                            ),
+                    ),
                   ),
                 ),
-                const SizedBox(height: AppSizes.p8),
-                Text(
-                  cat.title,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                    height: 1.2,
-                  ),
+                const SizedBox(height: 8),
+
+                // Bottom: Title, Subtitle, and Circular Arrow Button
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            cat.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                              height: 1.2,
+                            ),
+                          ),
+                          if (cat.subtitle.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              cat.subtitle,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.textSecondary,
+                                height: 1.2,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      height: 28,
+                      width: 28,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.06),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.chevron_right_rounded,
+                        size: 16,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

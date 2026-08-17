@@ -5,7 +5,6 @@ import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
-import '../../core/widgets/category_image.dart';
 import '../../models/order.dart';
 import '../../providers/order_provider.dart';
 import 'order_details_screen.dart';
@@ -273,24 +272,35 @@ class _OrderCard extends ConsumerWidget {
                     children: [
                       ...List.generate(
                         order.items.length.clamp(0, 3),
-                        (i) => Positioned(
-                          left: i * 30.0,
-                          child: Container(
-                            width: 46,
-                            height: 46,
-                            decoration: BoxDecoration(
-                              color: AppColors.lightBlue,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                  color: AppColors.surface, width: 2),
+                        (i) {
+                          final thumbAsset =
+                              i.isEven ? AppAssets.milkPng : AppAssets.lassiPng;
+                          return Positioned(
+                            left: i * 30.0,
+                            child: Container(
+                              width: 46,
+                              height: 46,
+                              decoration: BoxDecoration(
+                                color: AppColors.lightBlue,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                    color: AppColors.surface, width: 2),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.asset(
+                                  thumbAsset,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => const Icon(
+                                    Icons.local_drink_rounded,
+                                    size: 22,
+                                    color: AppColors.primaryBlue,
+                                  ),
+                                ),
+                              ),
                             ),
-                            child: CategoryImage(
-                              imageUrl: AppAssets.milkPlaceholder,
-                              size: 30,
-                              radius: 7,
-                            ),
-                          ),
-                        ),
+                          );
+                        },
                       ),
                       if (order.items.length > 3)
                         Positioned(

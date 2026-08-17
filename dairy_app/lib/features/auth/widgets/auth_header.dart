@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-import '../../../core/constants/app_assets.dart';
-import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
-import '../../../core/widgets/category_image.dart';
 
-/// Reusable Sawariya Dairy Brand Auth Header Component
+/// Reusable Sawariya Dairy Brand Auth Header Component matching reference image
 class AuthHeader extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -26,35 +24,28 @@ class AuthHeader extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 44,
-              height: 44,
+              padding: const EdgeInsets.all(5),
               decoration: BoxDecoration(
-                color: AppColors.primaryBlue,
+                color: const Color(0xFFFFF7ED),
                 shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primaryBlue.withValues(alpha: 0.25),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Center(
-                child: CategoryImage(
-                  imageUrl: AppAssets.milkPlaceholder,
-                  size: 30,
-                  radius: 8,
+                border: Border.all(
+                  color: const Color(0xFFE5C578).withValues(alpha: 0.6),
+                  width: 1,
                 ),
               ),
+              child: const Text(
+                '🐮',
+                style: TextStyle(fontSize: 20),
+              ),
             ),
-            const SizedBox(width: AppSizes.p12),
-            const Text(
+            const SizedBox(width: 10),
+            Text(
               'Sawariya Dairy',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: AppColors.primaryBlue,
-                letterSpacing: 0.3,
+              style: GoogleFonts.playfairDisplay(
+                fontSize: 19,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF2C1810),
+                letterSpacing: 0.2,
               ),
             ),
           ],
@@ -65,23 +56,24 @@ class AuthHeader extends StatelessWidget {
         // Welcome Title
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 26,
+          style: GoogleFonts.inter(
+            fontSize: 28,
             fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
+            color: const Color(0xFF132238),
             height: 1.2,
+            letterSpacing: -0.4,
           ),
         ),
 
-        const SizedBox(height: AppSizes.p8),
+        const SizedBox(height: AppSizes.p6),
 
         // Subtitle Description
         Text(
           subtitle,
-          style: const TextStyle(
+          style: GoogleFonts.inter(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: AppColors.textSecondary,
+            color: const Color(0xFF4A5568),
             height: 1.4,
           ),
         ),

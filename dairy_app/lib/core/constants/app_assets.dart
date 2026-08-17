@@ -7,6 +7,20 @@ abstract class AppAssets {
   static const String bannerPath = '$imagePath/banners';
   static const String iconPath = '$imagePath/icons';
 
+  static const String landingHeroMilk = '$imagePath/landing_hero_milk.jpg';
+  static const String landingHeroProducts = '$imagePath/landing_hero_products.jpg';
+  static const String landingHeroScooter = '$imagePath/landing_hero_scooter.jpg';
+  static const String landingBgMeadow = '$imagePath/landing_bg_meadow.jpg';
+  static const String loginHeroCow = '$imagePath/login_hero_cow.jpg';
+  static const String dairyMascot = '$imagePath/dairy_mascot.jpg';
+  static const String sawariyaLogo = '$imagePath/sawariya_logo.png';
+  static const String milkBottle = '$productPath/sawariya_milk_bottle.jpg';
+  static const String lassiBottle = '$productPath/sawariya_lassi_bottle.jpg';
+
+  // PNG product images for hero / banner use
+  static const String milkPng = '$imagePath/milk.png';
+  static const String lassiPng = '$imagePath/lassi.png';
+
   // Placeholder URLs for remote network fallback images
   static const String milkPlaceholder = 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=600&q=80';
   static const String curdPlaceholder = 'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=600&q=80';
