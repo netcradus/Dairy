@@ -382,7 +382,7 @@ class ProfileTab extends ConsumerWidget {
                 child: Switch(
                   value: isOnline,
                   onChanged: (_) => ref.read(deliveryAgentProvider.notifier).toggleDuty(),
-                  activeThumbColor: AppColors.success,
+                  activeColor: AppColors.success,
                   activeTrackColor: AppColors.success.withValues(alpha: 0.3),
                   inactiveThumbColor: AppColors.error,
                   inactiveTrackColor: AppColors.error.withValues(alpha: 0.3),
