@@ -2,42 +2,36 @@ name: Build Android APK
 
 on:
   push:
-    branches: [main, master]
-  pull_request:
-    branches: [main, master]
-  workflow_dispatch:
+    branches: [ "main" ]
 
 jobs:
   build:
-    name: Build Android APK
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Java (Android SDK)
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: 'temurin'
           java-version: '17'
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android SDK packages
-        run: |
-          yes | sdkmanager --licenses
-          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.32.x'
-          channel: stable
+          flutter-version: '3.32.8'
+          channel: 'stable'
           cache: true
 
-      - name: Print Flutter version
-        run: flutter --version
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Accept Android licenses and install tools
+        run: |
+          yes | sdkmanager --licenses
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Install dependencies
         run: flutter pub get
@@ -45,7 +39,7 @@ jobs:
       - name: Analyze project
         run: flutter analyze
 
-     - name: Patch Flutter 3.32.8 internal fileMode error
+      - name: Patch Flutter 3.32.8 internal fileMode error
         run: |
           PLUGIN_FILE="$FLUTTER_ROOT/packages/flutter_tools/gradle/src/main/kotlin/FlutterPlugin.kt"
           if [ -f "$PLUGIN_FILE" ]; then
