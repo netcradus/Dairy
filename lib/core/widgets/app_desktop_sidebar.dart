@@ -20,10 +20,8 @@ class AppDesktopSidebar extends StatelessWidget {
       width: AppSizes.desktopSidebarWidth,
       height: double.infinity,
       decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(
-          right: BorderSide(color: AppColors.border, width: 1.0),
-        ),
+        color: Color(0xFFE2EFE7),
+        border: Border(right: BorderSide(color: Color(0xFFCBE0D4), width: 1.0)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,22 +31,20 @@ class AppDesktopSidebar extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             child: Row(
               children: [
+                // Custom Cow Logo
                 Container(
-                  height: 44,
-                  width: 44,
+                  height: 48,
+                  width: 48,
                   decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withValues(alpha: 0.08),
+                    color: Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.pets_rounded,
-                      color: AppColors.primaryBlue,
-                      size: 26,
-                    ),
+                  child: Image.asset(
+                    'assets/images/sawariya_logo.png',
+                    fit: BoxFit.contain,
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 const Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -59,11 +55,11 @@ class AppDesktopSidebar extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: 15,
+                          fontSize: 16,
                           fontWeight: FontWeight.w900,
-                          color: AppColors.primaryBlue,
+                          color: Color(0xFF005F38),
                           letterSpacing: 0.8,
-                          height: 1.0,
+                          height: 1.1,
                         ),
                       ),
                       Text(
@@ -71,23 +67,24 @@ class AppDesktopSidebar extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: 14,
                           fontWeight: FontWeight.w800,
-                          color: AppColors.textPrimary,
+                          color: Color(0xFF005F38),
                           letterSpacing: 1.5,
-                          height: 1.15,
+                          height: 1.1,
                         ),
                       ),
+                      SizedBox(height: 2),
                       Text(
                         'Pure Milk. Pure Trust.',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 9,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.primaryBlue,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF005F38),
                           letterSpacing: 0.2,
-                          height: 1.2,
+                          height: 1.0,
                         ),
                       ),
                     ],
@@ -97,7 +94,7 @@ class AppDesktopSidebar extends StatelessWidget {
             ),
           ),
 
-          const Divider(height: 1, color: AppColors.border),
+          const Divider(height: 1, color: Color(0xFFCBE0D4)),
           const SizedBox(height: AppSizes.p16),
 
           // Navigation Links List
@@ -148,14 +145,14 @@ class AppDesktopSidebar extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFFF3F7FC),
+                color: const Color(0xFFECF5F0),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.border, width: 0.8),
+                border: Border.all(color: const Color(0xFFCBE0D4), width: 0.8),
               ),
               child: const Row(
                 children: [
                   CircleAvatar(
-                    backgroundColor: AppColors.primaryBlue,
+                    backgroundColor: Color(0xFF005F38),
                     radius: 18,
                     child: Icon(Icons.person, color: Colors.white, size: 20),
                   ),
@@ -169,14 +166,14 @@ class AppDesktopSidebar extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12.5,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                            color: Color(0xFF005F38),
                           ),
                         ),
                         Text(
                           'Fresh Member',
                           style: TextStyle(
                             fontSize: 11,
-                            color: AppColors.primaryBlue,
+                            color: Color(0xFF005F38),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -185,7 +182,7 @@ class AppDesktopSidebar extends StatelessWidget {
                   ),
                   Icon(
                     Icons.chevron_right_rounded,
-                    color: AppColors.textSecondary,
+                    color: Color(0xFF005F38),
                     size: 18,
                   ),
                 ],
@@ -231,8 +228,8 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
         duration: const Duration(milliseconds: 150),
         decoration: BoxDecoration(
           color: active
-              ? AppColors.primaryBlue
-              : (_isHovered ? AppColors.lightBlue : Colors.transparent),
+              ? const Color(0xFF005F38)
+              : (_isHovered ? const Color(0xFFD4E6DC) : Colors.transparent),
           borderRadius: AppSizes.borderMedium,
         ),
         child: Material(
@@ -240,13 +237,20 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
           borderRadius: AppSizes.borderMedium,
           child: ListTile(
             onTap: widget.onTap,
-            shape: const RoundedRectangleBorder(borderRadius: AppSizes.borderMedium),
-            contentPadding: const EdgeInsets.symmetric(horizontal: AppSizes.p16, vertical: 2),
+            shape: const RoundedRectangleBorder(
+              borderRadius: AppSizes.borderMedium,
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: AppSizes.p16,
+              vertical: 2,
+            ),
             leading: Icon(
               active ? widget.activeIcon : widget.icon,
               color: active
                   ? Colors.white
-                  : (_isHovered ? AppColors.primaryBlue : AppColors.textSecondary),
+                  : (_isHovered
+                        ? const Color(0xFF005F38)
+                        : const Color(0xFF334E41)),
               size: 22,
             ),
             title: Text(
@@ -256,7 +260,9 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
                 fontWeight: active ? FontWeight.w700 : FontWeight.w500,
                 color: active
                     ? Colors.white
-                    : (_isHovered ? AppColors.primaryBlue : AppColors.textPrimary),
+                    : (_isHovered
+                          ? const Color(0xFF005F38)
+                          : const Color(0xFF334E41)),
               ),
             ),
           ),
@@ -264,4 +270,63 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
       ),
     );
   }
+}
+
+class CowLogoPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFF005F38)
+      ..style = PaintingStyle.fill;
+
+    final path = Path();
+    
+    double cx = size.width / 2;
+    double cy = size.height / 2 + 3;
+    
+    // Face outline: rounded shape
+    path.moveTo(cx - 10, cy - 14);
+    path.quadraticBezierTo(cx, cy - 16, cx + 10, cy - 14);
+    path.quadraticBezierTo(cx + 12, cy - 2, cx + 9, cy + 8);
+    path.quadraticBezierTo(cx, cy + 13, cx - 9, cy + 8);
+    path.quadraticBezierTo(cx - 12, cy - 2, cx - 10, cy - 14);
+    
+    // Snout / Muzzle
+    path.moveTo(cx - 9, cy + 2);
+    path.quadraticBezierTo(cx, cy - 1, cx + 9, cy + 2);
+    path.quadraticBezierTo(cx + 9, cy + 8, cx + 7, cy + 10);
+    path.quadraticBezierTo(cx, cy + 13, cx - 7, cy + 10);
+    path.quadraticBezierTo(cx - 9, cy + 8, cx - 9, cy + 2);
+    
+    // Ears
+    path.moveTo(cx - 11, cy - 10);
+    path.cubicTo(cx - 20, cy - 12, cx - 22, cy - 2, cx - 12, cy + 2);
+    path.close();
+    
+    path.moveTo(cx + 11, cy - 10);
+    path.cubicTo(cx + 20, cy - 12, cx + 22, cy - 2, cx + 12, cy + 2);
+    path.close();
+    
+    // Horns
+    path.moveTo(cx - 9, cy - 13);
+    path.quadraticBezierTo(cx - 15, cy - 22, cx - 8, cy - 25);
+    path.quadraticBezierTo(cx - 5, cy - 21, cx - 6, cy - 14);
+    path.close();
+    
+    path.moveTo(cx + 9, cy - 13);
+    path.quadraticBezierTo(cx + 15, cy - 22, cx + 8, cy - 25);
+    path.quadraticBezierTo(cx + 5, cy - 21, cx + 6, cy - 14);
+    path.close();
+    
+    canvas.drawPath(path, paint);
+    
+    final nostrilPaint = Paint()
+      ..color = const Color(0xFFE2EFE7)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(Offset(cx - 3, cy + 6), 1.5, nostrilPaint);
+    canvas.drawCircle(Offset(cx + 3, cy + 6), 1.5, nostrilPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

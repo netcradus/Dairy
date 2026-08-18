@@ -42,9 +42,7 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        border: Border(
-          bottom: BorderSide(color: AppColors.border, width: 1.0),
-        ),
+        border: Border(bottom: BorderSide(color: AppColors.border, width: 1.0)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -146,26 +144,42 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
           // Search Field
           if (isDesktop)
             ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 260, minWidth: 140),
+              constraints: const BoxConstraints(maxWidth: 280, minWidth: 160),
               child: SizedBox(
                 height: 40,
                 child: TextField(
                   readOnly: true,
                   onTap: onSearchTap,
                   decoration: InputDecoration(
-                    hintText: 'Search milk, curd, paneer...',
-                    hintStyle: const TextStyle(fontSize: 12, color: AppColors.textMuted),
-                    prefixIcon: const Icon(Icons.search_rounded, size: 18, color: AppColors.textSecondary),
+                    hintText: 'Search milk, curd, paneer, ghee...',
+                    hintStyle: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textMuted,
+                    ),
+                    prefixIcon: const Icon(
+                      Icons.search_rounded,
+                      size: 18,
+                      color: AppColors.textSecondary,
+                    ),
                     filled: true,
-                    fillColor: const Color(0xFFF6F8FA),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 0,
+                      horizontal: 10,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppColors.border, width: 0.8),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFCBD5E1),
+                        width: 0.8,
+                      ),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppColors.border, width: 0.8),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFCBD5E1),
+                        width: 0.8,
+                      ),
                     ),
                   ),
                 ),
@@ -173,7 +187,10 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
             )
           else
             IconButton(
-              icon: const Icon(Icons.search_rounded, color: AppColors.textPrimary),
+              icon: const Icon(
+                Icons.search_rounded,
+                color: AppColors.textPrimary,
+              ),
               onPressed: onSearchTap,
             ),
 
@@ -181,7 +198,11 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
 
           // Notification Button
           IconButton(
-            icon: const Icon(Icons.notifications_none_rounded, color: AppColors.textPrimary, size: 23),
+            icon: const Icon(
+              Icons.notifications_none_rounded,
+              color: AppColors.textPrimary,
+              size: 23,
+            ),
             onPressed: onNotificationTap,
           ),
 
@@ -192,7 +213,11 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
             clipBehavior: Clip.none,
             children: [
               IconButton(
-                icon: const Icon(Icons.shopping_cart_outlined, color: AppColors.textPrimary, size: 23),
+                icon: const Icon(
+                  Icons.shopping_cart_outlined,
+                  color: AppColors.textPrimary,
+                  size: 23,
+                ),
                 onPressed: onCartTap,
               ),
               if (cartItemCount > 0)

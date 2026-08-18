@@ -2,20 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/constants/app_colors.dart';
 import '../../core/responsive/responsive.dart';
 import '../../providers/user_provider.dart';
+import '../../providers/navigation_provider.dart';
 import '../address/address_screen.dart';
 import 'edit_profile_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../subscription/subscriptions_screen.dart';
 import 'about_screen.dart';
 import 'customer_support_screen.dart';
-import '../../screens/settings/settings_screen.dart';
 
-/// Demo delivery-partner account. The delivery panel is only reachable for this
-/// account (and only from the delivery panel itself once a role is simulated),
-/// never exposed to ordinary customers. Keep in sync with [AuthProvider].
+/// Demo delivery-partner account.
 const String _deliveryAccountPhone = '7777777777';
 
 class ProfileScreen extends ConsumerWidget {
@@ -27,177 +24,140 @@ class ProfileScreen extends ConsumerWidget {
     final user = ref.watch(userProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('My Profile'),
-        backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.textPrimary,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            tooltip: 'Edit Profile',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const EditProfileScreen(),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(
-          horizontal: context.responsiveHorizontalPadding,
-          vertical: 20,
-        ),
-        child: Center(
-          child: Container(
-            constraints: BoxConstraints(
-              maxWidth: isDesktop ? 700 : double.infinity,
-            ),
-            child: Column(
-              children: [
-                // User Info Header
-                buildProfileHeader(context, ref),
-                const SizedBox(height: 24),
+      backgroundColor: const Color(0xFFF8FAFD),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Center(
+            child: Container(
+              constraints: BoxConstraints(
+                maxWidth: isDesktop ? 700 : double.infinity,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ─── 1. Header Card (Splash/Gradient Green with User Profile Info) ───
+                  _buildProfileHeaderCard(context, ref),
 
-                // Delivery-boy access only: the customer app never exposes the
-                // delivery panel to regular users. It is shown here solely so a
-                // delivery account can return to the panel after switching to the
-                // customer view from within the delivery panel.
-                if (user.phone == _deliveryAccountPhone) ...[
-                  buildSectionTitle('Delivery Partner'),
-                  buildTile(
-                    context: context,
-                    icon: Icons.local_shipping_rounded,
-                    title: 'Open Delivery Panel',
-                    subtitle: 'Switch back to the delivery partner experience',
-                    onTap: () => _openDeliveryPanel(context, ref),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // ─── 2. My Orders Quick Stats Card ───
+                        _buildMyOrdersStatsCard(context, ref),
+                        const SizedBox(height: 20),
+
+                        // ─── 3. Delivery Partner Panel (For Delivery boys only) ───
+                        if (user.phone == _deliveryAccountPhone) ...[
+                          const Text(
+                            'Delivery Partner',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF667085),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          _buildMenuTile(
+                            context,
+                            Icons.local_shipping_outlined,
+                            'Open Delivery Panel',
+                            'Switch to delivery experience',
+                            () => _openDeliveryPanel(context, ref),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+
+                        // ─── 4. Account Settings Menu ───
+                        const Text(
+                          'Account Settings',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF667085),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFF1F5F9), width: 1.0),
+                          ),
+                          child: Column(
+                            children: [
+                              _buildMenuTile(
+                                context,
+                                Icons.person_outline_rounded,
+                                'My Profile',
+                                'Manage your personal details',
+                                () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const EditProfileScreen()));
+                                },
+                              ),
+                              const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                              _buildMenuTile(
+                                context,
+                                Icons.location_on_outlined,
+                                'Delivery Addresses',
+                                'Add or edit delivery addresses',
+                                () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const AddressScreen()));
+                                },
+                              ),
+                              const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                              _buildMenuTile(
+                                context,
+                                Icons.payment_outlined,
+                                'Payment Methods',
+                                'Manage your payment options',
+                                () {},
+                              ),
+                              const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                              _buildMenuTile(
+                                context,
+                                Icons.autorenew_rounded,
+                                'My Subscriptions',
+                                'Manage milk & product subscriptions',
+                                () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const SubscriptionsScreen()));
+                                },
+                              ),
+                              const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                              _buildMenuTile(
+                                context,
+                                Icons.notifications_none_rounded,
+                                'Notifications',
+                                'Manage your notification preferences',
+                                () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen()));
+                                },
+                              ),
+                              const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                              _buildMenuTile(
+                                context,
+                                Icons.info_outline_rounded,
+                                'About Sawariya Dairy',
+                                'Know more about us',
+                                () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen()));
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // Logout Button
+                        _buildLogoutTile(context, ref),
+                        const SizedBox(height: 32),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 16),
                 ],
-
-                // Account Settings
-                buildSectionTitle('Account Settings'),
-                buildTile(
-                  context: context,
-                  icon: Icons.location_on_outlined,
-                  title: 'Saved Delivery Addresses',
-                  subtitle: 'Manage home & office addresses',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const AddressScreen(),
-                      ),
-                    );
-                  },
-                ),
-                buildTile(
-                  context: context,
-                  icon: Icons.repeat_rounded,
-                  title: 'Daily Milk Subscriptions',
-                  subtitle: 'Manage recurring morning/evening deliveries',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const SubscriptionsScreen(),
-                      ),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 16),
-                buildSectionTitle('Preferences & Support'),
-                buildTile(
-                  context: context,
-                  icon: Icons.settings_outlined,
-                  title: 'App Settings',
-                  subtitle: 'Notifications, navigation, language & theme',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const SettingsScreen(),
-                      ),
-                    );
-                  },
-                ),
-                buildTile(
-                  context: context,
-                  icon: Icons.notifications_none_rounded,
-                  title: 'Notifications',
-                  subtitle: 'Delivery updates and daily reminders',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const NotificationsScreen(),
-                      ),
-                    );
-                  },
-                ),
-                buildTile(
-                  context: context,
-                  icon: Icons.headset_mic_outlined,
-                  title: 'Customer Support',
-                  subtitle: 'Contact Sawariya Dairy support team',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const CustomerSupportScreen(),
-                      ),
-                    );
-                  },
-                ),
-                buildTile(
-                  context: context,
-                  icon: Icons.info_outline_rounded,
-                  title: 'About Sawariya Dairy',
-                  subtitle: 'App version 1.0.0',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const AboutScreen(),
-                      ),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 24),
-
-                // Logout Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.redAccent),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
-                    label: const Text(
-                      'Log Out',
-                      style: TextStyle(
-                        color: Colors.redAccent,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    onPressed: () {
-                      showLogoutDialog(context, ref);
-                    },
-                  ),
-                ),
-                const SizedBox(height: 32),
-              ],
+              ),
             ),
           ),
         ),
@@ -205,63 +165,145 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget buildProfileHeader(BuildContext context, WidgetRef ref) {
+  Widget _buildProfileHeaderCard(BuildContext context, WidgetRef ref) {
     final user = ref.watch(userProvider);
-    final primaryColor = Theme.of(context).primaryColor;
-
     return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFFEAF5EF), Color(0xFFF1F9F5), Colors.white],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
       ),
-      child: Row(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+      child: Stack(
         children: [
-          CircleAvatar(
-            radius: 36,
-            backgroundColor: primaryColor.withValues(alpha: 0.1),
-            child: Icon(
-              Icons.person,
-              size: 40,
-              color: primaryColor,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
+          // Top Left Brand Logo
+          Positioned(
+            left: 0,
+            top: 0,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  user.name,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+                Image.asset(
+                  'assets/images/sawariya_logo.png',
+                  height: 48,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.eco_rounded,
+                    color: Color(0xFF005F38),
+                    size: 32,
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  user.phone,
+                const Text(
+                  'Pure Milk, Pure Trust',
                   style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  user.email ?? '',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade500,
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF005F38),
+                    letterSpacing: 0.2,
                   ),
                 ),
               ],
+            ),
+          ),
+
+          // Main User Details
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // User Avatar with Camera edit button
+                  Stack(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: CircleAvatar(
+                          radius: 46,
+                          backgroundColor: const Color(0xFFE2EFE7),
+                          child: const Icon(
+                            Icons.person_rounded,
+                            size: 55,
+                            color: Color(0xFF005F38),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        right: 2,
+                        bottom: 2,
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 4,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.camera_alt_outlined,
+                            size: 14,
+                            color: Color(0xFF005F38),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Name
+                  Text(
+                    user.name.isEmpty ? 'Sawariya Customer' : user.name,
+                    style: const TextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF172033),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+
+                  // Phone Number
+                  Text(
+                    user.phone.isEmpty ? '+91 98765 43210' : user.phone,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF667085),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Membership Badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFF005F38), width: 1.0),
+                    ),
+                    child: const Text(
+                      'Fresh Member',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF005F38),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -269,64 +311,186 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget buildSectionTitle(String title) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Padding(
-        padding: const EdgeInsets.only(left: 4, bottom: 8),
-        child: Text(
-          title,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey.shade600,
+  Widget _buildMyOrdersStatsCard(BuildContext context, WidgetRef ref) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF1F5F9), width: 1.0),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          // Title Header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'My Orders',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF172033),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  ref.read(navigationProvider.notifier).setIndex(2); // Navigate to Orders Tab
+                },
+                child: const Row(
+                  children: [
+                    Text(
+                      'View All',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF005F38),
+                      ),
+                    ),
+                    SizedBox(width: 2),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      size: 16,
+                      color: Color(0xFF005F38),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ),
+          const SizedBox(height: 16),
+
+          // Count stats row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildOrderStatColumn(Icons.shopping_bag_outlined, 'All Orders', '12'),
+              _buildOrderStatColumn(Icons.inventory_2_outlined, 'Processing', '3'),
+              _buildOrderStatColumn(Icons.check_box_outlined, 'Delivered', '8'),
+              _buildOrderStatColumn(Icons.cancel_presentation_outlined, 'Cancelled', '1'),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget buildTile({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    final primaryColor = Theme.of(context).primaryColor;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
-        child: ListTile(
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: primaryColor.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, color: primaryColor),
+  Widget _buildOrderStatColumn(IconData icon, String label, String count) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: const BoxDecoration(
+            color: Color(0xFFEAF5EF),
+            shape: BoxShape.circle,
           ),
-          title: Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-          ),
-          subtitle: Text(
-            subtitle,
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-          ),
-          trailing: const Icon(
-            Icons.chevron_right_rounded,
-            color: Colors.grey,
-          ),
-          onTap: onTap,
+          child: Icon(icon, color: const Color(0xFF005F38), size: 20),
         ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF667085),
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          count,
+          style: const TextStyle(
+            fontSize: 13.5,
+            fontWeight: FontWeight.w900,
+            color: Color(0xFF005F38),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMenuTile(
+    BuildContext context,
+    IconData icon,
+    String title,
+    String subtitle,
+    VoidCallback onTap,
+  ) {
+    return ListTile(
+      dense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: const BoxDecoration(
+          color: Color(0xFFEAF5EF),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: const Color(0xFF005F38), size: 18),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 13.5,
+          fontWeight: FontWeight.w700,
+          color: Color(0xFF172033),
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+          color: Color(0xFF98A2B3),
+        ),
+      ),
+      trailing: const Icon(
+        Icons.chevron_right_rounded,
+        color: Color(0xFFCBD5E1),
+        size: 18,
+      ),
+      onTap: onTap,
+    );
+  }
+
+  Widget _buildLogoutTile(BuildContext context, WidgetRef ref) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF1F5F9), width: 1.0),
+      ),
+      child: ListTile(
+        dense: true,
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: const BoxDecoration(
+            color: Color(0xFFFEF2F2),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 18),
+        ),
+        title: const Text(
+          'Logout',
+          style: TextStyle(
+            fontSize: 13.5,
+            fontWeight: FontWeight.w700,
+            color: Colors.redAccent,
+          ),
+        ),
+        subtitle: const Text(
+          'Log out of your account',
+          style: TextStyle(
+            fontSize: 11,
+            color: Color(0xFF98A2B3),
+          ),
+        ),
+        trailing: const Icon(
+          Icons.chevron_right_rounded,
+          color: Color(0xFFCBD5E1),
+          size: 18,
+        ),
+        onTap: () => showLogoutDialog(context, ref),
       ),
     );
   }
@@ -354,8 +518,6 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  /// Switch the current user to the delivery role so the router redirects into
-  /// the Delivery Panel, then navigate to it.
   void _openDeliveryPanel(BuildContext context, WidgetRef ref) {
     ref.read(userProvider.notifier).setRole('delivery');
     context.push('/delivery');

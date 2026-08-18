@@ -466,18 +466,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(5),
+              height: 40,
+              width: 40,
               decoration: BoxDecoration(
-                color: const Color(0xFFFFF7ED),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFFE5C578).withValues(alpha: 0.6),
-                  width: 1,
-                ),
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(8),
               ),
-              child: const Text(
-                '🐮',
-                style: TextStyle(fontSize: 20),
+              child: Image.asset(
+                'assets/images/sawariya_logo.png',
+                fit: BoxFit.contain,
               ),
             ),
             const SizedBox(width: 8),
