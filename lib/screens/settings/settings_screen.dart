@@ -46,7 +46,7 @@ class SettingsScreen extends ConsumerWidget {
                     onTap: null,
                     trailing: Switch(
                       value: settings.notificationsEnabled,
-                      activeThumbColor: AppColors.primary,
+                      activeColor: AppColors.primary,
                       onChanged: notifier.updateNotifications,
                     ),
                   ),
@@ -59,7 +59,7 @@ class SettingsScreen extends ConsumerWidget {
                       enabled: settings.notificationsEnabled,
                       trailing: Switch(
                          value: settings.pushNotifications,
-                         activeThumbColor: AppColors.primary,
+                         activeColor: AppColors.primary,
                         onChanged: settings.notificationsEnabled
                             ? notifier.updatePushNotifications
                             : null,
@@ -73,7 +73,7 @@ class SettingsScreen extends ConsumerWidget {
                       enabled: settings.notificationsEnabled,
                       trailing: Switch(
                          value: settings.emailNotifications,
-                         activeThumbColor: AppColors.primary,
+                         activeColor: AppColors.primary,
                         onChanged: settings.notificationsEnabled
                             ? notifier.updateEmailNotifications
                             : null,
