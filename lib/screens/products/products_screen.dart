@@ -220,7 +220,7 @@ class ProductsScreen extends StatelessWidget {
                                     scale: 0.8,
                                     child: Switch(
                                       value: product.inStock,
-                                      activeThumbColor: AppColors.revenueGreen,
+                                      activeColor: AppColors.revenueGreen,
                                       activeTrackColor: AppColors.revenueGreen.withValues(alpha: 0.3),
                                       onChanged: (val) => provider.toggleProductStock(product.id),
                                     ),
