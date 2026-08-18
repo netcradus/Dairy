@@ -17,6 +17,7 @@ import '../../features/auth/screens/reset_password_screen.dart';
 import '../../features/cart/cart_screen.dart';
 import '../../features/checkout/checkout_screen.dart';
 import '../../features/delivery_panel/delivery_panel_screen.dart';
+import '../../features/delivery_map/delivery_map_screen.dart';
 import '../../features/main_layout/main_layout_screen.dart';
 import '../../features/notifications/notifications_screen.dart';
 import '../../features/onboarding/onboarding_screen.dart';
@@ -171,6 +172,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/delivery',
         builder: (context, state) => const DeliveryPanelScreen(),
+      ),
+      GoRoute(
+        path: '/delivery-map',
+        builder: (context, state) => const DeliveryMapScreen(),
       ),
     ],
   );

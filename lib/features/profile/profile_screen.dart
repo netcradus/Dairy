@@ -417,39 +417,42 @@ class ProfileScreen extends ConsumerWidget {
     String subtitle,
     VoidCallback onTap,
   ) {
-    return ListTile(
-      dense: true,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: const BoxDecoration(
-          color: Color(0xFFEAF5EF),
-          shape: BoxShape.circle,
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        dense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: const BoxDecoration(
+            color: Color(0xFFEAF5EF),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: const Color(0xFF005F38), size: 18),
         ),
-        child: Icon(icon, color: const Color(0xFF005F38), size: 18),
-      ),
-      title: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 13.5,
-          fontWeight: FontWeight.w700,
-          color: Color(0xFF172033),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontSize: 13.5,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF172033),
+          ),
         ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w500,
-          color: Color(0xFF98A2B3),
+        subtitle: Text(
+          subtitle,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF98A2B3),
+          ),
         ),
+        trailing: const Icon(
+          Icons.chevron_right_rounded,
+          color: Color(0xFFCBD5E1),
+          size: 18,
+        ),
+        onTap: onTap,
       ),
-      trailing: const Icon(
-        Icons.chevron_right_rounded,
-        color: Color(0xFFCBD5E1),
-        size: 18,
-      ),
-      onTap: onTap,
     );
   }
 
@@ -460,16 +463,18 @@ class ProfileScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFF1F5F9), width: 1.0),
       ),
-      child: ListTile(
-        dense: true,
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: const BoxDecoration(
-            color: Color(0xFFFEF2F2),
-            shape: BoxShape.circle,
+      child: Material(
+        color: Colors.transparent,
+        child: ListTile(
+          dense: true,
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: const BoxDecoration(
+              color: Color(0xFFFEF2F2),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 18),
           ),
-          child: const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 18),
-        ),
         title: const Text(
           'Logout',
           style: TextStyle(
@@ -491,6 +496,7 @@ class ProfileScreen extends ConsumerWidget {
           size: 18,
         ),
         onTap: () => showLogoutDialog(context, ref),
+      ),
       ),
     );
   }

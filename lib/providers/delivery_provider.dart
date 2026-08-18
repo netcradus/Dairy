@@ -3,6 +3,61 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/delivery_boy_model.dart';
+import '../models/order.dart';
+import '../services/order_service.dart';
+
+/// Maps a Firestore [Order] into the delivery panel's [DeliveryOrder] view
+/// model. Active orders from the `orders` collection don't carry an assigned
+/// agent yet, so pickup defaults to the Sawariya Dairy hub.
+DeliveryOrder deliveryOrderFromOrder(Order order) {
+  const hub = 'Sawariya Dairy Hub, Vijay Nagar';
+  const hubPhone = '+91 731 400 5000';
+
+  DeliveryOrderStatus status;
+  switch (order.status) {
+    case OrderStatus.placed:
+    case OrderStatus.confirmed:
+      status = DeliveryOrderStatus.accepted;
+    case OrderStatus.preparing:
+      status = DeliveryOrderStatus.pickup;
+    case OrderStatus.outForDelivery:
+      status = DeliveryOrderStatus.outForDelivery;
+    case OrderStatus.delivered:
+      status = DeliveryOrderStatus.delivered;
+    case OrderStatus.cancelled:
+      status = DeliveryOrderStatus.cancelled;
+  }
+
+  return DeliveryOrder(
+    id: order.id,
+    orderId: order.id,
+    customerName: order.deliveryAddress.fullName,
+    customerPhone: order.deliveryAddress.mobileNumber,
+    customerAddress: order.deliveryAddress.fullAddressText,
+    pickupLocation: hub,
+    pickupPhone: hubPhone,
+    items: order.items
+        .map((ci) => '${ci.product.title} ${ci.product.unit} x${ci.quantity}')
+        .toList(),
+    amount: order.totalAmount,
+    deliveryFee: order.deliveryCharge,
+    status: status,
+    orderTime: order.orderDate,
+    distance: '—',
+    estimatedTime: order.estimatedDeliveryTime.isNotEmpty
+        ? order.estimatedDeliveryTime
+        : '—',
+  );
+}
+
+/// Live Firestore stream of active orders (delivery panel + tracking map).
+final deliveryActiveOrdersStreamProvider =
+    StreamProvider.autoDispose<List<DeliveryOrder>>((ref) {
+  return ref
+      .watch(orderServiceProvider)
+      .streamActiveOrders()
+      .map((orders) => orders.map(deliveryOrderFromOrder).toList());
+});
 
 class DeliveryNotifier extends StateNotifier<DeliveryAgent> {
   DeliveryNotifier() : super(_getMockAgent());

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/responsive/responsive_layout.dart';
 import '../../models/delivery_boy_model.dart';
+import '../../providers/delivery_live_location_provider.dart';
 import '../../providers/delivery_provider.dart';
 import 'screens/requests_tab.dart';
 import 'screens/active_delivery_tab.dart';
@@ -54,6 +56,7 @@ class _DeliveryPanelScreenState extends ConsumerState<DeliveryPanelScreen> {
     final isDesktop = ResponsiveLayout.isDesktop(context);
     final agent = ref.watch(deliveryAgentProvider);
     final isOnline = agent.status == DeliveryStatus.onDuty;
+    final sharing = ref.watch(agentLiveLocationProvider);
     final currentIndex = ref.watch(deliveryPanelTabProvider);
 
     if (isDesktop) {
@@ -64,7 +67,7 @@ class _DeliveryPanelScreenState extends ConsumerState<DeliveryPanelScreen> {
             Expanded(
               child: Column(
                 children: [
-                  _buildDesktopTopBar(isOnline, currentIndex),
+                  _buildDesktopTopBar(isOnline, currentIndex, sharing),
                   Expanded(
                     child: IndexedStack(
                       index: currentIndex,
@@ -80,7 +83,7 @@ class _DeliveryPanelScreenState extends ConsumerState<DeliveryPanelScreen> {
     }
 
     return Scaffold(
-      appBar: _buildMobileAppBar(isOnline, currentIndex),
+      appBar: _buildMobileAppBar(isOnline, currentIndex, sharing),
       body: IndexedStack(
         index: currentIndex,
         children: _pages,
@@ -232,7 +235,7 @@ class _DeliveryPanelScreenState extends ConsumerState<DeliveryPanelScreen> {
     );
   }
 
-  Widget _buildDesktopTopBar(bool isOnline, int currentIndex) {
+  Widget _buildDesktopTopBar(bool isOnline, int currentIndex, bool sharing) {
     final textPrimary = AppColors.textPrimaryOf(context);
     final cardBg = AppColors.cardBgOf(context);
     final cardBorder = AppColors.cardBorderOf(context);
@@ -255,10 +258,20 @@ class _DeliveryPanelScreenState extends ConsumerState<DeliveryPanelScreen> {
             ),
           ),
           const Spacer(),
+          IconButton(
+            tooltip: 'Live Delivery Map',
+            icon: const Icon(Icons.map_rounded),
+            onPressed: () => context.push('/delivery-map'),
+          ),
+          IconButton(
+            tooltip: sharing ? 'Stop sharing live location' : 'Share live location',
+            icon: Icon(sharing ? Icons.location_on_rounded : Icons.location_off_rounded),
+            onPressed: () => ref.read(agentLiveLocationProvider.notifier).toggle(),
+          ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-color: isOnline ? AppColors.success.withValues(alpha: 0.1) : AppColors.error.withValues(alpha: 0.1),
+ color: isOnline ? AppColors.success.withValues(alpha: 0.1) : AppColors.error.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: isOnline ? AppColors.success : AppColors.error,
@@ -292,7 +305,7 @@ color: isOnline ? AppColors.success.withValues(alpha: 0.1) : AppColors.error.wit
     );
   }
 
-  PreferredSizeWidget _buildMobileAppBar(bool isOnline, int currentIndex) {
+  PreferredSizeWidget _buildMobileAppBar(bool isOnline, int currentIndex, bool sharing) {
     final textPrimary = AppColors.textPrimaryOf(context);
     final cardBg = AppColors.cardBgOf(context);
 
@@ -308,6 +321,16 @@ color: isOnline ? AppColors.success.withValues(alpha: 0.1) : AppColors.error.wit
         ),
       ),
       actions: [
+        IconButton(
+          tooltip: 'Live Delivery Map',
+          icon: const Icon(Icons.map_rounded),
+          onPressed: () => context.push('/delivery-map'),
+        ),
+        IconButton(
+          tooltip: sharing ? 'Stop sharing live location' : 'Share live location',
+          icon: Icon(sharing ? Icons.location_on_rounded : Icons.location_off_rounded),
+          onPressed: () => ref.read(agentLiveLocationProvider.notifier).toggle(),
+        ),
         Container(
           margin: const EdgeInsets.only(right: 16),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

@@ -6,8 +6,11 @@ import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
 import '../../core/widgets/product_card.dart';
 import '../../core/widgets/empty_state.dart';
+import '../../models/category.dart';
+import '../../models/product.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/navigation_provider.dart';
+import '../../repositories/firestore_product_repository.dart';
 import '../product/product_details_screen.dart';
 
 /// Sawariya Dairy — Redesigned Shop Catalog Screen matching the mockup
@@ -23,6 +26,18 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   String _selectedCategoryId = 'cat_all';
   String _searchQuery = '';
   int _bannerIndex = 0;
+
+  /// Live streams from Cloud Firestore, subscribed once.
+  late final Stream<List<Product>> _productsStream;
+  late final Stream<List<Category>> _categoriesStream;
+
+  @override
+  void initState() {
+    super.initState();
+    final repo = ref.read(firestoreProductRepoProvider);
+    _productsStream = repo.streamProducts();
+    _categoriesStream = repo.streamCategories();
+  }
 
   @override
   void dispose() {
@@ -40,27 +55,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final allProducts = ref.watch(allProductsProvider);
     final cartQuantities = ref.watch(cartQuantitiesProvider);
-
-    // Filter products by category and search query
-    final filteredProducts = allProducts.where((product) {
-      final matchesCategory = _selectedCategoryId == 'cat_all' ||
-          product.categoryId == _selectedCategoryId;
-      final matchesSearch = _searchQuery.isEmpty ||
-          product.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          product.categoryName.toLowerCase().contains(_searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
-    }).toList();
-
-    // Defined Categories to match the 5 options in the mockup
-    final categoryOptions = [
-      {'id': 'cat_all', 'title': 'All', 'image': ''},
-      {'id': 'cat_milk', 'title': 'Milk', 'image': 'assets/images/milk.png'},
-      {'id': 'cat_makhan', 'title': 'Curd', 'image': 'assets/images/makhan.png'},
-      {'id': 'cat_paneer', 'title': 'Paneer', 'image': 'assets/images/paneer.png'},
-      {'id': 'cat_ghee', 'title': 'Ghee', 'image': 'assets/images/ghee.png'},
-    ];
 
     final isMobile = context.isMobile;
 
@@ -203,76 +198,92 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
               const SizedBox(height: 16),
 
               // ── Horizontal Categories Row ──
-              SizedBox(
-                height: 82,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: categoryOptions.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 20),
-                  itemBuilder: (context, index) {
-                    final cat = categoryOptions[index];
-                    final isSelected = cat['id'] == _selectedCategoryId;
+              StreamBuilder<List<Category>>(
+                stream: _categoriesStream,
+                builder: (context, catSnap) {
+                  final cats = <Category>[
+                    const Category(id: 'cat_all', title: 'All', imageUrl: ''),
+                    ...?catSnap.data,
+                  ];
 
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedCategoryId = cat['id'] as String;
-                        });
-                      },
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            height: 50,
-                            width: 50,
-                            decoration: BoxDecoration(
-                              color: isSelected ? const Color(0xFF005F38) : Colors.white,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isSelected ? const Color(0xFF005F38) : const Color(0xFFCBD5E1),
-                                width: 1.0,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.02),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 1),
-                                ),
-                              ],
-                            ),
-                            child: Center(
-                              child: cat['id'] == 'cat_all'
-                                  ? Text(
-                                      'All',
-                                      style: TextStyle(
-                                        color: isSelected ? Colors.white : const Color(0xFF005F38),
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13.5,
-                                      ),
-                                    )
-                                  : Padding(
-                                      padding: const EdgeInsets.all(10),
-                                      child: Image.asset(
-                                        cat['image'] as String,
-                                        fit: BoxFit.contain,
-                                      ),
+                  return SizedBox(
+                    height: 82,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: cats.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 20),
+                      itemBuilder: (context, index) {
+                        final cat = cats[index];
+                        final isSelected = cat.id == _selectedCategoryId;
+
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedCategoryId = cat.id;
+                            });
+                          },
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                height: 50,
+                                width: 50,
+                                decoration: BoxDecoration(
+                                  color: isSelected ? const Color(0xFF005F38) : Colors.white,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: isSelected ? const Color(0xFF005F38) : const Color(0xFFCBD5E1),
+                                    width: 1.0,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.02),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 1),
                                     ),
-                            ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: cat.id == 'cat_all'
+                                      ? Text(
+                                          'All',
+                                          style: TextStyle(
+                                            color: isSelected ? Colors.white : const Color(0xFF005F38),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13.5,
+                                          ),
+                                        )
+                                      : cat.imageUrl.isNotEmpty
+                                          ? Padding(
+                                              padding: const EdgeInsets.all(10),
+                                              child: Image.asset(
+                                                cat.imageUrl,
+                                                fit: BoxFit.contain,
+                                              ),
+                                            )
+                                          : Icon(
+                                              cat.iconData ?? Icons.category_rounded,
+                                              size: 22,
+                                              color: isSelected ? Colors.white : const Color(0xFF005F38),
+                                            ),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                cat.title,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                                  color: isSelected ? const Color(0xFF005F38) : const Color(0xFF667085),
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 6),
-                          Text(
-                            cat['title'] as String,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                              color: isSelected ? const Color(0xFF005F38) : const Color(0xFF667085),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                        );
+                      },
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 18),
 
@@ -309,53 +320,91 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
               const SizedBox(height: 12),
 
               // ── Products Grid ──
-              filteredProducts.isEmpty
-                  ? Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 40),
-                        child: EmptyStateWidget(
-                          icon: Icons.search_off_rounded,
-                          title: 'No products found',
-                          message: 'No products match your filter. Try adjusting or reset.',
-                          buttonText: 'Reset Filters',
-                          onButtonPressed: _resetFilters,
-                        ),
-                      ),
-                    )
-                  : GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: isMobile ? 2 : 3,
-                        crossAxisSpacing: 14,
-                        mainAxisSpacing: 14,
-                        childAspectRatio: isMobile ? 0.73 : 0.79,
-                      ),
-                      itemCount: filteredProducts.length,
-                      itemBuilder: (context, index) {
-                        final product = filteredProducts[index];
-                        final qty = cartQuantities[product.id] ?? 0;
+              StreamBuilder<List<Product>>(
+                stream: _productsStream,
+                builder: (context, prodSnap) {
+                  final allProducts = prodSnap.data ?? [];
 
-                        return ProductCard(
-                          product: product,
-                          quantity: qty,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => ProductDetailsScreen(product: product),
-                              ),
+                  // Filter products by category and search query
+                  final filteredProducts = allProducts.where((product) {
+                    final matchesCategory = _selectedCategoryId == 'cat_all' ||
+                        product.categoryId == _selectedCategoryId;
+                    final matchesSearch = _searchQuery.isEmpty ||
+                        product.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                        product.categoryName.toLowerCase().contains(_searchQuery.toLowerCase());
+                    return matchesCategory && matchesSearch;
+                  }).toList();
+
+                  if (prodSnap.connectionState == ConnectionState.waiting &&
+                      allProducts.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 48),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+
+                  if (prodSnap.hasError) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      child: EmptyStateWidget(
+                        icon: Icons.cloud_off_rounded,
+                        title: 'Could not load products',
+                        message: 'Check your connection and Firestore setup.',
+                        buttonText: 'Retry',
+                        onButtonPressed: _resetFilters,
+                      ),
+                    );
+                  }
+
+                  return filteredProducts.isEmpty
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 40),
+                            child: EmptyStateWidget(
+                              icon: Icons.search_off_rounded,
+                              title: 'No products found',
+                              message: 'No products match your filter. Try adjusting or reset.',
+                              buttonText: 'Reset Filters',
+                              onButtonPressed: _resetFilters,
+                            ),
+                          ),
+                        )
+                      : GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: isMobile ? 2 : 3,
+                            crossAxisSpacing: 14,
+                            mainAxisSpacing: 14,
+                            childAspectRatio: isMobile ? 0.73 : 0.79,
+                          ),
+                          itemCount: filteredProducts.length,
+                          itemBuilder: (context, index) {
+                            final product = filteredProducts[index];
+                            final qty = cartQuantities[product.id] ?? 0;
+
+                            return ProductCard(
+                              product: product,
+                              quantity: qty,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ProductDetailsScreen(product: product),
+                                  ),
+                                );
+                              },
+                              onIncrement: () {
+                                ref.read(cartProvider.notifier).increment(product);
+                              },
+                              onDecrement: () {
+                                ref.read(cartProvider.notifier).decrement(product.id);
+                              },
                             );
                           },
-                          onIncrement: () {
-                            ref.read(cartProvider.notifier).increment(product);
-                          },
-                          onDecrement: () {
-                            ref.read(cartProvider.notifier).decrement(product.id);
-                          },
                         );
-                      },
-                    ),
+                },
+              ),
               const SizedBox(height: 24),
 
               // ── Bottom Benefits Strip ──
@@ -428,12 +477,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
             top: 4,
             width: 100,
             child: Image.asset(
-              'assets/images/pure goodness.png',
+              'assets/images/milk.png',
               fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => Image.asset(
-                'assets/images/milk.png',
-                fit: BoxFit.contain,
-              ),
             ),
           ),
         ],

@@ -4,6 +4,7 @@ import '../models/product.dart';
 import '../models/cart_item.dart';
 import '../models/order.dart';
 import '../repositories/product_repository.dart';
+import '../services/order_service.dart';
 
 const _sampleAddress = Address(
   id: 'addr_1',
@@ -144,4 +145,10 @@ final completedOrdersProvider = Provider<List<Order>>((ref) {
 
 final cancelledOrdersProvider = Provider<List<Order>>((ref) {
   return ref.watch(ordersProvider).where((o) => o.isCancelled).toList();
+});
+
+/// Live Firestore stream of a user's orders, keyed by their user id.
+final userOrdersStreamProvider =
+    StreamProvider.autoDispose.family<List<Order>, String>((ref, userId) {
+  return ref.watch(orderServiceProvider).streamOrdersForUser(userId);
 });

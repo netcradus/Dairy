@@ -7,6 +7,7 @@ import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
 import '../../models/order.dart';
 import '../../providers/order_provider.dart';
+import '../../providers/user_provider.dart';
 import 'order_details_screen.dart';
 import 'order_tracking_screen.dart';
 
@@ -23,27 +24,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final allOrders = ref.watch(allOrdersProvider);
-
-    // Filter orders locally based on selection
-    final filteredOrders = allOrders.where((order) {
-      if (_selectedFilter == 'All') return true;
-      if (_selectedFilter == 'Processing') {
-        return order.status == OrderStatus.placed ||
-            order.status == OrderStatus.confirmed ||
-            order.status == OrderStatus.preparing;
-      }
-      if (_selectedFilter == 'Shipped') {
-        return order.status == OrderStatus.outForDelivery;
-      }
-      if (_selectedFilter == 'Delivered') {
-        return order.status == OrderStatus.delivered;
-      }
-      if (_selectedFilter == 'Cancelled') {
-        return order.status == OrderStatus.cancelled;
-      }
-      return true;
-    }).toList();
+    final userId = ref.watch(userProvider).id;
+    final ordersAsync = ref.watch(userOrdersStreamProvider(userId));
 
     final isMobile = context.isMobile;
 
@@ -73,23 +55,48 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
             ),
             const SizedBox(height: 14),
 
-            // Orders list
+            // Orders list (live from Firestore)
             Expanded(
-              child: filteredOrders.isEmpty
-                  ? _buildEmptyState(context)
-                  : ListView.builder(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: context.responsiveHorizontalPadding,
-                        vertical: 10,
-                      ),
-                      itemCount: filteredOrders.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 14),
-                          child: _OrderCard(order: filteredOrders[index]),
+              child: ordersAsync.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => _buildErrorState(context, e.toString()),
+                data: (allOrders) {
+                  final filteredOrders = allOrders.where((order) {
+                    if (_selectedFilter == 'All') return true;
+                    if (_selectedFilter == 'Processing') {
+                      return order.status == OrderStatus.placed ||
+                          order.status == OrderStatus.confirmed ||
+                          order.status == OrderStatus.preparing;
+                    }
+                    if (_selectedFilter == 'Shipped') {
+                      return order.status == OrderStatus.outForDelivery;
+                    }
+                    if (_selectedFilter == 'Delivered') {
+                      return order.status == OrderStatus.delivered;
+                    }
+                    if (_selectedFilter == 'Cancelled') {
+                      return order.status == OrderStatus.cancelled;
+                    }
+                    return true;
+                  }).toList();
+
+                  return filteredOrders.isEmpty
+                      ? _buildEmptyState(context)
+                      : ListView.builder(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: context.responsiveHorizontalPadding,
+                            vertical: 10,
+                          ),
+                          itemCount: filteredOrders.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 14),
+                              child: _OrderCard(order: filteredOrders[index]),
+                            );
+                          },
                         );
-                      },
-                    ),
+                },
+              ),
             ),
           ],
         ),
@@ -171,6 +178,51 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
               'Your orders in this category will appear here.',
               textAlign: TextAlign.center,
               style: TextStyle(
+                fontSize: 13,
+                color: Color(0xFF667085),
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(BuildContext context, String message) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 90,
+              height: 90,
+              decoration: const BoxDecoration(
+                color: Color(0xFFFEF2F2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.error_outline_rounded,
+                size: 44,
+                color: Color(0xFFDC2626),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Could not load orders',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF172033),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
                 fontSize: 13,
                 color: Color(0xFF667085),
                 height: 1.4,

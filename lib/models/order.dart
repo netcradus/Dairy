@@ -1,5 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart' hide Order;
+
 import 'address.dart';
 import 'cart_item.dart';
+import 'product.dart';
 
 enum OrderStatus {
   placed,
@@ -114,5 +117,109 @@ class Order {
       estimatedDeliveryTime:
           estimatedDeliveryTime ?? this.estimatedDeliveryTime,
     );
+  }
+
+  /// Creates an [Order] from a Firestore document map.
+  factory Order.fromFirestore(Map<String, dynamic> data, String id) {
+    final itemsData = (data['items'] as List?) ?? [];
+    final items = itemsData.map((raw) {
+      final m = raw as Map<String, dynamic>;
+      final product = Product(
+        id: (m['productId'] as String?) ?? '',
+        title: (m['title'] as String?) ?? '',
+        categoryId: (m['categoryId'] as String?) ?? '',
+        categoryName: (m['categoryName'] as String?) ?? '',
+        price: (m['price'] as num?)?.toDouble() ?? 0.0,
+        unit: (m['unit'] as String?) ?? '',
+        imageUrl: (m['imageUrl'] as String?) ?? '',
+      );
+      return CartItem(
+        product: product,
+        quantity: (m['quantity'] as num?)?.toInt() ?? 1,
+      );
+    }).toList();
+
+    final addr = data['deliveryAddress'] as Map<String, dynamic>?;
+    final deliveryAddress = addr == null
+        ? const Address(
+            id: '',
+            label: 'Home',
+            fullName: 'Customer',
+            mobileNumber: '',
+            houseFlat: '',
+            streetArea: '',
+            city: '',
+            state: '',
+            pinCode: '',
+          )
+        : Address(
+            id: (addr['id'] as String?) ?? '',
+            label: (addr['label'] as String?) ?? 'Home',
+            fullName: (addr['fullName'] as String?) ?? '',
+            mobileNumber: (addr['mobileNumber'] as String?) ?? '',
+            houseFlat: (addr['houseFlat'] as String?) ?? '',
+            streetArea: (addr['streetArea'] as String?) ?? '',
+            city: (addr['city'] as String?) ?? '',
+            state: (addr['state'] as String?) ?? '',
+            pinCode: (addr['pinCode'] as String?) ?? '',
+            isDefault: (addr['isDefault'] as bool?) ?? false,
+          );
+
+    final created = data['createdAt'];
+    final orderDate = created is Timestamp ? created.toDate() : DateTime.now();
+
+    return Order(
+      id: id,
+      items: items,
+      subtotal: (data['subtotal'] as num?)?.toDouble() ?? 0.0,
+      deliveryCharge: (data['deliveryCharge'] as num?)?.toDouble() ?? 0.0,
+      discount: (data['discount'] as num?)?.toDouble() ?? 0.0,
+      totalAmount: (data['totalAmount'] as num?)?.toDouble() ?? 0.0,
+      status: orderStatusFromString((data['status'] as String?) ?? 'Pending'),
+      orderDate: orderDate,
+      deliveryAddress: deliveryAddress,
+      paymentMethod: (data['paymentMethod'] as String?) ?? 'Cash on Delivery',
+      estimatedDeliveryTime: (data['estimatedDeliveryTime'] as String?) ?? '',
+    );
+  }
+}
+
+/// Maps a stored status string to an [OrderStatus].
+OrderStatus orderStatusFromString(String status) {
+  switch (status.toLowerCase()) {
+    case 'pending':
+    case 'placed':
+      return OrderStatus.placed;
+    case 'confirmed':
+      return OrderStatus.confirmed;
+    case 'preparing':
+      return OrderStatus.preparing;
+    case 'out for delivery':
+    case 'outfordelivery':
+      return OrderStatus.outForDelivery;
+    case 'delivered':
+      return OrderStatus.delivered;
+    case 'cancelled':
+      return OrderStatus.cancelled;
+    default:
+      return OrderStatus.placed;
+  }
+}
+
+/// Maps an [OrderStatus] to the string stored in Firestore.
+String orderStatusToString(OrderStatus status) {
+  switch (status) {
+    case OrderStatus.placed:
+      return 'Pending';
+    case OrderStatus.confirmed:
+      return 'confirmed';
+    case OrderStatus.preparing:
+      return 'preparing';
+    case OrderStatus.outForDelivery:
+      return 'outForDelivery';
+    case OrderStatus.delivered:
+      return 'delivered';
+    case OrderStatus.cancelled:
+      return 'cancelled';
   }
 }
