@@ -45,6 +45,14 @@ jobs:
       - name: Analyze project
         run: flutter analyze
 
+      - name: Patch Flutter 3.32.8 Gradle Plugin fileMode incompatibility
+        run: |
+          FLUTTER_PLUGIN_KT="$FLUTTER_ROOT/packages/flutter_tools/gradle/src/main/kotlin/FlutterPlugin.kt"
+          if [ -f "$FLUTTER_PLUGIN_KT" ]; then
+            echo "Patching FlutterPlugin.kt..."
+            sed -i 's/\.fileMode(/\/* .fileMode( *\//g' "$FLUTTER_PLUGIN_KT" || true
+          fi
+
       - name: Build release APK
         run: flutter build apk --release
 
