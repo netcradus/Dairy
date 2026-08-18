@@ -378,7 +378,7 @@ class ProfileTab extends ConsumerWidget {
                   onChanged: (_) => ref.read(deliveryAgentProvider.notifier).toggleDuty(),
                   activeColor: AppColors.success,
                   activeTrackColor: AppColors.success.withValues(alpha: 0.3),
-                  inactiveColor: AppColors.error,
+                  inactiveTrackColor: AppColors.error,
                   inactiveTrackColor: AppColors.error.withValues(alpha: 0.3),
                 ),
               ),
