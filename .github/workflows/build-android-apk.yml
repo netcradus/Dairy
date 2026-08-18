@@ -45,12 +45,11 @@ jobs:
       - name: Analyze project
         run: flutter analyze
 
-      - name: Patch Flutter 3.32.8 Gradle Plugin fileMode incompatibility
+     - name: Patch Flutter 3.32.8 internal fileMode error
         run: |
-          FLUTTER_PLUGIN_KT="$FLUTTER_ROOT/packages/flutter_tools/gradle/src/main/kotlin/FlutterPlugin.kt"
-          if [ -f "$FLUTTER_PLUGIN_KT" ]; then
-            echo "Patching FlutterPlugin.kt..."
-            sed -i 's/\.fileMode(/\/* .fileMode( *\//g' "$FLUTTER_PLUGIN_KT" || true
+          PLUGIN_FILE="$FLUTTER_ROOT/packages/flutter_tools/gradle/src/main/kotlin/FlutterPlugin.kt"
+          if [ -f "$PLUGIN_FILE" ]; then
+            sed -i 's/\.fileMode(/\/\* .fileMode( *\//g' "$PLUGIN_FILE" || true
           fi
 
       - name: Build release APK
