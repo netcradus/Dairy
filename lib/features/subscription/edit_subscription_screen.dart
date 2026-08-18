@@ -199,7 +199,7 @@ class _EditSubscriptionScreenState extends ConsumerState<EditSubscriptionScreen>
                     value: _includeIcePack,
                     onChanged: (v) => setState(() => _includeIcePack = v),
                     contentPadding: EdgeInsets.zero,
-                    activeThumbColor: AppColors.primaryBlue,
+                    activeColor: AppColors.primaryBlue,
                     title: const Text(
                       'Include ice pack for freshness',
                       style: TextStyle(
