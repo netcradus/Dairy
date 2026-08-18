@@ -25,7 +25,7 @@ void main() {
       originalOnError?.call(details);
     };
 
-    final loggedIn = User(
+    const loggedIn = User(
       id: 'u1',
       name: 'Test',
       phone: '9999999999',

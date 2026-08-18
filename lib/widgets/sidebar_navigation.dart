@@ -68,7 +68,7 @@ class SidebarNavigation extends StatelessWidget {
                   child: Image.asset(
                     'assets/images/sawariya_logo.png',
                     fit: BoxFit.contain,
-                    errorBuilder: (ctx, err, stack) => Center(
+                    errorBuilder: (ctx, err, stack) => const Center(
                       child: CategoryImage(
                         imageUrl: AppAssets.milkPlaceholder,
                         size: 28,
@@ -200,7 +200,7 @@ class SidebarNavigation extends StatelessWidget {
                   scale: 0.75,
                   child: Switch(
                     value: provider.isDarkMode,
-                    activeColor: AppColors.primary,
+                    activeThumbColor: AppColors.primary,
                     activeTrackColor: AppColors.primary.withValues(alpha: 0.4),
                     onChanged: (val) => provider.toggleTheme(),
                   ),

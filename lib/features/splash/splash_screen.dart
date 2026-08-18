@@ -146,7 +146,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                             ),
                           ],
                         ),
-                        child: Center(
+                        child: const Center(
                           child: CategoryImage(
                             imageUrl: AppAssets.heroBannerPlaceholder,
                             size: 104,

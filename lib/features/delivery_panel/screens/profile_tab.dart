@@ -158,7 +158,7 @@ class ProfileTab extends ConsumerWidget {
               null,
               trailing: Switch(
                 value: settings.notificationsEnabled,
-                activeColor: AppColors.primary,
+                activeThumbColor: AppColors.primary,
                 onChanged: settingsNotifier.updateNotifications,
               ),
             ),
@@ -376,7 +376,7 @@ class ProfileTab extends ConsumerWidget {
                 child: Switch(
                   value: isOnline,
                   onChanged: (_) => ref.read(deliveryAgentProvider.notifier).toggleDuty(),
-                  activeColor: AppColors.success,
+                  activeThumbColor: AppColors.success,
                   activeTrackColor: AppColors.success.withValues(alpha: 0.3),
                   inactiveThumbColor: AppColors.error,
                   inactiveTrackColor: AppColors.error.withValues(alpha: 0.3),

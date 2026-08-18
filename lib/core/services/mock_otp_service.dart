@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
+
 /// A clearly separated Mock OTP Service for testing.
 /// This is designed so it can be easily replaced by Firebase Auth or a custom OTP API.
 class MockOtpService {
@@ -30,10 +32,10 @@ class MockOtpService {
     _otpCache[mobileNumber] = otp;
 
     // Log to console so the tester/developer can see it
-    print('--------- MOCK OTP SERVICE ---------');
-    print('Mobile Number: $mobileNumber');
-    print('Generated OTP: $otp');
-    print('------------------------------------');
+    debugPrint('--------- MOCK OTP SERVICE ---------');
+    debugPrint('Mobile Number: $mobileNumber');
+    debugPrint('Generated OTP: $otp');
+    debugPrint('------------------------------------');
 
     // Broadcast the OTP so UI can optionally show a toast/overlay for debugging ease
     _otpStreamController.add(MockOtpNotification(

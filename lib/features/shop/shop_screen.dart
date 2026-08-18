@@ -194,7 +194,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                         horizontal: 10,
                         vertical: 5,
                       ),
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: AppColors.lightBlue,
                         borderRadius: AppSizes.borderMedium,
                       ),
@@ -219,7 +219,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
             child: filteredProducts.isEmpty
                 ? Center(
                     child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: AppSizes.p40),
+                      padding: const EdgeInsets.symmetric(vertical: AppSizes.p40),
                       child: EmptyStateWidget(
                         icon: Icons.search_off_rounded,
                         title: 'No products found',

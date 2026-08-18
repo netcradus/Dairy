@@ -300,7 +300,7 @@ class _CustomerSupportScreenState extends State<CustomerSupportScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primaryBlue,
                               foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
+                              shape: const RoundedRectangleBorder(
                                 borderRadius: AppSizes.borderMedium,
                               ),
                               elevation: 0,
@@ -415,22 +415,22 @@ class _CustomerSupportScreenState extends State<CustomerSupportScreen> {
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 14),
+      hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 14),
       filled: true,
       fillColor: AppColors.inputBackground,
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppSizes.p14,
         vertical: AppSizes.p12,
       ),
-      border: OutlineInputBorder(
+      border: const OutlineInputBorder(
         borderRadius: AppSizes.borderMedium,
         borderSide: BorderSide.none,
       ),
-      enabledBorder: OutlineInputBorder(
+      enabledBorder: const OutlineInputBorder(
         borderRadius: AppSizes.borderMedium,
         borderSide: BorderSide.none,
       ),
-      focusedBorder: OutlineInputBorder(
+      focusedBorder: const OutlineInputBorder(
         borderRadius: AppSizes.borderMedium,
         borderSide: BorderSide(color: AppColors.primaryBlue, width: 1.5),
       ),

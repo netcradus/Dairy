@@ -222,7 +222,7 @@ class AppHeader extends StatelessWidget {
               child: Image.asset(
                 'assets/images/sawariya_logo.png',
                 fit: BoxFit.contain,
-                errorBuilder: (ctx, err, stack) => CategoryImage(
+                errorBuilder: (ctx, err, stack) => const CategoryImage(
                   imageUrl: AppAssets.milkPlaceholder,
                   size: 20,
                   radius: 5,

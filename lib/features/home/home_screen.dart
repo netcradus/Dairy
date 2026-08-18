@@ -418,13 +418,13 @@ class _HeroPromotionalBanner extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         // ── Left: Text + Feature Grid ──
-                        Expanded(
+                        const Expanded(
                           flex: 55,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Text(
+                              Text(
                                 'Pure Goodness,\nDelivered to Your Doorstep',
                                 style: TextStyle(
                                   fontSize: 22,
@@ -434,8 +434,8 @@ class _HeroPromotionalBanner extends StatelessWidget {
                                   letterSpacing: -0.5,
                                 ),
                               ),
-                              const SizedBox(height: 6),
-                              const Text(
+                              SizedBox(height: 6),
+                              Text(
                                 'Farm fresh milk & dairy products,\nhygienically packed for your family.',
                                 style: TextStyle(
                                   fontSize: 11.5,
@@ -444,7 +444,7 @@ class _HeroPromotionalBanner extends StatelessWidget {
                                   height: 1.4,
                                 ),
                               ),
-                              const SizedBox(height: 14),
+                              SizedBox(height: 14),
 
                               // 2×2 Feature Icon Grid
                               Row(
@@ -452,7 +452,7 @@ class _HeroPromotionalBanner extends StatelessWidget {
                                   // Column 1
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: const [
+                                    children: [
                                       _HeroFeatureIcon(
                                         icon: Icons.eco_rounded,
                                         label: '100%\nPure',
@@ -464,11 +464,11 @@ class _HeroPromotionalBanner extends StatelessWidget {
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(width: 14),
+                                  SizedBox(width: 14),
                                   // Column 2
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: const [
+                                    children: [
                                       _HeroFeatureIcon(
                                         icon: Icons.water_drop_rounded,
                                         label: 'No Added\nPreservatives',
@@ -779,12 +779,12 @@ class _FreshnessBanner extends StatelessWidget {
       child: Row(
         children: [
           // Left Content
-          Expanded(
+          const Expanded(
             flex: 6,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
+              children: [
                 Text(
                   'Freshness You Can Trust',
                   style: TextStyle(

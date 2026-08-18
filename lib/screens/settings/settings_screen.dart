@@ -46,7 +46,7 @@ class SettingsScreen extends ConsumerWidget {
                     onTap: null,
                     trailing: Switch(
                       value: settings.notificationsEnabled,
-                      activeColor: AppColors.primary,
+                      activeThumbColor: AppColors.primary,
                       onChanged: notifier.updateNotifications,
                     ),
                   ),
@@ -59,7 +59,7 @@ class SettingsScreen extends ConsumerWidget {
                       enabled: settings.notificationsEnabled,
                       trailing: Switch(
                          value: settings.pushNotifications,
-                         activeColor: AppColors.primary,
+                         activeThumbColor: AppColors.primary,
                         onChanged: settings.notificationsEnabled
                             ? notifier.updatePushNotifications
                             : null,
@@ -73,7 +73,7 @@ class SettingsScreen extends ConsumerWidget {
                       enabled: settings.notificationsEnabled,
                       trailing: Switch(
                          value: settings.emailNotifications,
-                         activeColor: AppColors.primary,
+                         activeThumbColor: AppColors.primary,
                         onChanged: settings.notificationsEnabled
                             ? notifier.updateEmailNotifications
                             : null,
@@ -302,7 +302,7 @@ class _Divider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Divider(
+    return const Divider(
       height: 1,
       thickness: 1,
       indent: 14,

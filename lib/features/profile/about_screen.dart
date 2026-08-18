@@ -40,7 +40,7 @@ class _Value {
   const _Value(this.title, this.description, this.image);
 }
 
-final List<_Stage> _stages = const [
+const List<_Stage> _stages = [
   _Stage('01', 'FARM', 'Careful dairy farming and responsible animal care.',
       AppAssets.heroBannerPlaceholder),
   _Stage('02', 'FRESH MILK', 'Fresh milk collected with care.',
@@ -55,7 +55,7 @@ final List<_Stage> _stages = const [
       AppAssets.gheePlaceholder),
 ];
 
-final List<_Product> _products = const [
+const List<_Product> _products = [
   _Product('Milk', 'Farm-fresh pure cow milk.', AppAssets.milkPlaceholder),
   _Product('Lassi', 'Creamy traditional sweet lassi.', AppAssets.curdPlaceholder),
   _Product('Makhan', 'Soft white homemade butter.', AppAssets.a2BannerPlaceholder),
@@ -63,7 +63,7 @@ final List<_Product> _products = const [
   _Product('Ghee', 'Pure traditional bilona ghee.', AppAssets.gheePlaceholder),
 ];
 
-final List<_Value> _values = const [
+const List<_Value> _values = [
   _Value('PURITY', 'Care in every drop.', AppAssets.milkPlaceholder),
   _Value('QUALITY', 'Quality at every stage.', AppAssets.a2BannerPlaceholder),
   _Value('FRESHNESS', 'Freshness for everyday life.', AppAssets.curdPlaceholder),
@@ -170,7 +170,7 @@ class _FarmToHomeTimelineState extends State<_FarmToHomeTimeline>
     );
     _slides = List.generate(
       _n,
-      (i) => Tween<Offset>(begin: Offset(0, 0.25), end: Offset.zero).animate(
+      (i) => Tween<Offset>(begin: const Offset(0, 0.25), end: Offset.zero).animate(
         CurvedAnimation(
           parent: _ctrl,
           curve: Interval(i / _n, (i + 0.7) / _n, curve: Curves.easeOutCubic),
@@ -903,7 +903,7 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
                           decoration: BoxDecoration(
                             borderRadius: AppSizes.borderXLarge,
                             boxShadow: AppColors.cardShadowMd,
-                            image: DecorationImage(
+                            image: const DecorationImage(
                               image: NetworkImage(AppAssets.a2BannerPlaceholder),
                               fit: BoxFit.cover,
                             ),
@@ -919,10 +919,10 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
                               ),
                             ),
                             padding: const EdgeInsets.all(AppSizes.p40),
-                            child: Column(
+                            child: const Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Our Vision',
                                   style: TextStyle(
                                     fontSize: 28,
@@ -930,8 +930,8 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
                                     color: Colors.white,
                                   ),
                                 ),
-                                const SizedBox(height: AppSizes.p16),
-                                const Text(
+                                SizedBox(height: AppSizes.p16),
+                                Text(
                                   'To build a trusted dairy brand that makes '
                                   'fresh, quality dairy products accessible and '
                                   'convenient for everyday families while keeping '

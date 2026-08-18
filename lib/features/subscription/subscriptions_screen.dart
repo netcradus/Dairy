@@ -246,7 +246,7 @@ class _SubscriptionCard extends ConsumerWidget {
                           color: AppColors.lightBlue,
                           borderRadius: AppSizes.borderSmall,
                         ),
-                        child: Center(
+                        child: const Center(
                           child: CategoryImage(
                             imageUrl: AppAssets.milkPlaceholder,
                             size: 32,

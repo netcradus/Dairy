@@ -65,7 +65,7 @@ class SettingsTile extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12.5,
                         color: AppColors.textSecondary,
                       ),

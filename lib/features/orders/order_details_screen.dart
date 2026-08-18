@@ -214,7 +214,7 @@ class OrderDetailsScreen extends ConsumerWidget {
                         color: AppColors.lightBlue,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Center(
+                      child: const Center(
                         child: CategoryImage(
                           imageUrl: AppAssets.milkPlaceholder,
                           size: 36,
