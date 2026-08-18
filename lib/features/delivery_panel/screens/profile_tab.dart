@@ -22,11 +22,6 @@ class ProfileTab extends ConsumerWidget {
     final settings = ref.watch(settingsProvider);
     final settingsNotifier = ref.read(settingsProvider.notifier);
 
-    final textPrimary = AppColors.textPrimaryOf(context);
-    final textSecondary = AppColors.textSecondaryOf(context);
-    final textMuted = AppColors.textMutedOf(context);
-    final cardBg = AppColors.cardBgOf(context);
-    final cardBorder = AppColors.cardBorderOf(context);
 
     return ListView(
       padding: EdgeInsets.all(isDesktop ? 24 : 16),
@@ -163,7 +158,7 @@ class ProfileTab extends ConsumerWidget {
               null,
               trailing: Switch(
                 value: settings.notificationsEnabled,
-                activeColor: AppColors.primary,
+                activeThumbColor: AppColors.primary,
                 onChanged: settingsNotifier.updateNotifications,
               ),
             ),
@@ -218,7 +213,6 @@ class ProfileTab extends ConsumerWidget {
   Widget _buildDeliveryTools(BuildContext context, WidgetRef ref) {
     final textPrimary = AppColors.textPrimaryOf(context);
     final cardBg = AppColors.cardBgOf(context);
-    final cardBorder = AppColors.cardBorderOf(context);
 
     return Container(
       decoration: BoxDecoration(
@@ -382,7 +376,7 @@ class ProfileTab extends ConsumerWidget {
                 child: Switch(
                   value: isOnline,
                   onChanged: (_) => ref.read(deliveryAgentProvider.notifier).toggleDuty(),
-                  activeColor: AppColors.success,
+                  activeThumbColor: AppColors.success,
                   activeTrackColor: AppColors.success.withValues(alpha: 0.3),
                   inactiveThumbColor: AppColors.error,
                   inactiveTrackColor: AppColors.error.withValues(alpha: 0.3),
@@ -465,8 +459,6 @@ class ProfileTab extends ConsumerWidget {
     IconData icon,
   ) {
     final textPrimary = AppColors.textPrimaryOf(context);
-    final textSecondary = AppColors.textSecondaryOf(context);
-    final cardBorder = AppColors.cardBorderOf(context);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -593,7 +585,6 @@ class ProfileTab extends ConsumerWidget {
     switch (code) {
       case 'hi':
         return 'हिंदी (Hindi)';
-      case 'en':
       default:
         return 'English';
     }
@@ -606,7 +597,6 @@ class ProfileTab extends ConsumerWidget {
       case ThemeMode.dark:
         return 'Dark';
       case ThemeMode.system:
-      default:
         return 'System Default';
     }
   }

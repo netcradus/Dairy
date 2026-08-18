@@ -200,7 +200,7 @@ class SidebarNavigation extends StatelessWidget {
                   scale: 0.75,
                   child: Switch(
                     value: provider.isDarkMode,
-                    activeColor: AppColors.primary,
+                    activeThumbColor: AppColors.primary,
                     activeTrackColor: AppColors.primary.withValues(alpha: 0.4),
                     onChanged: (val) => provider.toggleTheme(),
                   ),

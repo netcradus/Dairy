@@ -4,9 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_sizes.dart';
 import '../../../core/responsive/responsive_layout.dart';
-import '../../../core/widgets/loading_widget.dart';
 import '../../../models/delivery_boy_model.dart';
 import '../../../providers/delivery_provider.dart';
 
@@ -34,9 +32,6 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
     final isOnline = agent.status == DeliveryStatus.onDuty;
 
     final textPrimary = AppColors.textPrimaryOf(context);
-    final textSecondary = AppColors.textSecondaryOf(context);
-    final cardBg = AppColors.cardBgOf(context);
-    final cardBorder = AppColors.cardBorderOf(context);
 
     if (!isOnline) {
       return _buildOfflineView(context);
@@ -290,7 +285,6 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
     required String address,
     required Color color,
   }) {
-    final textPrimary = AppColors.textPrimaryOf(context);
     final textMuted = AppColors.textMutedOf(context);
 
     return Column(
@@ -343,7 +337,6 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
   }
 
   Widget _buildActionButtons(DeliveryOrder order) {
-    final textPrimary = AppColors.textPrimaryOf(context);
 
     switch (order.status) {
       case DeliveryOrderStatus.accepted:
@@ -494,7 +487,6 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
     final textSecondary = AppColors.textSecondaryOf(context);
     final textMuted = AppColors.textMutedOf(context);
     final cardBg = AppColors.cardBgOf(context);
-    final cardBorder = AppColors.cardBorderOf(context);
 
     return Scaffold(
       appBar: AppBar(

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../constants/app_assets.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
 import '../../models/product.dart';
-import 'category_image.dart';
 import 'price_text.dart';
 import 'quantity_selector.dart';
 

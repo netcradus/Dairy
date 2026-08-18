@@ -75,13 +75,9 @@ final List<_Value> _values = const [
 class _Reveal extends StatefulWidget {
   final Widget child;
   final ScrollController controller;
-  final Duration duration;
-  final double offset;
   const _Reveal({
     required this.child,
     required this.controller,
-    this.duration = const Duration(milliseconds: 700),
-    this.offset = 0.15,
   });
 
   @override
@@ -97,11 +93,14 @@ class _RevealState extends State<_Reveal> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: widget.duration);
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
     _opacity = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _ctrl, curve: Curves.easeOut),
     );
-    _slide = Tween<Offset>(begin: Offset(0, widget.offset), end: Offset.zero).animate(
+    _slide = Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero).animate(
       CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic),
     );
     widget.controller.addListener(_check);

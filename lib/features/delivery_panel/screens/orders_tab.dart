@@ -20,10 +20,6 @@ class OrdersTab extends ConsumerWidget {
         .toList();
 
     final textPrimary = AppColors.textPrimaryOf(context);
-    final textSecondary = AppColors.textSecondaryOf(context);
-    final textMuted = AppColors.textMutedOf(context);
-    final cardBg = AppColors.cardBgOf(context);
-    final cardBorder = AppColors.cardBorderOf(context);
 
     // Combine history and completed orders for display
     final allOrders = [

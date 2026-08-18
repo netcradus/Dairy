@@ -16,13 +16,8 @@ class EarningsTab extends ConsumerWidget {
     final isDesktop = ResponsiveLayout.isDesktop(context);
     final earnings = ref.watch(deliveryEarningsProvider);
     final notifier = ref.watch(deliveryEarningsProvider.notifier);
-    final agent = ref.watch(deliveryAgentProvider);
 
     final textPrimary = AppColors.textPrimaryOf(context);
-    final textSecondary = AppColors.textSecondaryOf(context);
-    final textMuted = AppColors.textMutedOf(context);
-    final cardBg = AppColors.cardBgOf(context);
-    final cardBorder = AppColors.cardBorderOf(context);
 
     final todayEarnings = notifier.todayTotal;
     final todayDeliveries = notifier.todayDeliveries;
@@ -198,9 +193,6 @@ class EarningsTab extends ConsumerWidget {
     required double bonuses,
     required double total,
   }) {
-    final textPrimary = AppColors.textPrimaryOf(context);
-    final textSecondary = AppColors.textSecondaryOf(context);
-    final textMuted = AppColors.textMutedOf(context);
     final cardBg = AppColors.cardBgOf(context);
     final cardBorder = AppColors.cardBorderOf(context);
 

@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/delivery_boy_model.dart';
@@ -163,7 +162,6 @@ final deliveryOrdersProvider = StateNotifierProvider<DeliveryOrdersNotifier, Lis
 
 class DeliveryRequestsNotifier extends StateNotifier<List<DeliveryRequest>> {
   Timer? _timer;
-  final int _countdown = 30;
 
   DeliveryRequestsNotifier() : super(_getMockRequests()) {
     _startTimer();

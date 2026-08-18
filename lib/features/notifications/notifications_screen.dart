@@ -96,7 +96,7 @@ class NotificationsScreen extends ConsumerWidget {
                 vertical: AppSizes.p16,
               ),
               itemCount: notifications.length,
-              separatorBuilder: (_, _) => const SizedBox(height: AppSizes.p12),
+              separatorBuilder: (_, __) => const SizedBox(height: AppSizes.p12),
               itemBuilder: (context, index) {
                 final item = notifications[index];
                 return _NotificationTile(

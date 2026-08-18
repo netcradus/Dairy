@@ -134,7 +134,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: allCategoryOptions.length,
-                    separatorBuilder: (_, _) =>
+                    separatorBuilder: (_, __) =>
                         const SizedBox(width: AppSizes.p8),
                     itemBuilder: (context, index) {
                       final cat = allCategoryOptions[index];

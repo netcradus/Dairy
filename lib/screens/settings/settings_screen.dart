@@ -46,7 +46,7 @@ class SettingsScreen extends ConsumerWidget {
                     onTap: null,
                     trailing: Switch(
                       value: settings.notificationsEnabled,
-                      activeColor: AppColors.primary,
+                      activeThumbColor: AppColors.primary,
                       onChanged: notifier.updateNotifications,
                     ),
                   ),
@@ -58,8 +58,8 @@ class SettingsScreen extends ConsumerWidget {
                       subtitle: 'Order & delivery alerts on this device',
                       enabled: settings.notificationsEnabled,
                       trailing: Switch(
-                        value: settings.pushNotifications,
-                        activeColor: AppColors.primary,
+                         value: settings.pushNotifications,
+                         activeThumbColor: AppColors.primary,
                         onChanged: settings.notificationsEnabled
                             ? notifier.updatePushNotifications
                             : null,
@@ -72,8 +72,8 @@ class SettingsScreen extends ConsumerWidget {
                       subtitle: 'Summary & promotional emails',
                       enabled: settings.notificationsEnabled,
                       trailing: Switch(
-                        value: settings.emailNotifications,
-                        activeColor: AppColors.primary,
+                         value: settings.emailNotifications,
+                         activeThumbColor: AppColors.primary,
                         onChanged: settings.notificationsEnabled
                             ? notifier.updateEmailNotifications
                             : null,
@@ -171,7 +171,6 @@ class SettingsScreen extends ConsumerWidget {
     switch (code) {
       case 'hi':
         return 'हिंदी (Hindi)';
-      case 'en':
       default:
         return 'English';
     }
@@ -184,7 +183,6 @@ class SettingsScreen extends ConsumerWidget {
       case ThemeMode.dark:
         return 'Dark';
       case ThemeMode.system:
-      default:
         return 'System Default';
     }
   }
