@@ -233,13 +233,31 @@ class _ProductCardState extends State<ProductCard> {
                           ),
                         ),
                         const SizedBox(width: 6),
-                        QuantitySelector(
-                          quantity: widget.quantity,
-                          onIncrement: widget.onIncrement ?? () {},
-                          onDecrement: widget.onDecrement ?? () {},
-                          height: 34,
-                          width: 88,
-                        ),
+                        if (widget.quantity == 0)
+                          GestureDetector(
+                            onTap: widget.onIncrement,
+                            child: Container(
+                              height: 30,
+                              width: 30,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF005F38),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.add_rounded,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                            ),
+                          )
+                        else
+                          QuantitySelector(
+                            quantity: widget.quantity,
+                            onIncrement: widget.onIncrement ?? () {},
+                            onDecrement: widget.onDecrement ?? () {},
+                            height: 30,
+                            width: 80,
+                          ),
                       ],
                     ),
                   ],

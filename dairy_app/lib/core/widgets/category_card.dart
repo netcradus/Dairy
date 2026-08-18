@@ -37,19 +37,23 @@ class _CategoryCardState extends State<CategoryCard> {
         width: widget.width,
         height: widget.height,
         decoration: BoxDecoration(
-          color: cat.backgroundColor,
+          gradient: const LinearGradient(
+            colors: [Colors.white, Color(0xFFEAF5EF)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: _isHovered ? AppColors.primaryBlue.withValues(alpha: 0.5) : AppColors.border.withValues(alpha: 0.6),
-            width: _isHovered ? 1.5 : 1.0,
+            color: _isHovered ? const Color(0xFF005F38) : const Color(0xFFB1D5C0),
+            width: _isHovered ? 1.5 : 1.2,
           ),
           boxShadow: [
             BoxShadow(
               color: _isHovered
-                  ? AppColors.primaryBlue.withValues(alpha: 0.12)
-                  : Colors.black.withValues(alpha: 0.03),
-              blurRadius: _isHovered ? 14 : 6,
-              offset: const Offset(0, 4),
+                  ? const Color(0xFF005F38).withValues(alpha: 0.08)
+                  : Colors.black.withValues(alpha: 0.02),
+              blurRadius: _isHovered ? 12 : 6,
+              offset: const Offset(0, 3),
             ),
           ],
         ),

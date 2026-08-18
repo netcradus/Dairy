@@ -4,13 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
-import '../../core/responsive/responsive_layout.dart';
 import '../../core/widgets/product_card.dart';
 import '../../core/widgets/empty_state.dart';
 import '../../providers/product_provider.dart';
+import '../../providers/navigation_provider.dart';
 import '../product/product_details_screen.dart';
 
-/// Sawariya Dairy — Shop Catalog Screen
+/// Sawariya Dairy — Redesigned Shop Catalog Screen matching the mockup
 class ShopScreen extends ConsumerStatefulWidget {
   const ShopScreen({super.key});
 
@@ -22,6 +22,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _selectedCategoryId = 'cat_all';
   String _searchQuery = '';
+  int _bannerIndex = 0;
 
   @override
   void dispose() {
@@ -40,7 +41,6 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   @override
   Widget build(BuildContext context) {
     final allProducts = ref.watch(allProductsProvider);
-    final categories = ref.watch(categoriesProvider);
     final cartQuantities = ref.watch(cartQuantitiesProvider);
 
     // Filter products by category and search query
@@ -53,224 +53,283 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       return matchesCategory && matchesSearch;
     }).toList();
 
-    final allCategoryOptions = [
-      {'id': 'cat_all', 'title': 'All Items'},
-      ...categories.map((c) => {'id': c.id, 'title': c.title}),
+    // Defined Categories to match the 5 options in the mockup
+    final categoryOptions = [
+      {'id': 'cat_all', 'title': 'All', 'image': ''},
+      {'id': 'cat_milk', 'title': 'Milk', 'image': 'assets/images/milk.png'},
+      {'id': 'cat_makhan', 'title': 'Curd', 'image': 'assets/images/makhan.png'},
+      {'id': 'cat_paneer', 'title': 'Paneer', 'image': 'assets/images/paneer.png'},
+      {'id': 'cat_ghee', 'title': 'Ghee', 'image': 'assets/images/ghee.png'},
     ];
 
     final isMobile = context.isMobile;
-    final selectedTitle = _selectedCategoryId == 'cat_all'
-        ? 'All Fresh Dairy Products'
-        : categories
-            .firstWhere(
-              (c) => c.id == _selectedCategoryId,
-              orElse: () => categories.first,
-            )
-            .title;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Column(
-        children: [
-          // ── Fixed header (search + filters + count) — does not scroll ──
-          ResponsiveContainer(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: AppSizes.p20),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 12),
 
-                // Search Bar Header
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSizes.p16,
-                    vertical: AppSizes.p6,
+              // ── Shop Title Row with Cart Icon (on Mobile/Tablet) ──
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Shop',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF005F38),
+                    ),
                   ),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: AppSizes.borderLarge,
-                    border: Border.all(color: AppColors.border, width: 1.0),
-                    boxShadow: AppColors.cardShadowSm,
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.search_rounded,
-                          color: AppColors.primaryBlue, size: 22),
-                      const SizedBox(width: AppSizes.p12),
-                      Expanded(
-                        child: TextField(
-                          controller: _searchController,
-                          onChanged: (val) =>
-                              setState(() => _searchQuery = val),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          decoration: const InputDecoration(
-                            hintText:
-                                'Search fresh milk, ghee, paneer, curd, sweets...',
-                            border: InputBorder.none,
-                            isDense: true,
-                          ),
-                        ),
-                      ),
-                      if (_searchQuery.isNotEmpty)
+                  if (isMobile)
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
                         IconButton(
-                          icon: const Icon(Icons.clear_rounded, size: 20),
-                          color: AppColors.textSecondary,
+                          icon: const Icon(
+                            Icons.shopping_cart_outlined,
+                            color: Color(0xFF172033),
+                            size: 24,
+                          ),
                           onPressed: () {
-                            _searchController.clear();
-                            setState(() => _searchQuery = '');
+                            ref.read(navigationProvider.notifier).setIndex(1); // Nav to Shop / Cart
                           },
                         ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSizes.p16),
-
-                // Category Filter Pills/Tabs
-                SizedBox(
-                  height: 40,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: allCategoryOptions.length,
-                    separatorBuilder: (_, _) =>
-                        const SizedBox(width: AppSizes.p8),
-                    itemBuilder: (context, index) {
-                      final cat = allCategoryOptions[index];
-                      final isSelected = cat['id'] == _selectedCategoryId;
-
-                      return FilterChip(
-                        selected: isSelected,
-                        showCheckmark: false,
-                        label: Text(cat['title'] as String),
-                        selectedColor: AppColors.primaryBlue,
-                        backgroundColor: AppColors.surface,
-                        labelStyle: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: isSelected
-                              ? AppColors.textOnPrimary
-                              : AppColors.textPrimary,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: AppSizes.borderMedium,
-                          side: BorderSide(
-                            color: isSelected
-                                ? AppColors.primaryBlue
-                                : AppColors.border,
-                          ),
-                        ),
-                        onSelected: (selected) {
-                          setState(() {
-                            _selectedCategoryId = cat['id'] as String;
-                          });
-                        },
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: AppSizes.p20),
-
-                // Header & Count
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        selectedTitle,
-                        style: const TextStyle(
-                          fontSize: 19,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.textPrimary,
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: AppSizes.p12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.lightBlue,
-                        borderRadius: AppSizes.borderMedium,
-                      ),
-                      child: Text(
-                        '${filteredProducts.length} items',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.primaryBlue,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSizes.p16),
-              ],
-            ),
-          ),
-
-          // ── Product grid — bounded by Expanded, scrolls on its own ──
-          Expanded(
-            child: filteredProducts.isEmpty
-                ? Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: AppSizes.p40),
-                      child: EmptyStateWidget(
-                        icon: Icons.search_off_rounded,
-                        title: 'No products found',
-                        message:
-                            'No products match your search or filter. Try adjusting or reset to see everything.',
-                        buttonText: 'Reset Filters',
-                        onButtonPressed: _resetFilters,
-                      ),
-                    ),
-                  )
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(
-                          left: AppSizes.p4,
-                          right: AppSizes.p4,
-                          bottom: AppSizes.p12,
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
-                          ),
-                          decoration: const BoxDecoration(
-                            color: AppColors.lightBlue,
-                            borderRadius: AppSizes.borderMedium,
-                          ),
-                          child: Text(
-                            '${filteredProducts.length} items',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.primaryBlue,
-                              fontWeight: FontWeight.w700,
+                        Positioned(
+                          top: 4,
+                          right: 4,
+                          child: Container(
+                            padding: const EdgeInsets.all(3),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF1E6BFF),
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 16,
+                              minHeight: 16,
+                            ),
+                            child: const Text(
+                              '1',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
                           ),
                         ),
+                      ],
+                    ),
+                ],
+              ),
+              const SizedBox(height: 10),
+
+              // ── Outlined Search Bar ──
+              Container(
+                height: 46,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: const Color(0xFFE2E8F0), width: 1.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.015),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.search_rounded, color: Color(0xFF667085), size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: (val) => setState(() => _searchQuery = val),
+                        style: const TextStyle(fontSize: 13.5, color: Color(0xFF172033)),
+                        decoration: const InputDecoration(
+                          hintText: 'Search for milk, paneer, ghee...',
+                          hintStyle: TextStyle(color: Color(0xFF98A2B3), fontSize: 13.5),
+                          border: InputBorder.none,
+                          isDense: true,
+                        ),
                       ),
-                      Expanded(
-                        child: ResponsiveContainer(
-                          child: GridView.builder(
-                            padding: const EdgeInsets.only(
-                              left: AppSizes.p4,
-                              right: AppSizes.p4,
-                              bottom: AppSizes.p40,
+                    ),
+                    if (_searchQuery.isNotEmpty)
+                      IconButton(
+                        icon: const Icon(Icons.clear_rounded, size: 18),
+                        color: const Color(0xFF667085),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = '');
+                        },
                       ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // ── Promotional Banner ──
+              _buildPromoBanner(),
+              const SizedBox(height: 8),
+
+              // Banner Indicator Dots
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(4, (index) {
+                  final isActive = index == _bannerIndex;
+                  return GestureDetector(
+                    onTap: () => setState(() => _bannerIndex = index),
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                      width: isActive ? 12 : 5,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: isActive ? const Color(0xFF005F38) : const Color(0xFFCBD5E1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 16),
+
+              // ── Horizontal Categories Row ──
+              SizedBox(
+                height: 82,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: categoryOptions.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 20),
+                  itemBuilder: (context, index) {
+                    final cat = categoryOptions[index];
+                    final isSelected = cat['id'] == _selectedCategoryId;
+
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedCategoryId = cat['id'] as String;
+                        });
+                      },
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            height: 50,
+                            width: 50,
+                            decoration: BoxDecoration(
+                              color: isSelected ? const Color(0xFF005F38) : Colors.white,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isSelected ? const Color(0xFF005F38) : const Color(0xFFCBD5E1),
+                                width: 1.0,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.02),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: cat['id'] == 'cat_all'
+                                  ? Text(
+                                      'All',
+                                      style: TextStyle(
+                                        color: isSelected ? Colors.white : const Color(0xFF005F38),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13.5,
+                                      ),
+                                    )
+                                  : Padding(
+                                      padding: const EdgeInsets.all(10),
+                                      child: Image.asset(
+                                        cat['image'] as String,
+                                        fit: BoxFit.contain,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            cat['title'] as String,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                              color: isSelected ? const Color(0xFF005F38) : const Color(0xFF667085),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 18),
+
+              // ── Best Sellers Title Row ──
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Best Sellers',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF172033),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: _resetFilters,
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: const Text(
+                      'View All',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF667085),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // ── Products Grid ──
+              filteredProducts.isEmpty
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 40),
+                        child: EmptyStateWidget(
+                          icon: Icons.search_off_rounded,
+                          title: 'No products found',
+                          message: 'No products match your filter. Try adjusting or reset.',
+                          buttonText: 'Reset Filters',
+                          onButtonPressed: _resetFilters,
+                        ),
+                      ),
+                    )
+                  : GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: context.responsiveGridColumns,
-                        crossAxisSpacing: AppSizes.p16,
-                        mainAxisSpacing: AppSizes.p16,
-                        childAspectRatio: isMobile ? 0.72 : 0.78,
+                        crossAxisCount: isMobile ? 2 : 3,
+                        crossAxisSpacing: 14,
+                        mainAxisSpacing: 14,
+                        childAspectRatio: isMobile ? 0.73 : 0.79,
                       ),
                       itemCount: filteredProducts.length,
                       itemBuilder: (context, index) {
@@ -284,8 +343,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) =>
-                                    ProductDetailsScreen(product: product),
+                                builder: (_) => ProductDetailsScreen(product: product),
                               ),
                             );
                           },
@@ -298,13 +356,162 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                         );
                       },
                     ),
+              const SizedBox(height: 24),
+
+              // ── Bottom Benefits Strip ──
+              _buildBenefitsRow(),
+              const SizedBox(height: 24),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPromoBanner() {
+    return Container(
+      width: double.infinity,
+      height: 120,
+      decoration: BoxDecoration(
+        color: const Color(0xFF005F38),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 100, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  'Fresh Dairy Products',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
                   ),
-                      ),
-                    ],
+                ),
+                const SizedBox(height: 2),
+                const Text(
+                  'Delivered to your home',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
                   ),
+                ),
+                const SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFF005F38),
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    minimumSize: Size.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: const Text(
+                    'Shop Now',
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            right: 8,
+            bottom: 4,
+            top: 4,
+            width: 100,
+            child: Image.asset(
+              'assets/images/pure goodness.png',
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => Image.asset(
+                'assets/images/milk.png',
+                fit: BoxFit.contain,
+              ),
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildBenefitsRow() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEAF5EF),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: const [
+          _BenefitItem(
+            icon: Icons.verified_user_outlined,
+            title: '100% Pure',
+            subtitle: 'No Additives',
+          ),
+          _BenefitItem(
+            icon: Icons.eco_outlined,
+            title: 'Farm Fresh',
+            subtitle: 'Daily Collection',
+          ),
+          _BenefitItem(
+            icon: Icons.local_shipping_outlined,
+            title: 'Safe Delivery',
+            subtitle: 'Hygienic Packing',
+          ),
+          _BenefitItem(
+            icon: Icons.payment_outlined,
+            title: 'Secure Payment',
+            subtitle: '100% Safe',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BenefitItem extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  const _BenefitItem({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: const Color(0xFF005F38), size: 16),
+        const SizedBox(height: 4),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 9,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF172033),
+          ),
+        ),
+        const SizedBox(height: 1),
+        Text(
+          subtitle,
+          style: const TextStyle(
+            fontSize: 7.5,
+            color: Color(0xFF667085),
+          ),
+        ),
+      ],
     );
   }
 }
