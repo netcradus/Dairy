@@ -90,6 +90,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
               const SizedBox(height: AppSizes.p24),
 
+              // ─── 3.5. Middle Promotional Banner (banner4 & banner5) ───────────────────
+              const _CategoryPromotionalBanner(),
+
+              const SizedBox(height: AppSizes.p24),
+
               // ─── 4. Bottom Split Row: Track Order & Freshness Banner ─────────────
               if (isDesktop)
                 Row(
@@ -301,7 +306,6 @@ class _HeroPromotionalBannerState extends State<_HeroPromotionalBanner> {
 
   final List<String> bannerImages = [
     'assets/images/banner1.png',
-    'assets/images/banner2.png',
     'assets/images/banner3.png',
   ];
 
@@ -314,7 +318,7 @@ class _HeroPromotionalBannerState extends State<_HeroPromotionalBanner> {
     return CarouselSlider(
       carouselController: _carouselController,
       options: CarouselOptions(
-        height: bannerHeight,
+        aspectRatio: 1769 / 608,
         autoPlay: true,
         autoPlayInterval: const Duration(seconds: 4),
         autoPlayAnimationDuration: const Duration(milliseconds: 800),
@@ -334,7 +338,7 @@ class _HeroPromotionalBannerState extends State<_HeroPromotionalBanner> {
                 borderRadius: BorderRadius.circular(18),
                 child: Image.asset(
                   imagePath,
-                  fit: BoxFit.fill,
+                  fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     // Fallback to the beautiful custom designed brand banner if image not found
                     return _buildFallbackBanner(context);
@@ -866,6 +870,68 @@ class _CheckRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Middle/Category Promotional Banner (banner4.png, banner5.png)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _CategoryPromotionalBanner extends StatefulWidget {
+  const _CategoryPromotionalBanner();
+
+  @override
+  State<_CategoryPromotionalBanner> createState() => _CategoryPromotionalBannerState();
+}
+
+class _CategoryPromotionalBannerState extends State<_CategoryPromotionalBanner> {
+  final CarouselSliderController _carouselController = CarouselSliderController();
+
+  final List<String> bannerImages = [
+    'assets/images/banner4.png',
+    'assets/images/banner5.png',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return CarouselSlider(
+      carouselController: _carouselController,
+      options: CarouselOptions(
+        aspectRatio: 1764 / 608,
+        autoPlay: true,
+        autoPlayInterval: const Duration(seconds: 4),
+        autoPlayAnimationDuration: const Duration(milliseconds: 800),
+        enlargeCenterPage: false,
+        viewportFraction: 1.0,
+      ),
+      items: bannerImages.map((imagePath) {
+        return Builder(
+          builder: (BuildContext context) {
+            return Container(
+              width: MediaQuery.of(context).size.width,
+              margin: const EdgeInsets.symmetric(horizontal: 2.0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(18),
+                child: Image.asset(
+                  imagePath,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: const Color(0xFF005F38),
+                      alignment: Alignment.center,
+                      child: const Text(
+                        'Sawariya Dairy Specials',
+                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            );
+          },
+        );
+      }).toList(),
     );
   }
 }
