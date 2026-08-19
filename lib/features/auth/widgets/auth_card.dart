@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 
 import '../../../core/constants/app_assets.dart';
 import '../../../core/responsive/responsive.dart';
@@ -116,18 +117,7 @@ class AuthCard extends StatelessWidget {
                                         padding: const EdgeInsets.all(20),
                                         child: AspectRatio(
                                           aspectRatio: 4 / 5,
-                                          child: Image.asset(
-                                            AppAssets.dairyMascot,
-                                            fit: BoxFit.contain,
-                                            errorBuilder: (context, error, stackTrace) =>
-                                                const Center(
-                                              child: Icon(
-                                                Icons.image_outlined,
-                                                size: 64,
-                                                color: Color(0xFFD4AF37),
-                                              ),
-                                            ),
-                                          ),
+                                          child: const _AuthVideoPlayer(fit: BoxFit.contain),
                                         ),
                                       ),
                                     ),
@@ -161,18 +151,7 @@ class AuthCard extends StatelessWidget {
                                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                                       child: AspectRatio(
                                         aspectRatio: 4 / 5,
-                                        child: Image.asset(
-                                          AppAssets.dairyMascot,
-                                          fit: BoxFit.contain,
-                                          errorBuilder: (context, error, stackTrace) =>
-                                              const Center(
-                                            child: Icon(
-                                              Icons.image_outlined,
-                                              size: 48,
-                                              color: Color(0xFFD4AF37),
-                                            ),
-                                          ),
-                                        ),
+                                        child: const _AuthVideoPlayer(fit: BoxFit.contain),
                                       ),
                                     ),
                                   ),
@@ -251,4 +230,62 @@ class _MilkCanWatermarkPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Video Player Widget for Login Page
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _AuthVideoPlayer extends StatefulWidget {
+  final BoxFit fit;
+  const _AuthVideoPlayer({this.fit = BoxFit.contain});
+
+  @override
+  State<_AuthVideoPlayer> createState() => _AuthVideoPlayerState();
+}
+
+class _AuthVideoPlayerState extends State<_AuthVideoPlayer> {
+  late VideoPlayerController _controller;
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.asset('assets/images/login.mp4')
+      ..initialize().then((_) {
+        setState(() {
+          _isInitialized = true;
+        });
+        _controller.setLooping(true);
+        _controller.play();
+        _controller.setVolume(0.0); // Mute
+      });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_isInitialized) {
+      return const Center(
+        child: CircularProgressIndicator(
+          color: Color(0xFF005F38),
+        ),
+      );
+    }
+    return SizedBox.expand(
+      child: FittedBox(
+        fit: widget.fit,
+        child: SizedBox(
+          width: _controller.value.size.width,
+          height: _controller.value.size.height,
+          child: VideoPlayer(_controller),
+        ),
+      ),
+    );
+  }
 }

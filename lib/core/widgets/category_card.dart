@@ -44,7 +44,8 @@ class _CategoryCardState extends State<CategoryCard> {
           ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: _isHovered ? const Color(0xFF005F38) : const Color(0xFFB1D5C0),
+            color:
+                _isHovered ? const Color(0xFF005F38) : const Color(0xFFB1D5C0),
             width: _isHovered ? 1.5 : 1.2,
           ),
           boxShadow: [
@@ -76,21 +77,27 @@ class _CategoryCardState extends State<CategoryCard> {
                                   imageUrl: cat.imageUrl,
                                   fit: BoxFit.cover,
                                   placeholder: (context, url) => const Center(
-                                    child: Icon(Icons.image_outlined, color: AppColors.textMuted, size: 36),
+                                    child: Icon(Icons.image_outlined,
+                                        color: AppColors.textMuted, size: 36),
                                   ),
-                                  errorWidget: (context, url, error) => const Center(
-                                    child: Icon(Icons.image_outlined, color: AppColors.textMuted, size: 36),
+                                  errorWidget: (context, url, error) =>
+                                      const Center(
+                                    child: Icon(Icons.image_outlined,
+                                        color: AppColors.textMuted, size: 36),
                                   ),
                                 )
                               : Image.asset(
                                   cat.imageUrl,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) => const Center(
-                                    child: Icon(Icons.image_outlined, color: AppColors.textMuted, size: 36),
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Center(
+                                    child: Icon(Icons.image_outlined,
+                                        color: AppColors.textMuted, size: 36),
                                   ),
                                 ))
                           : const Center(
-                              child: Icon(Icons.image_outlined, color: AppColors.textMuted, size: 36),
+                              child: Icon(Icons.image_outlined,
+                                  color: AppColors.textMuted, size: 36),
                             ),
                     ),
                   ),

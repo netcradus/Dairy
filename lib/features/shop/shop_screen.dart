@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
@@ -23,6 +24,7 @@ class ShopScreen extends ConsumerStatefulWidget {
 
 class _ShopScreenState extends ConsumerState<ShopScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final CarouselSliderController _carouselController = CarouselSliderController();
   String _selectedCategoryId = 'cat_all';
   String _searchQuery = '';
   int _bannerIndex = 0;
@@ -30,6 +32,12 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   /// Live streams from Cloud Firestore, subscribed once.
   late final Stream<List<Product>> _productsStream;
   late final Stream<List<Category>> _categoriesStream;
+
+  final List<String> _shopBanners = [
+    'assets/images/shopbanner1.png',
+    'assets/images/shopbanner2.png',
+    'assets/images/shopbanner3.png',
+  ];
 
   @override
   void initState() {
@@ -179,10 +187,13 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
               // Banner Indicator Dots
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(4, (index) {
+                children: List.generate(_shopBanners.length, (index) {
                   final isActive = index == _bannerIndex;
                   return GestureDetector(
-                    onTap: () => setState(() => _bannerIndex = index),
+                    onTap: () {
+                      _carouselController.animateToPage(index);
+                      setState(() => _bannerIndex = index);
+                    },
                     child: Container(
                       margin: const EdgeInsets.symmetric(horizontal: 2.5),
                       width: isActive ? 12 : 5,
@@ -418,71 +429,46 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   }
 
   Widget _buildPromoBanner() {
-    return Container(
-      width: double.infinity,
-      height: 120,
-      decoration: BoxDecoration(
-        color: const Color(0xFF005F38),
-        borderRadius: BorderRadius.circular(16),
+    return CarouselSlider(
+      carouselController: _carouselController,
+      options: CarouselOptions(
+        aspectRatio: 1584 / 336,
+        viewportFraction: 1.0,
+        autoPlay: true,
+        autoPlayInterval: const Duration(seconds: 4),
+        enlargeCenterPage: false,
+        onPageChanged: (index, reason) {
+          setState(() {
+            _bannerIndex = index;
+          });
+        },
       ),
-      child: Stack(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 100, 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  'Fresh Dairy Products',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                const Text(
-                  'Delivered to your home',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: const Color(0xFF005F38),
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                    minimumSize: Size.zero,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                  child: const Text(
-                    'Shop Now',
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
+      items: _shopBanners.map((imagePath) {
+        return Container(
+          width: double.infinity,
+          margin: const EdgeInsets.symmetric(horizontal: 2.0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
           ),
-          Positioned(
-            right: 8,
-            bottom: 4,
-            top: 4,
-            width: 100,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
             child: Image.asset(
-              'assets/images/milk.png',
-              fit: BoxFit.contain,
+              imagePath,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: const Color(0xFF005F38),
+                  alignment: Alignment.center,
+                  child: const Text(
+                    'Sawariya Dairy',
+                    style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                );
+              },
             ),
           ),
-        ],
-      ),
+        );
+      }).toList(),
     );
   }
 
