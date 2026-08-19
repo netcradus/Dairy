@@ -7,10 +7,10 @@ import 'package:latlong2/latlong.dart';
 /// Data model in Firestore:
 ///   collection('delivery_agents').doc(<agentId>)
 ///     {
-///       'location':   GeoPoint(lat, lng),  // live position
-///       'orderId':    String?,              // order currently being delivered
-///       'isOnline':   bool,                 // duty status
-///       'updatedAt':  Timestamp,            // server time of last update
+///       'location':   [latitude, longitude], // live position as a 2-element array
+///       'orderId':    String?,               // order currently being delivered
+///       'isOnline':   bool,                  // duty status
+///       'updatedAt':  Timestamp,             // server time of last update
 ///     }
 class DeliveryTrackingService {
   final FirebaseFirestore _firestore;
@@ -18,18 +18,34 @@ class DeliveryTrackingService {
   DeliveryTrackingService([FirebaseFirestore? firestore])
       : _firestore = firestore ?? FirebaseFirestore.instance;
 
-  /// Pushes the delivery agent's live [position] to Firestore. Use [merge: true]
-  /// so non-location fields are preserved across updates.
+  /// Pushes the delivery agent's live position to Firestore as a `[latitude,
+  /// longitude]` array, stamping `updatedAt`. Use [merge: true] so non-location
+  /// fields (e.g. `isOnline`) are preserved across updates.
   Future<void> updateAgentLocation(
     String agentId,
-    LatLng position, {
+    double latitude,
+    double longitude, {
     String? orderId,
-    bool isOnline = true,
   }) async {
     await _firestore.collection('delivery_agents').doc(agentId).set(
       {
-        'location': GeoPoint(position.latitude, position.longitude),
-        'orderId': orderId,
+        'location': [latitude, longitude],
+        if (orderId != null) 'orderId': orderId,
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+      SetOptions(merge: true),
+    );
+  }
+
+  /// Updates only the agent's duty/online status in Firestore. Used when the
+  /// agent toggles online/offline so the stored `isOnline` flag always reflects
+  /// the current dynamic state rather than a stale value.
+  Future<void> updateAgentOnlineStatus(
+    String agentId,
+    bool isOnline,
+  ) async {
+    await _firestore.collection('delivery_agents').doc(agentId).set(
+      {
         'isOnline': isOnline,
         'updatedAt': FieldValue.serverTimestamp(),
       },
@@ -38,6 +54,7 @@ class DeliveryTrackingService {
   }
 
   /// Streams the agent's live [LatLng] (emits `null` when no location yet).
+  /// The stored `location` is a `[latitude, longitude]` array.
   Stream<LatLng?> agentLocationStream(String agentId) {
     return _firestore
         .collection('delivery_agents')
@@ -46,9 +63,12 @@ class DeliveryTrackingService {
         .map((snapshot) {
       if (!snapshot.exists) return null;
       final data = snapshot.data();
-      final geo = data?['location'] as GeoPoint?;
-      if (geo == null) return null;
-      return LatLng(geo.latitude, geo.longitude);
+      final location = data?['location'];
+      if (location is! List || location.length < 2) return null;
+      final lat = (location[0] as num?)?.toDouble();
+      final lng = (location[1] as num?)?.toDouble();
+      if (lat == null || lng == null) return null;
+      return LatLng(lat, lng);
     });
   }
 

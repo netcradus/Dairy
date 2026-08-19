@@ -62,6 +62,8 @@ class Order {
   final Address deliveryAddress;
   final String paymentMethod;
   final String estimatedDeliveryTime;
+  final String? assignedAgentId;
+  final DateTime? acceptedAt;
 
   const Order({
     required this.id,
@@ -75,6 +77,8 @@ class Order {
     required this.deliveryAddress,
     this.paymentMethod = 'Cash on Delivery',
     this.estimatedDeliveryTime = 'Today by 7:30 AM',
+    this.assignedAgentId,
+    this.acceptedAt,
   });
 
   bool get isUpcoming =>
@@ -102,6 +106,8 @@ class Order {
     Address? deliveryAddress,
     String? paymentMethod,
     String? estimatedDeliveryTime,
+    String? assignedAgentId,
+    DateTime? acceptedAt,
   }) {
     return Order(
       id: id ?? this.id,
@@ -116,6 +122,8 @@ class Order {
       paymentMethod: paymentMethod ?? this.paymentMethod,
       estimatedDeliveryTime:
           estimatedDeliveryTime ?? this.estimatedDeliveryTime,
+      assignedAgentId: assignedAgentId ?? this.assignedAgentId,
+      acceptedAt: acceptedAt ?? this.acceptedAt,
     );
   }
 
@@ -168,6 +176,9 @@ class Order {
     final created = data['createdAt'];
     final orderDate = created is Timestamp ? created.toDate() : DateTime.now();
 
+    final accepted = data['acceptedAt'];
+    final acceptedAt = accepted is Timestamp ? accepted.toDate() : null;
+
     return Order(
       id: id,
       items: items,
@@ -180,6 +191,8 @@ class Order {
       deliveryAddress: deliveryAddress,
       paymentMethod: (data['paymentMethod'] as String?) ?? 'Cash on Delivery',
       estimatedDeliveryTime: (data['estimatedDeliveryTime'] as String?) ?? '',
+      assignedAgentId: (data['assignedAgentId'] as String?),
+      acceptedAt: acceptedAt,
     );
   }
 }
@@ -190,6 +203,7 @@ OrderStatus orderStatusFromString(String status) {
     case 'pending':
     case 'placed':
       return OrderStatus.placed;
+    case 'accepted':
     case 'confirmed':
       return OrderStatus.confirmed;
     case 'preparing':

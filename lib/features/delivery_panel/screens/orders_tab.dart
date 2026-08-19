@@ -14,18 +14,12 @@ class OrdersTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDesktop = ResponsiveLayout.isDesktop(context);
-    final history = ref.watch(deliveryHistoryProvider);
-    final completedOrders = ref.watch(deliveryOrdersProvider)
-        .where((o) => o.status == DeliveryOrderStatus.delivered)
-        .toList();
+    final history = ref.watch(deliveryHistoryStreamProvider);
 
     final textPrimary = AppColors.textPrimaryOf(context);
 
-    // Combine history and completed orders for display
-    final allOrders = [
-      ...history.map((h) => _HistoryOrderItem.fromHistory(h)),
-      ...completedOrders.map((o) => _HistoryOrderItem.fromOrder(o)),
-    ];
+    // History is derived from Firestore (single source of truth).
+    final allOrders = history.map((o) => _HistoryOrderItem.fromOrder(o)).toList();
 
     // Sort by date descending
     allOrders.sort((a, b) => b.date.compareTo(a.date));

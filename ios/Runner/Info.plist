@@ -66,5 +66,10 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- Location permissions for real-time delivery agent GPS tracking -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your live location is shared with customers while you are on duty for delivery tracking.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Your live location is shared with customers while you are on duty for delivery tracking.</string>
 </dict>
 </plist>

@@ -426,8 +426,7 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: () {
-                  ref.read(orderServiceProvider).updateOrderStatus(order.id, OrderStatus.preparing);
-                  ref.read(deliveryOrdersProvider.notifier).startPickup(order.id);
+                  _transitionOrder(order, OrderStatus.preparing);
                 },
                 icon: const Icon(Icons.inventory_2_rounded, size: 18),
                 label: const Text('Start Pickup'),
@@ -475,8 +474,7 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: () {
-                  ref.read(orderServiceProvider).updateOrderStatus(order.id, OrderStatus.outForDelivery);
-                  ref.read(deliveryOrdersProvider.notifier).startDelivery(order.id);
+                  _transitionOrder(order, OrderStatus.outForDelivery);
                 },
                 icon: const Icon(Icons.local_shipping_rounded, size: 18),
                 label: const Text('Start Delivery'),
@@ -684,9 +682,25 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
             child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: AppColors.textSecondaryOf(context))),
           ),
           ElevatedButton(
-            onPressed: () {
-              ref.read(orderServiceProvider).updateOrderStatus(order.id, OrderStatus.delivered);
-              ref.read(deliveryOrdersProvider.notifier).completeDelivery(order.id);
+            onPressed: () async {
+              try {
+                await ref
+                    .read(orderServiceProvider)
+                    .updateOrderStatus(order.id, OrderStatus.delivered);
+              } catch (e, st) {
+                if (mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Could not update order. Check your connection and try again.',
+                      ),
+                      backgroundColor: AppColors.error,
+                    ),
+                  );
+                }
+                return;
+              }
               // Add to history
               ref.read(deliveryHistoryProvider.notifier).addToHistory(
                 DeliveryHistoryItem(
@@ -755,6 +769,25 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
     final uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(address)}');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  /// Updates an order's status in Firestore with graceful error handling so a
+  /// failed network write surfaces a message instead of failing silently.
+  Future<void> _transitionOrder(DeliveryOrder order, OrderStatus status) async {
+    try {
+      await ref.read(orderServiceProvider).updateOrderStatus(order.id, status);
+    } catch (e, st) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Could not update order. Check your connection and try again.',
+            ),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 }

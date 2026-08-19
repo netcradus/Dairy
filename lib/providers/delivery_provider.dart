@@ -1,9 +1,9 @@
-import 'dart:async';
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/delivery_boy_model.dart';
 import '../models/order.dart';
+import '../services/delivery_tracking_service.dart';
 import '../services/order_service.dart';
 
 /// Maps a Firestore [Order] into the delivery panel's [DeliveryOrder] view
@@ -16,6 +16,8 @@ DeliveryOrder deliveryOrderFromOrder(Order order) {
   DeliveryOrderStatus status;
   switch (order.status) {
     case OrderStatus.placed:
+      // A freshly placed order is a delivery request awaiting driver acceptance.
+      status = DeliveryOrderStatus.pendingAcceptance;
     case OrderStatus.confirmed:
       status = DeliveryOrderStatus.accepted;
     case OrderStatus.preparing:
@@ -50,21 +52,86 @@ DeliveryOrder deliveryOrderFromOrder(Order order) {
   );
 }
 
-/// Live Firestore stream of active orders (delivery panel + tracking map).
-final deliveryActiveOrdersStreamProvider =
-    StreamProvider.autoDispose<List<DeliveryOrder>>((ref) {
+/// Returns the signed-in delivery agent's Firebase Auth uid, or an empty
+/// string when unauthenticated (so agent-scoped streams fall back to only the
+/// public pending orders).
+String get _currentAgentId => FirebaseAuth.instance.currentUser?.uid ?? '';
+
+/// Single source of truth for the delivery panel: a live Firestore stream of the
+/// orders relevant to THIS agent — pending orders awaiting acceptance plus any
+/// order already assigned to the agent — mapped into [DeliveryOrder]s. The
+/// Requests, Active and History tabs all derive their lists from this one
+/// stream.
+final deliveryOrdersStreamProvider =
+    StreamProvider<List<DeliveryOrder>>((ref) {
+  final agentId = _currentAgentId;
   return ref
       .watch(orderServiceProvider)
-      .streamActiveOrders()
+      .streamDeliveryOrdersForAgent(agentId)
       .map((orders) => orders.map(deliveryOrderFromOrder).toList());
 });
 
+/// Live Firestore stream of the agent's active (accepted / in-progress) orders,
+/// derived from the unified agent stream. Used by the Active tab and the
+/// tracking map.
+final deliveryActiveOrdersStreamProvider =
+    StreamProvider.autoDispose<List<DeliveryOrder>>((ref) {
+  final agentId = _currentAgentId;
+  return ref
+      .watch(orderServiceProvider)
+      .streamDeliveryOrdersForAgent(agentId)
+      .map((orders) => orders
+          .map(deliveryOrderFromOrder)
+          .where((o) =>
+              o.status == DeliveryOrderStatus.accepted ||
+              o.status == DeliveryOrderStatus.pickup ||
+              o.status == DeliveryOrderStatus.outForDelivery)
+          .toList());
+});
+
+/// Orders awaiting driver acceptance (Requests tab), derived from the unified
+/// agent stream.
+final deliveryRequestsStreamProvider =
+    Provider.autoDispose<List<DeliveryOrder>>((ref) {
+  final asyncOrders = ref.watch(deliveryOrdersStreamProvider);
+  return asyncOrders.when(
+    data: (orders) => orders
+        .where((o) => o.status == DeliveryOrderStatus.pendingAcceptance)
+        .toList(),
+    loading: () => const [],
+    error: (_, stackTrace) => const [],
+  );
+});
+
+/// Completed / cancelled orders (History tab), derived from the unified agent
+/// stream.
+final deliveryHistoryStreamProvider =
+    Provider.autoDispose<List<DeliveryOrder>>((ref) {
+  final asyncOrders = ref.watch(deliveryOrdersStreamProvider);
+  return asyncOrders.when(
+    data: (orders) => orders
+        .where((o) =>
+            o.status == DeliveryOrderStatus.delivered ||
+            o.status == DeliveryOrderStatus.cancelled)
+        .toList(),
+    loading: () => const [],
+    error: (_, stackTrace) => const [],
+  );
+});
+
 class DeliveryNotifier extends StateNotifier<DeliveryAgent> {
-  DeliveryNotifier() : super(_getMockAgent());
+  final Ref _ref;
+
+  DeliveryNotifier(this._ref) : super(_getMockAgent());
+
+  /// Returns the signed-in delivery agent's Firebase Auth uid, falling back to a
+  /// placeholder only when no user is authenticated (e.g. during local dev).
+  static String get _agentId =>
+      FirebaseAuth.instance.currentUser?.uid ?? 'unknown_agent';
 
   static DeliveryAgent _getMockAgent() {
-    return const DeliveryAgent(
-      id: 'DEL-001',
+    return DeliveryAgent(
+      id: _agentId,
       name: 'Rajesh Kumar',
       phone: '+91 98765 43210',
       vehicle: 'Honda Activa',
@@ -83,12 +150,18 @@ class DeliveryNotifier extends StateNotifier<DeliveryAgent> {
     final newStatus = state.status == DeliveryStatus.offDuty
         ? DeliveryStatus.onDuty
         : DeliveryStatus.offDuty;
+    final isOnline = newStatus == DeliveryStatus.onDuty;
     state = state.copyWith(
       status: newStatus,
       totalDeliveriesToday: newStatus == DeliveryStatus.onDuty ? 0 : state.totalDeliveriesToday,
       completedDeliveriesToday: newStatus == DeliveryStatus.onDuty ? 0 : state.completedDeliveriesToday,
       earningsToday: newStatus == DeliveryStatus.onDuty ? 0.0 : state.earningsToday,
     );
+    // Persist the evaluated duty state so Firestore never keeps a stale
+    // `isOnline` value (e.g. staying `true` after the agent goes offline).
+    _ref
+        .read(deliveryTrackingServiceProvider)
+        .updateAgentOnlineStatus(state.id, isOnline);
   }
 
   void startBreak() {
@@ -113,190 +186,7 @@ class DeliveryNotifier extends StateNotifier<DeliveryAgent> {
 }
 
 final deliveryAgentProvider = StateNotifierProvider<DeliveryNotifier, DeliveryAgent>((ref) {
-  return DeliveryNotifier();
-});
-
-class DeliveryOrdersNotifier extends StateNotifier<List<DeliveryOrder>> {
-  DeliveryOrdersNotifier() : super(_getMockOrders());
-
-  static List<DeliveryOrder> _getMockOrders() {
-    final now = DateTime.now();
-    return [
-      DeliveryOrder(
-        id: 'DO-001',
-        orderId: 'SD-9842',
-        customerName: 'Priya Sharma',
-        customerPhone: '+91 98765 43210',
-        customerAddress: 'Flat 402, Sunshine Heights, MG Road, Vijay Nagar, Indore - 452010',
-        pickupLocation: 'Sawariya Dairy Hub, Vijay Nagar',
-        pickupPhone: '+91 731 400 5000',
-        items: ['A2 Gir Cow Milk - 1L x 2', 'Fresh Paneer - 200g x 1'],
-        amount: 180.0,
-        deliveryFee: 30.0,
-        status: DeliveryOrderStatus.pendingAcceptance,
-        orderTime: now.subtract(const Duration(minutes: 5)),
-        distance: '3.2 km',
-        estimatedTime: '12 min',
-      ),
-      DeliveryOrder(
-        id: 'DO-002',
-        orderId: 'SD-9843',
-        customerName: 'Amit Patel',
-        customerPhone: '+91 98234 56789',
-        customerAddress: 'Plot 15, Scheme 54, Near BRTS, Indore - 452010',
-        pickupLocation: 'Sawariya Dairy Hub, Vijay Nagar',
-        pickupPhone: '+91 731 400 5000',
-        items: ['A2 Gir Cow Milk - 500ml x 4', 'Curd - 400g x 2'],
-        amount: 220.0,
-        deliveryFee: 25.0,
-        status: DeliveryOrderStatus.pendingAcceptance,
-        orderTime: now.subtract(const Duration(minutes: 10)),
-        distance: '4.5 km',
-        estimatedTime: '15 min',
-      ),
-    ];
-  }
-
-  void addOrder(DeliveryOrder order) {
-    state = [order, ...state];
-  }
-
-  void updateOrderStatus(String orderId, DeliveryOrderStatus status) {
-    state = state.map((order) {
-      if (order.id == orderId) {
-        final now = DateTime.now();
-        return order.copyWith(
-          status: status,
-          acceptedTime: status == DeliveryOrderStatus.accepted ? now : order.acceptedTime,
-          pickupTime: status == DeliveryOrderStatus.pickup ? now : order.pickupTime,
-          deliveredTime: status == DeliveryOrderStatus.delivered ? now : order.deliveredTime,
-        );
-      }
-      return order;
-    }).toList();
-  }
-
-  void acceptOrder(String orderId) {
-    updateOrderStatus(orderId, DeliveryOrderStatus.accepted);
-  }
-
-  void startPickup(String orderId) {
-    updateOrderStatus(orderId, DeliveryOrderStatus.pickup);
-  }
-
-  void startDelivery(String orderId) {
-    updateOrderStatus(orderId, DeliveryOrderStatus.outForDelivery);
-  }
-
-  void completeDelivery(String orderId) {
-    updateOrderStatus(orderId, DeliveryOrderStatus.delivered);
-  }
-
-  void declineOrder(String orderId) {
-    updateOrderStatus(orderId, DeliveryOrderStatus.declined);
-  }
-
-  List<DeliveryOrder> get activeOrders => state
-      .where((o) => o.status != DeliveryOrderStatus.delivered &&
-                   o.status != DeliveryOrderStatus.cancelled &&
-                   o.status != DeliveryOrderStatus.declined)
-      .toList();
-
-  List<DeliveryOrder> get completedOrders => state
-      .where((o) => o.status == DeliveryOrderStatus.delivered)
-      .toList();
-
-  List<DeliveryOrder> get pendingOrders => state
-      .where((o) => o.status == DeliveryOrderStatus.pendingAcceptance)
-      .toList();
-}
-
-final deliveryOrdersProvider = StateNotifierProvider<DeliveryOrdersNotifier, List<DeliveryOrder>>((ref) {
-  return DeliveryOrdersNotifier();
-});
-
-class DeliveryRequestsNotifier extends StateNotifier<List<DeliveryRequest>> {
-  Timer? _timer;
-
-  DeliveryRequestsNotifier() : super(_getMockRequests()) {
-    _startTimer();
-  }
-
-  static List<DeliveryRequest> _getMockRequests() {
-    final now = DateTime.now();
-    return [
-      DeliveryRequest(
-        id: 'DR-001',
-        orderId: 'SD-9845',
-        customerName: 'Suresh Verma',
-        customerPhone: '+91 98765 43210',
-        customerAddress: '201, Galaxy Apartment, Scheme 78, Indore - 452010',
-        pickupLocation: 'Sawariya Dairy Hub, Vijay Nagar',
-        pickupPhone: '+91 731 400 5000',
-        items: ['Full Cream Milk - 1L x 3', 'Butter - 100g x 1'],
-        amount: 195.0,
-        deliveryFee: 30.0,
-        distance: '2.8 km',
-        estimatedTime: '10 min',
-        requestTime: now,
-        countdownSeconds: 30,
-      ),
-    ];
-  }
-
-  void _startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
-      state = state.map((req) {
-        if (req.status == DeliveryRequestStatus.pending) {
-          final newCountdown = req.countdownSeconds - 1;
-          if (newCountdown <= 0) {
-            return req.copyWith(
-              countdownSeconds: 0,
-              status: DeliveryRequestStatus.expired,
-            );
-          }
-          return req.copyWith(countdownSeconds: newCountdown);
-        }
-        return req;
-      }).toList();
-    });
-  }
-
-  void acceptRequest(String requestId) {
-    state = state.map((req) {
-      if (req.id == requestId) {
-        return req.copyWith(status: DeliveryRequestStatus.accepted);
-      }
-      return req;
-    }).toList();
-  }
-
-  void declineRequest(String requestId) {
-    state = state.map((req) {
-      if (req.id == requestId) {
-        return req.copyWith(status: DeliveryRequestStatus.declined);
-      }
-      return req;
-    }).toList();
-  }
-
-  void removeExpiredRequests() {
-    state = state.where((req) => req.status != DeliveryRequestStatus.expired).toList();
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-}
-
-final deliveryRequestsProvider = StateNotifierProvider<DeliveryRequestsNotifier, List<DeliveryRequest>>((ref) {
-  return DeliveryRequestsNotifier();
+  return DeliveryNotifier(ref);
 });
 
 class DeliveryEarningsNotifier extends StateNotifier<List<DeliveryEarnings>> {

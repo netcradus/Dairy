@@ -1,18 +1,17 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../models/delivery_boy_model.dart';
 import '../services/delivery_tracking_service.dart';
+import '../services/location_service.dart';
 import 'delivery_provider.dart';
 
-/// Toggles the delivery agent's live location sharing. While active, the
-/// agent's (simulated) position is written to Firestore every few seconds so
-/// that the customer tracking map and the delivery map reflect it in real time.
-///
-/// Replace the simulated movement with real GPS (e.g. `geolocator`) for
-/// production use.
+/// Toggles the delivery agent's live GPS tracking. While the agent is online,
+/// high-accuracy device coordinates are streamed to Firestore (as a
+/// `[latitude, longitude]` array) so the customer tracking map and the delivery
+/// map reflect the agent's position in real time.
 final agentLiveLocationProvider =
     StateNotifierProvider<AgentLiveLocationNotifier, bool>((ref) {
   return AgentLiveLocationNotifier(ref);
@@ -20,54 +19,80 @@ final agentLiveLocationProvider =
 
 class AgentLiveLocationNotifier extends StateNotifier<bool> {
   final Ref _ref;
-  Timer? _timer;
-  LatLng _pos = const LatLng(22.7255, 75.8800); // Sawariya Dairy Hub, Indore
+  StreamSubscription<Position>? _subscription;
 
-  static const LatLng _hub = LatLng(22.7255, 75.8800);
-
-  AgentLiveLocationNotifier(this._ref) : super(false);
-
-  void toggle() {
-    if (state) {
-      _stop();
-    } else {
-      _start();
-    }
-    state = !state;
-  }
-
-  void _start() {
-    _pos = _hub;
-    _write(online: true);
-    _timer = Timer.periodic(const Duration(seconds: 3), (_) {
-      // Drift along a small loop so the marker visibly moves.
-      _pos = LatLng(
-        _hub.latitude + 0.004 * _triangle(_t += 0.4),
-        _hub.longitude + 0.004 * _triangle(_t + 1.57),
-      );
-      _write(online: true);
+  AgentLiveLocationNotifier(this._ref) : super(false) {
+    // Keep GPS tracking in sync with the agent's duty (online/offline) state:
+    // tracking starts automatically when they go online and stops when offline.
+    _ref.listen<DeliveryAgent>(deliveryAgentProvider, (previous, next) {
+      final isOnline = next.status == DeliveryStatus.onDuty;
+      if (isOnline && !state) {
+        startTracking();
+      } else if (!isOnline && state) {
+        stopTracking();
+      }
     });
   }
 
-  void _stop() {
-    _timer?.cancel();
-    _timer = null;
-    _write(online: false);
+  /// Starts streaming real GPS coordinates to Firestore. Requests permission
+  /// first; if denied, tracking stays off (state remains `false`).
+  Future<void> startTracking() async {
+    if (state) return;
+
+    final location = _ref.read(locationServiceProvider);
+    final granted = await location.requestLocationPermission();
+    if (!granted) {
+      state = false;
+      return;
+    }
+
+    state = true;
+    _writeCurrentPosition();
+
+    _subscription = location.getPositionStream().listen(
+      _onPosition,
+      onError: (_) {
+        // Transient GPS/permission errors are non-fatal: keep listening and
+        // simply skip the bad reading.
+      },
+    );
   }
 
-  void _write({required bool online}) {
+  /// Stops GPS tracking and releases the stream subscription.
+  void stopTracking() {
+    _subscription?.cancel();
+    _subscription = null;
+    state = false;
+  }
+
+  /// Convenience toggle used by the map / panel "share live location" buttons.
+  void toggle() {
+    if (state) {
+      stopTracking();
+    } else {
+      startTracking();
+    }
+  }
+
+  void _onPosition(Position position) {
+    _write(position.latitude, position.longitude);
+  }
+
+  Future<void> _writeCurrentPosition() async {
+    final position = await _ref.read(locationServiceProvider).getCurrentPosition();
+    if (position != null) _write(position.latitude, position.longitude);
+  }
+
+  void _write(double latitude, double longitude) {
     final agentId = _ref.read(deliveryAgentProvider).id;
     _ref
         .read(deliveryTrackingServiceProvider)
-        .updateAgentLocation(agentId, _pos, isOnline: online);
+        .updateAgentLocation(agentId, latitude, longitude);
   }
-
-  double _t = 0;
-  double _triangle(double x) => (x % (2 * 3.14159)) / 3.14159 - 1;
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _subscription?.cancel();
     super.dispose();
   }
 }

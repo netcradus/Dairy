@@ -213,7 +213,17 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 stream: _categoriesStream,
                 builder: (context, catSnap) {
                   final cats = <Category>[
-                    const Category(id: 'cat_all', title: 'All', imageUrl: ''),
+                    const Category(
+                      id: 'cat_all',
+                      title: 'All',
+                      imageUrl: '',
+                      subtitle: '',
+                      iconData: Icons.category_rounded,
+                      backgroundColor: const Color(0xFFEAF3FF),
+                      borderColor: const Color(0xFFB1D5C0),
+                      titleColor: const Color(0xFF005F38),
+                      itemCount: 0,
+                    ),
                     ...?catSnap.data,
                   ];
 

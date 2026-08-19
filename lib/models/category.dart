@@ -14,7 +14,7 @@ class Category {
   final String title;
   final String subtitle;
   final String imageUrl;
-  final IconData iconData;
+  final IconData? iconData;
   final Color backgroundColor;
   final Color borderColor;
   final Color titleColor;
@@ -44,6 +44,8 @@ class Category {
       iconData: iconName == null ? null : _iconByName[iconName],
       backgroundColor:
           colorValue == null ? const Color(0xFFEAF3FF) : Color(colorValue),
+      borderColor: const Color(0xFFB1D5C0),
+      titleColor: const Color(0xFF005F38),
       itemCount: (data['itemCount'] as num?)?.toInt() ?? 0,
     );
   }

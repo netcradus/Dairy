@@ -129,12 +129,14 @@ class OrderService {
   Future<void> cancelOrder(String orderId) =>
       updateOrderStatus(orderId, OrderStatus.cancelled);
 
-  /// Live stream of all active (not yet delivered/cancelled) orders from the
-  /// `orders` collection. Used by the delivery panel and tracking map.
+  /// Live stream of active (accepted / in-progress) orders from the `orders`
+  /// collection, used by the delivery panel Active tab and the tracking map.
+  /// Orders that are still `Pending` (awaiting driver acceptance) are excluded
+  /// here and handled by the Requests flow instead.
   ///
   /// Status filtering is done client-side to avoid requiring a composite index.
   Stream<List<Order>> streamActiveOrders() {
-    const activeStatuses = {'Pending', 'confirmed', 'preparing', 'outForDelivery'};
+    const activeStatuses = {'confirmed', 'preparing', 'outForDelivery'};
     return _firestore
         .collection('orders')
         .snapshots()
@@ -143,6 +145,58 @@ class OrderService {
             .where((o) => activeStatuses.contains(orderStatusToString(o.status)))
             .toList()
           ..sort((a, b) => b.orderDate.compareTo(a.orderDate)));
+  }
+
+  /// Live stream of ALL orders in the `orders` collection (every status),
+  /// newest first. This is the single source of truth for the delivery panel:
+  /// the Requests, Active and History tabs all derive their lists from it.
+  Stream<List<Order>> streamAllDeliveryOrders() {
+    return _firestore
+        .collection('orders')
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((d) => Order.fromFirestore(d.data(), d.id))
+            .toList()
+          ..sort((a, b) => b.orderDate.compareTo(a.orderDate)));
+  }
+
+  /// Live stream of the orders relevant to a delivery agent: any order that is
+  /// still `pending` (awaiting acceptance) OR already assigned to [agentId].
+  /// Filtering is done client-side to avoid requiring a composite index.
+  Stream<List<Order>> streamDeliveryOrdersForAgent(String agentId) {
+    return _firestore
+        .collection('orders')
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((d) => Order.fromFirestore(d.data(), d.id))
+            .where((o) =>
+                o.status == OrderStatus.placed ||
+                (o.assignedAgentId != null && o.assignedAgentId == agentId))
+            .toList()
+          ..sort((a, b) => b.orderDate.compareTo(a.orderDate)));
+  }
+
+  /// Accepts an order on behalf of a delivery agent. Persists the acceptance to
+  /// Firestore as the single source of truth: the order moves from `pending` to
+  /// `accepted`, is bound to [agentId], and records the acceptance time.
+  ///
+  /// Throws if the write fails so callers can surface a graceful error.
+  Future<void> acceptOrder(String orderId, String agentId) async {
+    await _firestore.collection('orders').doc(orderId).update({
+      'status': 'accepted',
+      'assignedAgentId': agentId,
+      'acceptedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Releases an order an agent had accepted: clears the assignment and returns
+  /// it to `pending` so it can be picked up by another agent.
+  Future<void> declineOrder(String orderId, String agentId) async {
+    await _firestore.collection('orders').doc(orderId).update({
+      'status': 'pending',
+      'assignedAgentId': null,
+      'acceptedAt': null,
+    });
   }
 }
 
