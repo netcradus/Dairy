@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart' hide Order;
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/order.dart';
 import '../models/address.dart';
 import '../models/cart_item.dart';
+import '../models/earning_model.dart';
+import 'earnings_service.dart';
 
 /// Creates and persists customer orders in Cloud Firestore.
 ///
@@ -12,9 +15,17 @@ import '../models/cart_item.dart';
 /// status of 'Pending'.
 class OrderService {
   final FirebaseFirestore _firestore;
+  final EarningsService _earningsService;
 
-  OrderService([FirebaseFirestore? firestore])
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+  /// Commission credited to the agent, as a fraction of the order subtotal,
+  /// when an order is delivered. Tune this to match your payout policy.
+  static const double agentEarningRate = 0.10;
+
+  OrderService({
+    FirebaseFirestore? firestore,
+    EarningsService? earningsService,
+  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+        _earningsService = earningsService ?? EarningsService();
 
   /// Pricing rules (mirror the cart provider so the service is self-contained).
   static const double freeDeliveryThreshold = 500.0;
@@ -117,12 +128,56 @@ class OrderService {
           ..sort((a, b) => b.orderDate.compareTo(a.orderDate)));
   }
 
-  /// Updates an order's status in Firestore.
+  /// Updates an order's status in Firestore. When the status becomes
+  /// [OrderStatus.delivered], the assigned agent's earnings are logged.
   Future<void> updateOrderStatus(String orderId, OrderStatus status) async {
-    await _firestore
-        .collection('orders')
-        .doc(orderId)
-        .update({'status': orderStatusToString(status)});
+    try {
+      await _firestore
+          .collection('orders')
+          .doc(orderId)
+          .update({'status': orderStatusToString(status)});
+    } catch (e) {
+      throw Exception('Failed to update order status for $orderId: $e');
+    }
+
+    if (status == OrderStatus.delivered) {
+      // Earnings logging is best-effort: a failure here must not roll back the
+      // successful status update above.
+      await _logEarningForDeliveredOrder(orderId);
+    }
+  }
+
+  /// Credits the assigned agent's earnings for a delivered order. Reads the
+  /// order document to obtain the agent id and totals, then writes an
+  /// [EarningModel] keyed by the order id (preventing duplicates). Any failure
+  /// is swallowed so the delivery itself is not affected.
+  Future<void> _logEarningForDeliveredOrder(String orderId) async {
+    try {
+      final doc = await _firestore.collection('orders').doc(orderId).get();
+      final data = doc.data();
+      if (data == null) return;
+
+      final assignedAgentId = (data['assignedAgentId'] as String?);
+      if (assignedAgentId == null || assignedAgentId.isEmpty) return;
+
+      final order = Order.fromFirestore(data, doc.id);
+      final amountEarned = order.subtotal * agentEarningRate;
+
+      final earning = EarningModel(
+        id: orderId,
+        agentId: assignedAgentId,
+        orderId: orderId,
+        amountEarned: amountEarned,
+        tipAmount: 0.0,
+        deliveryFee: order.deliveryCharge,
+        timestamp: DateTime.now(),
+        status: EarningStatus.pending,
+      );
+
+      await _earningsService.logEarning(earning);
+    } catch (e) {
+      debugPrint('Warning: failed to log earnings for order $orderId: $e');
+    }
   }
 
   /// Cancels an order by setting its status to [OrderStatus.cancelled].
@@ -200,5 +255,8 @@ class OrderService {
   }
 }
 
-/// Provides a singleton [OrderService].
-final orderServiceProvider = Provider<OrderService>((ref) => OrderService());
+/// Provides a singleton [OrderService], injecting the [EarningsService] so
+/// deliveries automatically credit agent earnings.
+final orderServiceProvider = Provider<OrderService>((ref) => OrderService(
+      earningsService: ref.watch(earningsServiceProvider),
+    ));
