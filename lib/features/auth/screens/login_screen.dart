@@ -98,6 +98,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 TextFormField(
                   controller: _mobileController,
                   keyboardType: TextInputType.phone,
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) => _handleSendOtp(),
                   validator: AppValidators.validatePhone,
                   style: GoogleFonts.inter(
                     fontSize: 14,
@@ -120,6 +122,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 14,
+                      // vertical: 14,
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
