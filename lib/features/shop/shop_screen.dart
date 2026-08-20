@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
 import '../../core/widgets/product_card.dart';
 import '../../core/widgets/empty_state.dart';
@@ -81,7 +78,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       {
         'id': 'cat_makhan',
         'title': 'Curd',
-        'image': 'assets/images/makhan.png'
+        'image': 'assets/images/makhana.png'
       },
       {
         'id': 'cat_paneer',
@@ -172,7 +169,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                       Border.all(color: const Color(0xFFE2E8F0), width: 1.0),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.015),
+                      color: Colors.black.withValues(alpha: 0.015),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -277,11 +274,11 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                                 width: 1.0,
                               ),
                               boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.02),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 1),
-                                ),
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.02),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 1),
+                                  ),
                               ],
                             ),
                             child: Center(

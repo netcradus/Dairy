@@ -267,48 +267,49 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
   Widget build(BuildContext context) {
     final active = widget.isSelected;
 
-    final backgroundColor = active
-        ? const Color(0xFF005F38)
-        : (_isHovered ? const Color(0xFFD4E0DC) : Colors.transparent);
-
-    final foregroundColor = active
-        ? Colors.white
-        : (_isHovered ? const Color(0xFF005F38) : const Color(0xFF334E41));
-
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
-      child: Material(
-        color: backgroundColor,
-        borderRadius: AppSizes.borderMedium,
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: widget.onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        decoration: BoxDecoration(
+          color: active
+              ? const Color(0xFF005F38)
+              : (_isHovered ? const Color(0xFFD4E6DC) : Colors.transparent),
           borderRadius: AppSizes.borderMedium,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
+        ),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: AppSizes.borderMedium,
+          child: ListTile(
+            onTap: widget.onTap,
+            shape: const RoundedRectangleBorder(
+              borderRadius: AppSizes.borderMedium,
+            ),
+            contentPadding: const EdgeInsets.symmetric(
               horizontal: AppSizes.p16,
               vertical: 2,
             ),
-            child: Row(
-              children: [
-                Icon(
-                  active ? widget.activeIcon : widget.icon,
-                  color: foregroundColor,
-                  size: 22,
-                ),
-                const SizedBox(width: AppSizes.p16),
-                Expanded(
-                  child: Text(
-                    widget.label,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-                      color: foregroundColor,
-                    ),
-                  ),
-                ),
-              ],
+            leading: Icon(
+              active ? widget.activeIcon : widget.icon,
+              color: active
+                  ? Colors.white
+                  : (_isHovered
+                      ? const Color(0xFF005F38)
+                      : const Color(0xFF334E41)),
+              size: 22,
+            ),
+            title: Text(
+              widget.label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                color: active
+                    ? Colors.white
+                    : (_isHovered
+                        ? const Color(0xFF005F38)
+                        : const Color(0xFF334E41)),
+              ),
             ),
           ),
         ),

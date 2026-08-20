@@ -10,7 +10,6 @@ import 'edit_profile_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../subscription/subscriptions_screen.dart';
 import 'about_screen.dart';
-import 'customer_support_screen.dart';
 
 /// Demo delivery-partner account.
 const String _deliveryAccountPhone = '7777777777';
@@ -79,72 +78,76 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 8),
 
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFFF1F5F9), width: 1.0),
-                          ),
-                          child: Column(
-                            children: [
-                              _buildMenuTile(
-                                context,
-                                Icons.person_outline_rounded,
-                                'My Profile',
-                                'Manage your personal details',
-                                () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const EditProfileScreen()));
-                                },
-                              ),
-                              const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                              _buildMenuTile(
-                                context,
-                                Icons.location_on_outlined,
-                                'Delivery Addresses',
-                                'Add or edit delivery addresses',
-                                () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const AddressScreen()));
-                                },
-                              ),
-                              const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                              _buildMenuTile(
-                                context,
-                                Icons.payment_outlined,
-                                'Payment Methods',
-                                'Manage your payment options',
-                                () {},
-                              ),
-                              const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                              _buildMenuTile(
-                                context,
-                                Icons.autorenew_rounded,
-                                'My Subscriptions',
-                                'Manage milk & product subscriptions',
-                                () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const SubscriptionsScreen()));
-                                },
-                              ),
-                              const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                              _buildMenuTile(
-                                context,
-                                Icons.notifications_none_rounded,
-                                'Notifications',
-                                'Manage your notification preferences',
-                                () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen()));
-                                },
-                              ),
-                              const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                              _buildMenuTile(
-                                context,
-                                Icons.info_outline_rounded,
-                                'About Sawariya Dairy',
-                                'Know more about us',
-                                () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen()));
-                                },
-                              ),
-                            ],
+                        Material(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          clipBehavior: Clip.antiAlias,
+                          child: Ink(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: const Color(0xFFF1F5F9), width: 1.0),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Column(
+                              children: [
+                                _buildMenuTile(
+                                  context,
+                                  Icons.person_outline_rounded,
+                                  'My Profile',
+                                  'Manage your personal details',
+                                  () {
+                                    Navigator.push(context, MaterialPageRoute(builder: (_) => const EditProfileScreen()));
+                                  },
+                                ),
+                                const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                                _buildMenuTile(
+                                  context,
+                                  Icons.location_on_outlined,
+                                  'Delivery Addresses',
+                                  'Add or edit delivery addresses',
+                                  () {
+                                    Navigator.push(context, MaterialPageRoute(builder: (_) => const AddressScreen()));
+                                  },
+                                ),
+                                const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                                _buildMenuTile(
+                                  context,
+                                  Icons.payment_outlined,
+                                  'Payment Methods',
+                                  'Manage your payment options',
+                                  () {},
+                                ),
+                                const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                                _buildMenuTile(
+                                  context,
+                                  Icons.autorenew_rounded,
+                                  'My Subscriptions',
+                                  'Manage milk & product subscriptions',
+                                  () {
+                                    Navigator.push(context, MaterialPageRoute(builder: (_) => const SubscriptionsScreen()));
+                                  },
+                                ),
+                                const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                                _buildMenuTile(
+                                  context,
+                                  Icons.notifications_none_rounded,
+                                  'Notifications',
+                                  'Manage your notification preferences',
+                                  () {
+                                    Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen()));
+                                  },
+                                ),
+                                const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                                _buildMenuTile(
+                                  context,
+                                  Icons.info_outline_rounded,
+                                  'About Sawariya Dairy',
+                                  'Know more about us',
+                                  () {
+                                    Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen()));
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
                         ),
 
@@ -196,10 +199,10 @@ class ProfileScreen extends ConsumerWidget {
                           color: Colors.white,
                           shape: BoxShape.circle,
                         ),
-                        child: CircleAvatar(
+                        child: const CircleAvatar(
                           radius: 46,
-                          backgroundColor: const Color(0xFFE2EFE7),
-                          child: const Icon(
+                          backgroundColor: Color(0xFFE2EFE7),
+                          child: Icon(
                             Icons.person_rounded,
                             size: 55,
                             color: Color(0xFF005F38),
@@ -424,43 +427,47 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   Widget _buildLogoutTile(BuildContext context, WidgetRef ref) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFF1F5F9), width: 1.0),
-      ),
-      child: ListTile(
-        dense: true,
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: const BoxDecoration(
-            color: Color(0xFFFEF2F2),
-            shape: BoxShape.circle,
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      clipBehavior: Clip.antiAlias,
+      child: Ink(
+        decoration: BoxDecoration(
+          border: Border.all(color: const Color(0xFFF1F5F9), width: 1.0),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: ListTile(
+          dense: true,
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: const BoxDecoration(
+              color: Color(0xFFFEF2F2),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 18),
           ),
-          child: const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 18),
-        ),
-        title: const Text(
-          'Logout',
-          style: TextStyle(
-            fontSize: 13.5,
-            fontWeight: FontWeight.w700,
-            color: Colors.redAccent,
+          title: const Text(
+            'Logout',
+            style: TextStyle(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w700,
+              color: Colors.redAccent,
+            ),
           ),
-        ),
-        subtitle: const Text(
-          'Log out of your account',
-          style: TextStyle(
-            fontSize: 11,
-            color: Color(0xFF98A2B3),
+          subtitle: const Text(
+            'Log out of your account',
+            style: TextStyle(
+              fontSize: 11,
+              color: Color(0xFF98A2B3),
+            ),
           ),
+          trailing: const Icon(
+            Icons.chevron_right_rounded,
+            color: Color(0xFFCBD5E1),
+            size: 18,
+          ),
+          onTap: () => showLogoutDialog(context, ref),
         ),
-        trailing: const Icon(
-          Icons.chevron_right_rounded,
-          color: Color(0xFFCBD5E1),
-          size: 18,
-        ),
-        onTap: () => showLogoutDialog(context, ref),
       ),
     );
   }

@@ -147,9 +147,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: AspectRatio(
-                  aspectRatio: 1280 / 714,
+                  aspectRatio: 1280 / 630,
                   child: Image.asset(
-                    'assets/images/why.jpeg',
+                    'assets/images/why2.png',
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return const SizedBox.shrink();
