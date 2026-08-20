@@ -8,6 +8,12 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/responsive/responsive_layout.dart';
 import '../../../models/delivery_boy_model.dart';
 import '../../../providers/delivery_provider.dart';
+import '../../../services/order_service.dart';
+
+int _requestCountdownSeconds(DeliveryOrder order) {
+  final elapsed = DateTime.now().difference(order.orderTime).inSeconds;
+  return (30 - elapsed).clamp(0, 30);
+}
 
 /// Requests Tab - Incoming delivery requests with accept/decline
 class RequestsTab extends ConsumerStatefulWidget {
@@ -19,6 +25,7 @@ class RequestsTab extends ConsumerStatefulWidget {
 
 class _RequestsTabState extends ConsumerState<RequestsTab> {
   Timer? _timer;
+  final Set<String> _dismissed = {};
 
   @override
   void initState() {
@@ -37,11 +44,14 @@ class _RequestsTabState extends ConsumerState<RequestsTab> {
   @override
   Widget build(BuildContext context) {
     final isDesktop = ResponsiveLayout.isDesktop(context);
-    final requests = ref.watch(deliveryRequestsProvider);
+    final requests = ref
+        .watch(deliveryRequestsStreamProvider)
+        .where((r) => !_dismissed.contains(r.id))
+        .toList();
     final agent = ref.watch(deliveryAgentProvider);
     final isOnline = agent.status == DeliveryStatus.onDuty;
-    final pendingRequests = requests.where((r) => r.status == DeliveryRequestStatus.pending).toList();
-    final acceptedRequests = requests.where((r) => r.status == DeliveryRequestStatus.accepted).toList();
+    final pendingRequests = requests.where((r) => r.status == DeliveryOrderStatus.pendingAcceptance).toList();
+    final acceptedRequests = requests.where((r) => r.status == DeliveryOrderStatus.accepted).toList();
 
     final textPrimary = AppColors.textPrimaryOf(context);
 
@@ -189,14 +199,14 @@ class _RequestsTabState extends ConsumerState<RequestsTab> {
     );
   }
 
-  Widget _buildRequestCard(DeliveryRequest request, {required bool isUrgent}) {
+  Widget _buildRequestCard(DeliveryOrder request, {required bool isUrgent}) {
     final textPrimary = AppColors.textPrimaryOf(context);
     final textSecondary = AppColors.textSecondaryOf(context);
     final textMuted = AppColors.textMutedOf(context);
     final cardBg = AppColors.cardBgOf(context);
     final cardBorder = AppColors.cardBorderOf(context);
 
-    final timeLeft = request.countdownSeconds;
+    final timeLeft = _requestCountdownSeconds(request);
     final isExpiring = timeLeft <= 10 && timeLeft > 0;
 
     return Container(
@@ -386,40 +396,53 @@ class _RequestsTabState extends ConsumerState<RequestsTab> {
     );
   }
 
-  void _handleAccept(String requestId) {
-    ref.read(deliveryRequestsProvider.notifier).acceptRequest(requestId);
-    // Also add to active orders
-    final request = ref.read(deliveryRequestsProvider).firstWhere((r) => r.id == requestId);
-    final order = DeliveryOrder(
-      id: 'DO-${DateTime.now().millisecondsSinceEpoch}',
-      orderId: request.orderId,
-      customerName: request.customerName,
-      customerPhone: request.customerPhone,
-      customerAddress: request.customerAddress,
-      pickupLocation: request.pickupLocation,
-      pickupPhone: request.pickupPhone,
-      items: request.items,
-      amount: request.amount,
-      deliveryFee: request.deliveryFee,
-      status: DeliveryOrderStatus.accepted,
-      orderTime: request.requestTime,
-      acceptedTime: DateTime.now(),
-      distance: request.distance,
-      estimatedTime: request.estimatedTime,
-    );
-    ref.read(deliveryOrdersProvider.notifier).addOrder(order);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Order ${request.orderId} accepted!'),
-        backgroundColor: AppColors.success,
-      ),
-    );
-    // Switch to Active tab
-    ref.read(deliveryPanelTabProvider.notifier).setTab(1);
+  void _handleAccept(String requestId) async {
+    final agent = ref.read(deliveryAgentProvider);
+    final order = _findOrder(requestId);
+    if (order == null) return;
+
+    try {
+      // Persist acceptance to Firestore (single source of truth). The order
+      // moves from Requests to Active automatically via the live stream.
+      await ref
+          .read(orderServiceProvider)
+          .acceptOrder(order.id, agent.id);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Order ${order.orderId} accepted!'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+      // Switch to Active tab
+      ref.read(deliveryPanelTabProvider.notifier).setTab(1);
+    } catch (e, st) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Could not accept order. Check your connection and try again.',
+          ),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
+  DeliveryOrder? _findOrder(String requestId) {
+    try {
+      return ref
+          .read(deliveryRequestsStreamProvider)
+          .firstWhere((r) => r.id == requestId);
+    } on StateError {
+      return null;
+    }
   }
 
   void _handleDecline(String requestId) {
-    ref.read(deliveryRequestsProvider.notifier).declineRequest(requestId);
+    // A pending request isn't assigned yet, so dismiss it locally so the card
+    // hides without affecting the order's Firestore status.
+    setState(() => _dismissed.add(requestId));
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Order declined'),

@@ -15,6 +15,8 @@ import '../../providers/address_provider.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/navigation_provider.dart';
 import '../../providers/order_provider.dart';
+import '../../providers/user_provider.dart';
+import '../../services/order_service.dart';
 import '../address/address_screen.dart';
 
 /// StateProvider for current payment method choice
@@ -26,7 +28,7 @@ final paymentMethodProvider = StateProvider<PaymentMethodType>((ref) {
 class CheckoutScreen extends ConsumerWidget {
   const CheckoutScreen({super.key});
 
-  void _onPlaceOrder(BuildContext context, WidgetRef ref) {
+  Future<void> _onPlaceOrder(BuildContext context, WidgetRef ref) async {
     final cartItems = ref.read(cartItemsProvider);
     if (cartItems.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -40,27 +42,33 @@ class CheckoutScreen extends ConsumerWidget {
     final paymentName = paymentMethod == PaymentMethodType.cashOnDelivery
         ? 'Cash on Delivery'
         : 'Online Payment';
+    final userId = ref.read(userProvider).id;
 
-    final subtotal = ref.read(cartSubtotalProvider);
-    final delivery = ref.read(cartDeliveryChargeProvider);
-    final discount = ref.read(cartDiscountProvider);
-    final grandTotal = ref.read(cartGrandTotalProvider);
-
-    final newOrder = Order(
-      id: _generateOrderId(),
-      items: cartItems,
-      subtotal: subtotal,
-      deliveryCharge: delivery,
-      discount: discount,
-      totalAmount: grandTotal,
-      status: OrderStatus.placed,
-      orderDate: DateTime.now(),
-      deliveryAddress: selectedAddress ?? _fallbackAddress(),
-      paymentMethod: paymentName,
-      estimatedDeliveryTime: 'Today by 7:30 AM',
+    // Show a loading indicator while the order is persisted to Firestore.
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
     );
 
-    // Persist the order so it appears in the Orders screen
+    Order newOrder;
+    try {
+      newOrder = await ref.read(orderServiceProvider).placeOrder(
+            userId: userId,
+            items: cartItems,
+            deliveryAddress: selectedAddress ?? _fallbackAddress(),
+            paymentMethod: paymentName,
+          );
+    } catch (e) {
+      Navigator.pop(context); // close loading dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not place order: $e')),
+      );
+      return;
+    }
+    Navigator.pop(context); // close loading dialog
+
+    // Persist locally too so it shows immediately in the Orders screen
     ref.read(ordersProvider.notifier).addOrder(newOrder);
     // Clear the cart after an order is placed
     ref.read(cartProvider.notifier).clearCart();

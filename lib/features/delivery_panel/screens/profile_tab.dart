@@ -235,35 +235,38 @@ class ProfileTab extends ConsumerWidget {
               ),
             ),
           ),
-          ListTile(
-            leading: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.warning.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
+          Material(
+            color: Colors.transparent,
+            child: ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.warning.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.swap_horiz_rounded, color: AppColors.warning),
               ),
-              child: const Icon(Icons.swap_horiz_rounded, color: AppColors.warning),
-            ),
-            title: Text(
-              'Simulate Customer Role',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: textPrimary,
+              title: Text(
+                'Simulate Customer Role',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: textPrimary,
+                ),
               ),
-            ),
-            subtitle: Text(
-              'Exit the delivery panel and return to the customer app',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 12,
-                color: AppColors.textSecondaryOf(context),
+              subtitle: Text(
+                'Exit the delivery panel and return to the customer app',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12,
+                  color: AppColors.textSecondaryOf(context),
+                ),
               ),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () {
+                ref.read(userProvider.notifier).setRole('customer');
+                context.push('/home');
+              },
             ),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () {
-              ref.read(userProvider.notifier).setRole('customer');
-              context.push('/home');
-            },
           ),
         ],
       ),

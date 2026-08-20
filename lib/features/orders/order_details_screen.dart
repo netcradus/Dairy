@@ -8,6 +8,7 @@ import '../../core/responsive/responsive.dart';
 import '../../core/widgets/category_image.dart';
 import '../../models/order.dart';
 import '../../providers/order_provider.dart';
+import '../../services/order_service.dart';
 import 'order_tracking_screen.dart';
 
 /// Order Details Screen — full breakdown of a single order
@@ -534,9 +535,10 @@ class OrderDetailsScreen extends ConsumerWidget {
             child: const Text('Keep Order'),
           ),
           ElevatedButton(
-            onPressed: () {
-              ref.read(ordersProvider.notifier).cancelOrder(orderId);
+            onPressed: () async {
               Navigator.pop(ctx);
+              await ref.read(orderServiceProvider).cancelOrder(orderId);
+              ref.read(ordersProvider.notifier).cancelOrder(orderId);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                     content: Text('Order cancelled successfully.')),

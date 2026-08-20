@@ -35,21 +35,6 @@ class ProductRepository {
   List<Product> getFreshDeals() {
     return const [
       Product(
-        id: 'p1',
-        title: 'Sawariya Full Cream Milk',
-        categoryId: 'cat_milk',
-        categoryName: 'Fresh Milk',
-        price: 34.0,
-        originalPrice: 38.0,
-        unit: '500 ml',
-        imageUrl: AppAssets.milkPng,
-        description: 'Rich, creamy and fresh cow milk sourced straight from Sawariya Farms.',
-        rating: 4.9,
-        reviewCount: 340,
-        isFreshDeal: true,
-        isBestSeller: true,
-      ),
-      Product(
         id: 'p2',
         title: 'Sawariya Pure Desi Ghee',
         categoryId: 'cat_ghee',
@@ -100,7 +85,7 @@ class ProductRepository {
     return const [
       Product(
         id: 'p5',
-        title: 'Sawariya Premium A2 Cow Milk',
+        title: 'Sawariya Milk',
         categoryId: 'cat_milk',
         categoryName: 'Fresh Milk',
         price: 45.0,
@@ -113,38 +98,11 @@ class ProductRepository {
         isA2CowMilk: true,
         isBestSeller: true,
       ),
-      Product(
-        id: 'p6',
-        title: 'Sawariya Premium A2 Cow Milk (Glass Bottle)',
-        categoryId: 'cat_milk',
-        categoryName: 'Fresh Milk',
-        price: 88.0,
-        originalPrice: 95.0,
-        unit: '1 L',
-        imageUrl: AppAssets.milkPng,
-        description: 'Chilled A2 milk in eco-friendly sterilized glass bottles.',
-        rating: 4.9,
-        reviewCount: 410,
-        isA2CowMilk: true,
-      ),
     ];
   }
 
   List<Product> getBestSellers() {
     return const [
-      Product(
-        id: 'p1',
-        title: 'Sawariya Full Cream Milk',
-        categoryId: 'cat_milk',
-        categoryName: 'Fresh Milk',
-        price: 34.0,
-        originalPrice: 38.0,
-        unit: '500 ml',
-        imageUrl: AppAssets.milkPng,
-        rating: 4.9,
-        reviewCount: 340,
-        isBestSeller: true,
-      ),
       Product(
         id: 'p2',
         title: 'Sawariya Pure Desi Ghee',
@@ -156,20 +114,6 @@ class ProductRepository {
         imageUrl: AppAssets.gheePlaceholder,
         rating: 5.0,
         reviewCount: 512,
-        isBestSeller: true,
-      ),
-      Product(
-        id: 'p5',
-        title: 'Sawariya Premium A2 Cow Milk',
-        categoryId: 'cat_milk',
-        categoryName: 'Fresh Milk',
-        price: 45.0,
-        originalPrice: 50.0,
-        unit: '500 ml',
-        imageUrl: AppAssets.milkPng,
-        rating: 5.0,
-        reviewCount: 620,
-        isA2CowMilk: true,
         isBestSeller: true,
       ),
       Product(

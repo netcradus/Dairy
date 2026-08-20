@@ -4,8 +4,11 @@ import 'package:carousel_slider/carousel_slider.dart';
 import '../../core/responsive/responsive.dart';
 import '../../core/widgets/product_card.dart';
 import '../../core/widgets/empty_state.dart';
+import '../../models/category.dart';
+import '../../models/product.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/navigation_provider.dart';
+import '../../repositories/firestore_product_repository.dart';
 import '../product/product_details_screen.dart';
 
 /// Sawariya Dairy — Redesigned Shop Catalog Screen matching the mockup
@@ -18,27 +21,28 @@ class ShopScreen extends ConsumerStatefulWidget {
 
 class _ShopScreenState extends ConsumerState<ShopScreen> {
   final TextEditingController _searchController = TextEditingController();
-  final CarouselSliderController _carouselController =
-      CarouselSliderController();
+  final CarouselSliderController _carouselController = CarouselSliderController();
   String _selectedCategoryId = 'cat_all';
   String _searchQuery = '';
   int _bannerIndex = 0;
 
+  /// Live streams from Cloud Firestore, subscribed once.
+  late final Stream<List<Product>> _productsStream;
+  late final Stream<List<Category>> _categoriesStream;
+
   final List<String> _shopBanners = [
-    'assets/images/shop1.png',
-    'assets/images/shop2.png',
-    'assets/images/shop3.png',
-  ];
-
-  final CarouselSliderController _middleCarouselController =
-      CarouselSliderController();
-  int _middleBannerIndex = 0;
-
-  final List<String> _middleBanners = [
     'assets/images/shopbanner1.png',
     'assets/images/shopbanner2.png',
     'assets/images/shopbanner3.png',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    final repo = ref.read(firestoreProductRepoProvider);
+    _productsStream = repo.streamProducts();
+    _categoriesStream = repo.streamCategories();
+  }
 
   @override
   void dispose() {
@@ -56,9 +60,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final allProducts = ref.watch(allProductsProvider);
     final cartQuantities = ref.watch(cartQuantitiesProvider);
 
+<<<<<<< HEAD
     // Filter products by category and search query
     final filteredProducts = allProducts.where((product) {
       final matchesCategory = _selectedCategoryId == 'cat_all' ||
@@ -88,6 +92,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       {'id': 'cat_ghee', 'title': 'Ghee', 'image': 'assets/images/ghee.png'},
     ];
 
+=======
+>>>>>>> 0899c804bdfc3d16143845b0fcb54a79f603a35a
     final isMobile = context.isMobile;
 
     return Scaffold(
@@ -123,9 +129,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                             size: 24,
                           ),
                           onPressed: () {
-                            ref
-                                .read(navigationProvider.notifier)
-                                .setIndex(1); // Nav to Shop / Cart
+                            ref.read(navigationProvider.notifier).setIndex(1); // Nav to Shop / Cart
                           },
                         ),
                         Positioned(
@@ -165,8 +169,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(24),
-                  border:
-                      Border.all(color: const Color(0xFFE2E8F0), width: 1.0),
+                  border: Border.all(color: const Color(0xFFE2E8F0), width: 1.0),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.015),
@@ -177,19 +180,16 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.search_rounded,
-                        color: Color(0xFF667085), size: 20),
+                    const Icon(Icons.search_rounded, color: Color(0xFF667085), size: 20),
                     const SizedBox(width: 10),
                     Expanded(
                       child: TextField(
                         controller: _searchController,
                         onChanged: (val) => setState(() => _searchQuery = val),
-                        style: const TextStyle(
-                            fontSize: 13.5, color: Color(0xFF172033)),
+                        style: const TextStyle(fontSize: 13.5, color: Color(0xFF172033)),
                         decoration: const InputDecoration(
                           hintText: 'Search for milk, paneer, ghee...',
-                          hintStyle: TextStyle(
-                              color: Color(0xFF98A2B3), fontSize: 13.5),
+                          hintStyle: TextStyle(color: Color(0xFF98A2B3), fontSize: 13.5),
                           border: InputBorder.none,
                           isDense: true,
                         ),
@@ -228,9 +228,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                       width: isActive ? 12 : 5,
                       height: 5,
                       decoration: BoxDecoration(
-                        color: isActive
-                            ? const Color(0xFF005F38)
-                            : const Color(0xFFCBD5E1),
+                        color: isActive ? const Color(0xFF005F38) : const Color(0xFFCBD5E1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -240,16 +238,25 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
               const SizedBox(height: 16),
 
               // ── Horizontal Categories Row ──
-              SizedBox(
-                height: 82,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: categoryOptions.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 20),
-                  itemBuilder: (context, index) {
-                    final cat = categoryOptions[index];
-                    final isSelected = cat['id'] == _selectedCategoryId;
+              StreamBuilder<List<Category>>(
+                stream: _categoriesStream,
+                builder: (context, catSnap) {
+                  final cats = <Category>[
+                    const Category(
+                      id: 'cat_all',
+                      title: 'All',
+                      imageUrl: '',
+                      subtitle: '',
+                      iconData: Icons.category_rounded,
+                      backgroundColor: const Color(0xFFEAF3FF),
+                      borderColor: const Color(0xFFB1D5C0),
+                      titleColor: const Color(0xFF005F38),
+                      itemCount: 0,
+                    ),
+                    ...?catSnap.data,
+                  ];
 
+<<<<<<< HEAD
                     return GestureDetector(
                       onTap: () {
                         setState(() {
@@ -299,27 +306,86 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                                         cat['image'] as String,
                                         fit: BoxFit.contain,
                                       ),
+=======
+                  return SizedBox(
+                    height: 82,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: cats.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 20),
+                      itemBuilder: (context, index) {
+                        final cat = cats[index];
+                        final isSelected = cat.id == _selectedCategoryId;
+
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedCategoryId = cat.id;
+                            });
+                          },
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                height: 50,
+                                width: 50,
+                                decoration: BoxDecoration(
+                                  color: isSelected ? const Color(0xFF005F38) : Colors.white,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: isSelected ? const Color(0xFF005F38) : const Color(0xFFCBD5E1),
+                                    width: 1.0,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.02),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 1),
+>>>>>>> 0899c804bdfc3d16143845b0fcb54a79f603a35a
                                     ),
-                            ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: cat.id == 'cat_all'
+                                      ? Text(
+                                          'All',
+                                          style: TextStyle(
+                                            color: isSelected ? Colors.white : const Color(0xFF005F38),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13.5,
+                                          ),
+                                        )
+                                      : cat.imageUrl.isNotEmpty
+                                          ? Padding(
+                                              padding: const EdgeInsets.all(10),
+                                              child: Image.asset(
+                                                cat.imageUrl,
+                                                fit: BoxFit.contain,
+                                              ),
+                                            )
+                                          : Icon(
+                                              cat.iconData ?? Icons.category_rounded,
+                                              size: 22,
+                                              color: isSelected ? Colors.white : const Color(0xFF005F38),
+                                            ),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                cat.title,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                                  color: isSelected ? const Color(0xFF005F38) : const Color(0xFF667085),
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 6),
-                          Text(
-                            cat['title'] as String,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: isSelected
-                                  ? FontWeight.w800
-                                  : FontWeight.w500,
-                              color: isSelected
-                                  ? const Color(0xFF005F38)
-                                  : const Color(0xFF667085),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                        );
+                      },
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 18),
 
@@ -356,86 +422,90 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
               const SizedBox(height: 12),
 
               // ── Products Grid ──
-              filteredProducts.isEmpty
-                  ? Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 40),
-                        child: EmptyStateWidget(
-                          icon: Icons.search_off_rounded,
-                          title: 'No products found',
-                          message:
-                              'No products match your filter. Try adjusting or reset.',
-                          buttonText: 'Reset Filters',
-                          onButtonPressed: _resetFilters,
-                        ),
-                      ),
-                    )
-                  : GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: isMobile ? 2 : 3,
-                        crossAxisSpacing: 14,
-                        mainAxisSpacing: 14,
-                        childAspectRatio: isMobile ? 0.73 : 0.79,
-                      ),
-                      itemCount: filteredProducts.length,
-                      itemBuilder: (context, index) {
-                        final product = filteredProducts[index];
-                        final qty = cartQuantities[product.id] ?? 0;
+              StreamBuilder<List<Product>>(
+                stream: _productsStream,
+                builder: (context, prodSnap) {
+                  final allProducts = prodSnap.data ?? [];
 
-                        return ProductCard(
-                          product: product,
-                          quantity: qty,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    ProductDetailsScreen(product: product),
-                              ),
+                  // Filter products by category and search query
+                  final filteredProducts = allProducts.where((product) {
+                    final matchesCategory = _selectedCategoryId == 'cat_all' ||
+                        product.categoryId == _selectedCategoryId;
+                    final matchesSearch = _searchQuery.isEmpty ||
+                        product.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                        product.categoryName.toLowerCase().contains(_searchQuery.toLowerCase());
+                    return matchesCategory && matchesSearch;
+                  }).toList();
+
+                  if (prodSnap.connectionState == ConnectionState.waiting &&
+                      allProducts.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 48),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+
+                  if (prodSnap.hasError) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      child: EmptyStateWidget(
+                        icon: Icons.cloud_off_rounded,
+                        title: 'Could not load products',
+                        message: 'Check your connection and Firestore setup.',
+                        buttonText: 'Retry',
+                        onButtonPressed: _resetFilters,
+                      ),
+                    );
+                  }
+
+                  return filteredProducts.isEmpty
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 40),
+                            child: EmptyStateWidget(
+                              icon: Icons.search_off_rounded,
+                              title: 'No products found',
+                              message: 'No products match your filter. Try adjusting or reset.',
+                              buttonText: 'Reset Filters',
+                              onButtonPressed: _resetFilters,
+                            ),
+                          ),
+                        )
+                      : GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: isMobile ? 2 : 3,
+                            crossAxisSpacing: 14,
+                            mainAxisSpacing: 14,
+                            childAspectRatio: isMobile ? 0.73 : 0.79,
+                          ),
+                          itemCount: filteredProducts.length,
+                          itemBuilder: (context, index) {
+                            final product = filteredProducts[index];
+                            final qty = cartQuantities[product.id] ?? 0;
+
+                            return ProductCard(
+                              product: product,
+                              quantity: qty,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ProductDetailsScreen(product: product),
+                                  ),
+                                );
+                              },
+                              onIncrement: () {
+                                ref.read(cartProvider.notifier).increment(product);
+                              },
+                              onDecrement: () {
+                                ref.read(cartProvider.notifier).decrement(product.id);
+                              },
                             );
                           },
-                          onIncrement: () {
-                            ref.read(cartProvider.notifier).increment(product);
-                          },
-                          onDecrement: () {
-                            ref
-                                .read(cartProvider.notifier)
-                                .decrement(product.id);
-                          },
                         );
-                      },
-                    ),
-              const SizedBox(height: 24),
-
-              // ── Middle Promotional Banners ──
-              _buildMiddlePromoBanner(),
-              const SizedBox(height: 8),
-
-              // Middle Banner Indicator Dots
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(_middleBanners.length, (index) {
-                  final isActive = index == _middleBannerIndex;
-                  return GestureDetector(
-                    onTap: () {
-                      _middleCarouselController.animateToPage(index);
-                      setState(() => _middleBannerIndex = index);
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 2.5),
-                      width: isActive ? 12 : 5,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: isActive
-                            ? const Color(0xFF005F38)
-                            : const Color(0xFFCBD5E1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  );
-                }),
+                },
               ),
               const SizedBox(height: 24),
 
@@ -453,7 +523,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     return CarouselSlider(
       carouselController: _carouselController,
       options: CarouselOptions(
-        aspectRatio: 1792 / 592,
+        aspectRatio: 1584 / 336,
         viewportFraction: 1.0,
         autoPlay: true,
         autoPlayInterval: const Duration(seconds: 4),
@@ -475,64 +545,14 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
             borderRadius: BorderRadius.circular(16),
             child: Image.asset(
               imagePath,
-              fit: BoxFit.contain,
+              fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
                 return Container(
                   color: const Color(0xFF005F38),
                   alignment: Alignment.center,
                   child: const Text(
                     'Sawariya Dairy',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold),
-                  ),
-                );
-              },
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildMiddlePromoBanner() {
-    return CarouselSlider(
-      carouselController: _middleCarouselController,
-      options: CarouselOptions(
-        aspectRatio: 1764 / 608,
-        viewportFraction: 1.0,
-        autoPlay: true,
-        autoPlayInterval: const Duration(seconds: 4),
-        enlargeCenterPage: false,
-        onPageChanged: (index, reason) {
-          setState(() {
-            _middleBannerIndex = index;
-          });
-        },
-      ),
-      items: _middleBanners.map((imagePath) {
-        return Container(
-          width: double.infinity,
-          margin: const EdgeInsets.symmetric(horizontal: 2.0),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Image.asset(
-              imagePath,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  color: const Color(0xFF005F38),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    'Sawariya Dairy Special',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold),
+                    style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 );
               },

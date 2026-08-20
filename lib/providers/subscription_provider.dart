@@ -5,8 +5,8 @@ import '../repositories/product_repository.dart';
 /// Builds seed subscriptions from the existing product catalog (Phase 7)
 List<Subscription> _buildSeedSubscriptions() {
   final repo = ProductRepository();
-  final milk = repo.getFreshDeals().first;
   final a2Milk = repo.getA2MilkProducts().first;
+  final milk = a2Milk;
   final ghee = repo.getFreshDeals().elementAt(1);
 
   final now = DateTime.now();

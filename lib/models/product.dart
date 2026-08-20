@@ -76,4 +76,44 @@ class Product {
       inStock: inStock ?? this.inStock,
     );
   }
+
+  /// Creates a [Product] from a Firestore document map.
+  factory Product.fromFirestore(Map<String, dynamic> data, String id) {
+    final original = data['originalPrice'];
+    return Product(
+      id: id,
+      title: (data['title'] as String?) ?? '',
+      categoryId: (data['categoryId'] as String?) ?? '',
+      categoryName: (data['categoryName'] as String?) ?? '',
+      price: (data['price'] as num?)?.toDouble() ?? 0.0,
+      originalPrice: original == null ? null : (original as num).toDouble(),
+      unit: (data['unit'] as String?) ?? '',
+      imageUrl: (data['imageUrl'] as String?) ?? '',
+      description: (data['description'] as String?) ?? '',
+      rating: (data['rating'] as num?)?.toDouble() ?? 4.8,
+      reviewCount: (data['reviewCount'] as num?)?.toInt() ?? 0,
+      isFreshDeal: (data['isFreshDeal'] as bool?) ?? false,
+      isBestSeller: (data['isBestSeller'] as bool?) ?? false,
+      isA2CowMilk: (data['isA2CowMilk'] as bool?) ?? false,
+      inStock: (data['inStock'] as bool?) ?? true,
+    );
+  }
+
+  /// Serializes this [Product] for writing to Firestore.
+  Map<String, dynamic> toFirestore() => {
+        'title': title,
+        'categoryId': categoryId,
+        'categoryName': categoryName,
+        'price': price,
+        'originalPrice': originalPrice,
+        'unit': unit,
+        'imageUrl': imageUrl,
+        'description': description,
+        'rating': rating,
+        'reviewCount': reviewCount,
+        'isFreshDeal': isFreshDeal,
+        'isBestSeller': isBestSeller,
+        'isA2CowMilk': isA2CowMilk,
+        'inStock': inStock,
+      };
 }

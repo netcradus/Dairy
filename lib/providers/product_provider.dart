@@ -4,6 +4,7 @@ import '../models/category.dart';
 import '../models/banner_item.dart';
 import '../repositories/product_repository.dart';
 import '../repositories/category_repository.dart';
+import '../repositories/firestore_product_repository.dart';
 
 export 'cart_provider.dart';
 
@@ -13,6 +14,11 @@ final productRepositoryProvider = Provider<ProductRepository>((ref) {
 
 final categoryRepositoryProvider = Provider<CategoryRepository>((ref) {
   return CategoryRepository();
+});
+
+/// Provides the Cloud Firestore-backed product/category repository.
+final firestoreProductRepoProvider = Provider<FirestoreProductRepository>((ref) {
+  return FirestoreProductRepository();
 });
 
 final heroBannersProvider = Provider<List<BannerItem>>((ref) {

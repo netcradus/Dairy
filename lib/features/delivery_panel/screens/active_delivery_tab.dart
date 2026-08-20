@@ -6,7 +6,9 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/responsive/responsive_layout.dart';
 import '../../../models/delivery_boy_model.dart';
+import '../../../models/order.dart';
 import '../../../providers/delivery_provider.dart';
+import '../../../services/order_service.dart';
 
 /// Active Delivery Tab - Pickup -> Out for Delivery -> Delivered flow
 class ActiveDeliveryTab extends ConsumerStatefulWidget {
@@ -22,44 +24,50 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
   @override
   Widget build(BuildContext context) {
     final isDesktop = ResponsiveLayout.isDesktop(context);
-    final orders = ref.watch(deliveryOrdersProvider);
-    final activeOrders = orders.where((o) =>
-      o.status == DeliveryOrderStatus.accepted ||
-      o.status == DeliveryOrderStatus.pickup ||
-      o.status == DeliveryOrderStatus.outForDelivery
-    ).toList();
     final agent = ref.watch(deliveryAgentProvider);
     final isOnline = agent.status == DeliveryStatus.onDuty;
-
     final textPrimary = AppColors.textPrimaryOf(context);
 
     if (!isOnline) {
       return _buildOfflineView(context);
     }
 
-    if (activeOrders.isEmpty) {
-      return _buildEmptyView(context);
-    }
+    final ordersAsync = ref.watch(deliveryActiveOrdersStreamProvider);
+    return ordersAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => _buildErrorView(context),
+      data: (orders) {
+        final activeOrders = orders.where((o) =>
+          o.status == DeliveryOrderStatus.accepted ||
+          o.status == DeliveryOrderStatus.pickup ||
+          o.status == DeliveryOrderStatus.outForDelivery
+        ).toList();
 
-    // If there's a selected order, show detail view on mobile
-    if (!isDesktop && _selectedOrder != null) {
-      return _buildOrderDetailView(_selectedOrder!);
-    }
+        if (activeOrders.isEmpty) {
+          return _buildEmptyView(context);
+        }
 
-    return ListView(
-      padding: EdgeInsets.all(isDesktop ? 24 : 16),
-      children: [
-        Text(
-          'Active Deliveries (${activeOrders.length})',
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-            color: textPrimary,
-          ),
-        ),
-        const SizedBox(height: 12),
-        ...activeOrders.map((order) => _buildOrderCard(order, isDesktop)),
-      ],
+        // If there's a selected order, show detail view on mobile
+        if (!isDesktop && _selectedOrder != null) {
+          return _buildOrderDetailView(_selectedOrder!);
+        }
+
+        return ListView(
+          padding: EdgeInsets.all(isDesktop ? 24 : 16),
+          children: [
+            Text(
+              'Active Deliveries (${activeOrders.length})',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: textPrimary,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ...activeOrders.map((order) => _buildOrderCard(order, isDesktop)),
+          ],
+        );
+      },
     );
   }
 
@@ -121,8 +129,7 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
     );
   }
 
-  Widget _buildEmptyView(BuildContext context) {
-    final textPrimary = AppColors.textPrimaryOf(context);
+  Widget _buildEmptyView(BuildContext context) {    final textPrimary = AppColors.textPrimaryOf(context);
     final textSecondary = AppColors.textSecondaryOf(context);
 
     return Center(
@@ -155,6 +162,52 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
             const SizedBox(height: 8),
             Text(
               'Accept requests from the Requests tab to start delivering',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 16,
+                color: textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorView(BuildContext context) {
+    final textPrimary = AppColors.textPrimaryOf(context);
+    final textSecondary = AppColors.textSecondaryOf(context);
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.cloud_off_rounded,
+                size: 64,
+                color: AppColors.error,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Could not load orders',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                color: textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Check your connection and try again',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 16,
                 color: textSecondary,
@@ -372,7 +425,9 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
             const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () => ref.read(deliveryOrdersProvider.notifier).startPickup(order.id),
+                onPressed: () {
+                  _transitionOrder(order, OrderStatus.preparing);
+                },
                 icon: const Icon(Icons.inventory_2_rounded, size: 18),
                 label: const Text('Start Pickup'),
                 style: ElevatedButton.styleFrom(
@@ -418,7 +473,9 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
             const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () => ref.read(deliveryOrdersProvider.notifier).startDelivery(order.id),
+                onPressed: () {
+                  _transitionOrder(order, OrderStatus.outForDelivery);
+                },
                 icon: const Icon(Icons.local_shipping_rounded, size: 18),
                 label: const Text('Start Delivery'),
                 style: ElevatedButton.styleFrom(
@@ -625,8 +682,25 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
             child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: AppColors.textSecondaryOf(context))),
           ),
           ElevatedButton(
-            onPressed: () {
-              ref.read(deliveryOrdersProvider.notifier).completeDelivery(order.id);
+            onPressed: () async {
+              try {
+                await ref
+                    .read(orderServiceProvider)
+                    .updateOrderStatus(order.id, OrderStatus.delivered);
+              } catch (e, st) {
+                if (mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Could not update order. Check your connection and try again.',
+                      ),
+                      backgroundColor: AppColors.error,
+                    ),
+                  );
+                }
+                return;
+              }
               // Add to history
               ref.read(deliveryHistoryProvider.notifier).addToHistory(
                 DeliveryHistoryItem(
@@ -695,6 +769,25 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
     final uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(address)}');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  /// Updates an order's status in Firestore with graceful error handling so a
+  /// failed network write surfaces a message instead of failing silently.
+  Future<void> _transitionOrder(DeliveryOrder order, OrderStatus status) async {
+    try {
+      await ref.read(orderServiceProvider).updateOrderStatus(order.id, status);
+    } catch (e, st) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Could not update order. Check your connection and try again.',
+            ),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 }
