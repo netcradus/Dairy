@@ -21,12 +21,23 @@ class ShopScreen extends ConsumerStatefulWidget {
 
 class _ShopScreenState extends ConsumerState<ShopScreen> {
   final TextEditingController _searchController = TextEditingController();
-  final CarouselSliderController _carouselController = CarouselSliderController();
+  final CarouselSliderController _carouselController =
+      CarouselSliderController();
   String _selectedCategoryId = 'cat_all';
   String _searchQuery = '';
   int _bannerIndex = 0;
 
   final List<String> _shopBanners = [
+    'assets/images/shop1.png',
+    'assets/images/shop2.png',
+    'assets/images/shop3.png',
+  ];
+
+  final CarouselSliderController _middleCarouselController =
+      CarouselSliderController();
+  int _middleBannerIndex = 0;
+
+  final List<String> _middleBanners = [
     'assets/images/shopbanner1.png',
     'assets/images/shopbanner2.png',
     'assets/images/shopbanner3.png',
@@ -57,7 +68,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
           product.categoryId == _selectedCategoryId;
       final matchesSearch = _searchQuery.isEmpty ||
           product.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          product.categoryName.toLowerCase().contains(_searchQuery.toLowerCase());
+          product.categoryName
+              .toLowerCase()
+              .contains(_searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     }).toList();
 
@@ -65,8 +78,16 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     final categoryOptions = [
       {'id': 'cat_all', 'title': 'All', 'image': ''},
       {'id': 'cat_milk', 'title': 'Milk', 'image': 'assets/images/milk.png'},
-      {'id': 'cat_makhan', 'title': 'Curd', 'image': 'assets/images/makhan.png'},
-      {'id': 'cat_paneer', 'title': 'Paneer', 'image': 'assets/images/paneer.png'},
+      {
+        'id': 'cat_makhan',
+        'title': 'Curd',
+        'image': 'assets/images/makhan.png'
+      },
+      {
+        'id': 'cat_paneer',
+        'title': 'Paneer',
+        'image': 'assets/images/paneer.png'
+      },
       {'id': 'cat_ghee', 'title': 'Ghee', 'image': 'assets/images/ghee.png'},
     ];
 
@@ -105,7 +126,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                             size: 24,
                           ),
                           onPressed: () {
-                            ref.read(navigationProvider.notifier).setIndex(1); // Nav to Shop / Cart
+                            ref
+                                .read(navigationProvider.notifier)
+                                .setIndex(1); // Nav to Shop / Cart
                           },
                         ),
                         Positioned(
@@ -145,7 +168,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: const Color(0xFFE2E8F0), width: 1.0),
+                  border:
+                      Border.all(color: const Color(0xFFE2E8F0), width: 1.0),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.015),
@@ -156,16 +180,19 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.search_rounded, color: Color(0xFF667085), size: 20),
+                    const Icon(Icons.search_rounded,
+                        color: Color(0xFF667085), size: 20),
                     const SizedBox(width: 10),
                     Expanded(
                       child: TextField(
                         controller: _searchController,
                         onChanged: (val) => setState(() => _searchQuery = val),
-                        style: const TextStyle(fontSize: 13.5, color: Color(0xFF172033)),
+                        style: const TextStyle(
+                            fontSize: 13.5, color: Color(0xFF172033)),
                         decoration: const InputDecoration(
                           hintText: 'Search for milk, paneer, ghee...',
-                          hintStyle: TextStyle(color: Color(0xFF98A2B3), fontSize: 13.5),
+                          hintStyle: TextStyle(
+                              color: Color(0xFF98A2B3), fontSize: 13.5),
                           border: InputBorder.none,
                           isDense: true,
                         ),
@@ -204,7 +231,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                       width: isActive ? 12 : 5,
                       height: 5,
                       decoration: BoxDecoration(
-                        color: isActive ? const Color(0xFF005F38) : const Color(0xFFCBD5E1),
+                        color: isActive
+                            ? const Color(0xFF005F38)
+                            : const Color(0xFFCBD5E1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -237,10 +266,14 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                             height: 50,
                             width: 50,
                             decoration: BoxDecoration(
-                              color: isSelected ? const Color(0xFF005F38) : Colors.white,
+                              color: isSelected
+                                  ? const Color(0xFF005F38)
+                                  : Colors.white,
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: isSelected ? const Color(0xFF005F38) : const Color(0xFFCBD5E1),
+                                color: isSelected
+                                    ? const Color(0xFF005F38)
+                                    : const Color(0xFFCBD5E1),
                                 width: 1.0,
                               ),
                               boxShadow: [
@@ -256,7 +289,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                                   ? Text(
                                       'All',
                                       style: TextStyle(
-                                        color: isSelected ? Colors.white : const Color(0xFF005F38),
+                                        color: isSelected
+                                            ? Colors.white
+                                            : const Color(0xFF005F38),
                                         fontWeight: FontWeight.bold,
                                         fontSize: 13.5,
                                       ),
@@ -275,8 +310,12 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                             cat['title'] as String,
                             style: TextStyle(
                               fontSize: 11,
-                              fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                              color: isSelected ? const Color(0xFF005F38) : const Color(0xFF667085),
+                              fontWeight: isSelected
+                                  ? FontWeight.w800
+                                  : FontWeight.w500,
+                              color: isSelected
+                                  ? const Color(0xFF005F38)
+                                  : const Color(0xFF667085),
                             ),
                           ),
                         ],
@@ -327,7 +366,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                         child: EmptyStateWidget(
                           icon: Icons.search_off_rounded,
                           title: 'No products found',
-                          message: 'No products match your filter. Try adjusting or reset.',
+                          message:
+                              'No products match your filter. Try adjusting or reset.',
                           buttonText: 'Reset Filters',
                           onButtonPressed: _resetFilters,
                         ),
@@ -354,7 +394,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => ProductDetailsScreen(product: product),
+                                builder: (_) =>
+                                    ProductDetailsScreen(product: product),
                               ),
                             );
                           },
@@ -362,11 +403,43 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                             ref.read(cartProvider.notifier).increment(product);
                           },
                           onDecrement: () {
-                            ref.read(cartProvider.notifier).decrement(product.id);
+                            ref
+                                .read(cartProvider.notifier)
+                                .decrement(product.id);
                           },
                         );
                       },
                     ),
+              const SizedBox(height: 24),
+
+              // ── Middle Promotional Banners ──
+              _buildMiddlePromoBanner(),
+              const SizedBox(height: 8),
+
+              // Middle Banner Indicator Dots
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(_middleBanners.length, (index) {
+                  final isActive = index == _middleBannerIndex;
+                  return GestureDetector(
+                    onTap: () {
+                      _middleCarouselController.animateToPage(index);
+                      setState(() => _middleBannerIndex = index);
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                      width: isActive ? 12 : 5,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: isActive
+                            ? const Color(0xFF005F38)
+                            : const Color(0xFFCBD5E1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  );
+                }),
+              ),
               const SizedBox(height: 24),
 
               // ── Bottom Benefits Strip ──
@@ -383,7 +456,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     return CarouselSlider(
       carouselController: _carouselController,
       options: CarouselOptions(
-        aspectRatio: 1584 / 336,
+        aspectRatio: 1792 / 592,
         viewportFraction: 1.0,
         autoPlay: true,
         autoPlayInterval: const Duration(seconds: 4),
@@ -405,14 +478,64 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
             borderRadius: BorderRadius.circular(16),
             child: Image.asset(
               imagePath,
-              fit: BoxFit.cover,
+              fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) {
                 return Container(
                   color: const Color(0xFF005F38),
                   alignment: Alignment.center,
                   child: const Text(
                     'Sawariya Dairy',
-                    style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildMiddlePromoBanner() {
+    return CarouselSlider(
+      carouselController: _middleCarouselController,
+      options: CarouselOptions(
+        aspectRatio: 1764 / 608,
+        viewportFraction: 1.0,
+        autoPlay: true,
+        autoPlayInterval: const Duration(seconds: 4),
+        enlargeCenterPage: false,
+        onPageChanged: (index, reason) {
+          setState(() {
+            _middleBannerIndex = index;
+          });
+        },
+      ),
+      items: _middleBanners.map((imagePath) {
+        return Container(
+          width: double.infinity,
+          margin: const EdgeInsets.symmetric(horizontal: 2.0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Image.asset(
+              imagePath,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: const Color(0xFF005F38),
+                  alignment: Alignment.center,
+                  child: const Text(
+                    'Sawariya Dairy Special',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold),
                   ),
                 );
               },

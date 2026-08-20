@@ -20,6 +20,6 @@ void main() {
     // Header, search and filters should be present.
     expect(find.byType(TextField), findsOneWidget);
     // Product cards should render (best sellers / all products).
-    expect(find.text('All Fresh Dairy Products'), findsOneWidget);
+    expect(find.text('Best Sellers'), findsOneWidget);
   });
 }

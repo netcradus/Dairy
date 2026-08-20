@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 /// Sawariya Dairy Centralized Color Palette
 abstract class AppColors {
-  // Brand Colors
-  static const Color primaryBlue = Color(0xFF1455C3);
-  static const Color secondaryBlue = Color(0xFF3D7FE8);
-  static const Color lightBlue = Color(0xFFEAF3FF);
-  static const Color accentBlue = Color(0xFF00B4D8);
+  // Brand Colors (Logo Color Palette: Fresh Forest Green)
+  static const Color primaryBlue = Color(0xFF005F38);
+  static const Color secondaryBlue = Color(0xFF2E8B57);
+  static const Color lightBlue = Color(0xFFE8F5E9);
+  static const Color accentBlue = Color(0xFF4CAF50);
 
   // Surface & Background Colors
-  static const Color background = Color(0xFFF8FAFD);
+  static const Color background = Color(0xFFF4F9F6);
   static const Color surface = Color(0xFFFFFFFF);
   static const Color cardBackground = Color(0xFFFFFFFF);
   static const Color inputBackground = Color(0xFFF1F5F9);
@@ -24,11 +24,11 @@ abstract class AppColors {
   static const Color success = Color(0xFF22A06B);
   static const Color warning = Color(0xFFF59E0B);
   static const Color error = Color(0xFFE53935);
-  static const Color info = Color(0xFF0284C7);
+  static const Color info = Color(0xFF005F38);
 
   // Border & Divider Colors
   static const Color border = Color(0xFFE2E8F0);
-  static const Color borderFocused = Color(0xFF1455C3);
+  static const Color borderFocused = Color(0xFF005F38);
   static const Color divider = Color(0xFFEEF2F6);
 
   // Accent & Decorative Colors
@@ -38,43 +38,43 @@ abstract class AppColors {
   static const Color shadow = Color(0x0C172033);
 
   // Dark Theme Palette
-  static const Color darkBackground = Color(0xFF0F172A);
-  static const Color darkSurface = Color(0xFF1E293B);
-  static const Color darkCard = Color(0xFF1E293B);
+  static const Color darkBackground = Color(0xFF0A1C14);
+  static const Color darkSurface = Color(0xFF11261B);
+  static const Color darkCard = Color(0xFF11261B);
   static const Color darkTextPrimary = Color(0xFFF8FAFC);
   static const Color darkTextSecondary = Color(0xFF94A3B8);
-  static const Color darkBorder = Color(0xFF334155);
+  static const Color darkBorder = Color(0xFF1B3B2B);
 
-  // Sidebar Colors (Dark Navy - consistent in both modes for a premium admin feel)
-  static const Color sidebarBg = Color(0xFF0A132C);
-  static const Color sidebarBgDarker = Color(0xFF070E22);
+  // Sidebar Colors (Green theme - consistent in both modes for a premium admin feel)
+  static const Color sidebarBg = Color(0xFF081F14);
+  static const Color sidebarBgDarker = Color(0xFF04120B);
   static const Color sidebarText = Color(0xFF94A3B8);
-  static const Color sidebarActive = Color(0xFF1E6BFF);
+  static const Color sidebarActive = Color(0xFF005F38);
   static const Color sidebarActiveText = Color(0xFFFFFFFF);
-  static const Color sidebarHover = Color(0xFF132247);
-  static const Color sidebarBorder = Color(0xFF1E293B);
+  static const Color sidebarHover = Color(0xFF0E2F1E);
+  static const Color sidebarBorder = Color(0xFF1B3B2B);
 
   // Light Theme Palette aliases / additions
   static const Color cardBg = Color(0xFFFFFFFF);
   static const Color cardBorder = Color(0xFFEBF0F7);
 
   // Dark Theme Palette additions
-  static const Color darkCardBg = Color(0xFF161F36);
-  static const Color darkCardBorder = Color(0xFF222F4E);
-  static const Color darkDivider = Color(0xFF1E293B);
+  static const Color darkCardBg = Color(0xFF122C20);
+  static const Color darkCardBorder = Color(0xFF1B3E2F);
+  static const Color darkDivider = Color(0xFF1B3B2B);
   static const Color darkTextMuted = Color(0xFF64748B);
 
   // Primary brand
-  static const Color primary = Color(0xFF1E6BFF);
-  static const Color primaryLight = Color(0xFFEFF6FF);
-  static const Color primaryDark = Color(0xFF1D4ED8);
+  static const Color primary = Color(0xFF005F38);
+  static const Color primaryLight = Color(0xFFE8F5E9);
+  static const Color primaryDark = Color(0xFF004D2C);
 
   // KPI Card Theme Colors
-  static const Color revenueGreen = Color(0xFF00BA88);
-  static const Color revenueGreenBg = Color(0xFFE8FAF2);
+  static const Color revenueGreen = Color(0xFF2E8B57);
+  static const Color revenueGreenBg = Color(0xFFE8F5E9);
   
-  static const Color ordersBlue = Color(0xFF1E6BFF);
-  static const Color ordersBlueBg = Color(0xFFEFF6FF);
+  static const Color ordersBlue = Color(0xFF005F38);
+  static const Color ordersBlueBg = Color(0xFFE8F5E9);
   
   static const Color customersOrange = Color(0xFFF97316);
   static const Color customersOrangeBg = Color(0xFFFFF4EC);

@@ -53,7 +53,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   Future<void> _navigateToNextScreen() async {
-    await Future.delayed(const Duration(milliseconds: 2200));
+    await Future.delayed(const Duration(milliseconds: 2000));
     if (!mounted) return;
 
     // If a session already exists, go straight to the relevant home screen
@@ -94,6 +94,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       backgroundColor: AppColors.background,
       body: Stack(
         children: [
+          // Full-screen background image
+          Positioned.fill(
+            child: Image.asset(
+              AppAssets.landingBg,
+              fit: BoxFit.cover,
+            ),
+          ),
+          // Ambient overlay
+          Positioned.fill(
+            child: Container(
+              color: Colors.black.withValues(alpha: 0.1),
+            ),
+          ),
           // Background Gradient Bubbles
           Positioned(
             top: -60,
@@ -136,11 +149,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                         width: 110,
                         height: 110,
                         decoration: BoxDecoration(
-                          color: AppColors.primaryBlue,
+                          color: Colors.white,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.primaryBlue.withValues(alpha: 0.3),
+                              color: Colors.black.withValues(alpha: 0.1),
                               blurRadius: 24,
                               offset: const Offset(0, 10),
                             ),

@@ -180,36 +180,6 @@ class ProfileScreen extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
       child: Stack(
         children: [
-          // Top Left Brand Logo
-          Positioned(
-            left: 0,
-            top: 0,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Image.asset(
-                  'assets/images/sawariya_logo.png',
-                  height: 48,
-                  errorBuilder: (_, __, ___) => const Icon(
-                    Icons.eco_rounded,
-                    color: Color(0xFF005F38),
-                    size: 32,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Pure Milk, Pure Trust',
-                  style: TextStyle(
-                    fontSize: 8.5,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF005F38),
-                    letterSpacing: 0.2,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
           // Main User Details
           Center(
             child: Padding(

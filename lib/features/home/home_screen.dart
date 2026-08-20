@@ -141,6 +141,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ],
                 ),
 
+              const SizedBox(height: AppSizes.p24),
+
+              // ─── Why Choose Us Banner ───
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: AspectRatio(
+                  aspectRatio: 1280 / 714,
+                  child: Image.asset(
+                    'assets/images/why.jpeg',
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                ),
+              ),
+
               const SizedBox(height: 36),
             ],
           ),
@@ -302,7 +319,8 @@ class _HeroPromotionalBanner extends StatefulWidget {
 }
 
 class _HeroPromotionalBannerState extends State<_HeroPromotionalBanner> {
-  final CarouselSliderController _carouselController = CarouselSliderController();
+  final CarouselSliderController _carouselController =
+      CarouselSliderController();
 
   final List<String> bannerImages = [
     'assets/images/banner1.png',
@@ -311,9 +329,8 @@ class _HeroPromotionalBannerState extends State<_HeroPromotionalBanner> {
 
   @override
   Widget build(BuildContext context) {
-    final double bannerHeight = context.isMobile
-        ? 220
-        : (context.isTablet ? 270 : 340);
+    final double bannerHeight =
+        context.isMobile ? 220 : (context.isTablet ? 270 : 340);
 
     return CarouselSlider(
       carouselController: _carouselController,
@@ -764,73 +781,40 @@ class _FreshnessBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF005F38), Color(0xFF004D2E)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    return GestureDetector(
+      onTap: onExploreTap,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF005F38).withOpacity(0.25),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Left Content
-          const Expanded(
-            flex: 6,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Image.asset(
+            'assets/images/home.png',
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                height: 120,
+                color: const Color(0xFF005F38),
+                alignment: Alignment.center,
+                child: const Text(
                   'Freshness You Can Trust',
                   style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
                     color: Colors.white,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 12),
-                _CheckRow(text: 'Sourced from trusted farms'),
-                SizedBox(height: 6),
-                _CheckRow(text: 'Hygienically processed'),
-                SizedBox(height: 6),
-                _CheckRow(text: 'Delivered with care'),
-              ],
-            ),
+              );
+            },
           ),
-
-          // Right Illustration Image
-          Expanded(
-            flex: 4,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: SizedBox(
-                height: 100,
-                child: AspectRatio(
-                  aspectRatio: 4 / 5,
-                  child: Image.asset(
-                    AppAssets.milkBottle,
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => const Icon(
-                      Icons.shopping_basket_rounded,
-                      size: 60,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -882,11 +866,14 @@ class _CategoryPromotionalBanner extends StatefulWidget {
   const _CategoryPromotionalBanner();
 
   @override
-  State<_CategoryPromotionalBanner> createState() => _CategoryPromotionalBannerState();
+  State<_CategoryPromotionalBanner> createState() =>
+      _CategoryPromotionalBannerState();
 }
 
-class _CategoryPromotionalBannerState extends State<_CategoryPromotionalBanner> {
-  final CarouselSliderController _carouselController = CarouselSliderController();
+class _CategoryPromotionalBannerState
+    extends State<_CategoryPromotionalBanner> {
+  final CarouselSliderController _carouselController =
+      CarouselSliderController();
 
   final List<String> bannerImages = [
     'assets/images/banner4.png',
@@ -922,7 +909,10 @@ class _CategoryPromotionalBannerState extends State<_CategoryPromotionalBanner> 
                       alignment: Alignment.center,
                       child: const Text(
                         'Sawariya Dairy Specials',
-                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold),
                       ),
                     );
                   },

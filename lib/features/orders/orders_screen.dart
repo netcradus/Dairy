@@ -50,34 +50,55 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Title
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 12, 16, 10),
-              child: Text(
-                'My Orders',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFF172033),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Title
+              const Padding(
+                padding: EdgeInsets.fromLTRB(16, 12, 16, 10),
+                child: Text(
+                  'My Orders',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF172033),
+                  ),
                 ),
               ),
-            ),
-
-            // Horizontal Filter bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: _buildFilterBar(),
-            ),
-            const SizedBox(height: 14),
-
-            // Orders list
-            Expanded(
-              child: filteredOrders.isEmpty
+  
+              // Deliver Banner
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: AspectRatio(
+                    aspectRatio: 2172 / 724,
+                    child: Image.asset(
+                      'assets/images/deliver.png',
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 6),
+  
+              // Horizontal Filter bar
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: _buildFilterBar(),
+              ),
+              const SizedBox(height: 14),
+  
+              // Orders list
+              filteredOrders.isEmpty
                   ? _buildEmptyState(context)
                   : ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
                       padding: EdgeInsets.symmetric(
                         horizontal: context.responsiveHorizontalPadding,
                         vertical: 10,
@@ -90,8 +111,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                         );
                       },
                     ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -78,25 +78,30 @@ class MainLayoutScreen extends ConsumerWidget {
       );
     }
 
+    final topPadding = MediaQuery.paddingOf(context).top;
+
     // Mobile & Tablet Layout
     return Scaffold(
-      appBar: AppTopAppBar(
-        cartItemCount: cartCount,
-        onSearchTap: () {
-          ref.read(navigationProvider.notifier).setIndex(1);
-        },
-        onNotificationTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const NotificationsScreen()),
-          );
-        },
-        onCartTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const CartScreen()),
-          );
-        },
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(72.0 + topPadding),
+        child: AppTopAppBar(
+          cartItemCount: cartCount,
+          onSearchTap: () {
+            ref.read(navigationProvider.notifier).setIndex(1);
+          },
+          onNotificationTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+            );
+          },
+          onCartTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const CartScreen()),
+            );
+          },
+        ),
       ),
       body: IndexedStack(
         index: currentIndex,
