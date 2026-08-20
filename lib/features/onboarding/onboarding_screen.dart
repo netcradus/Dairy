@@ -99,7 +99,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           // 1. Full-screen Lush Green Meadow Background
           Positioned.fill(
             child: Image.asset(
-              AppAssets.landingBgMeadow,
+              AppAssets.landingBg,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) => Container(
                 decoration: const BoxDecoration(
@@ -473,7 +473,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Image.asset(
-                'assets/images/sawariya_logo.png',
+                'assets/images/logo(1).png',
                 fit: BoxFit.contain,
               ),
             ),
@@ -687,13 +687,22 @@ class _DairyFreshVisual extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.local_drink_rounded, size: 80, color: AppColors.primaryBlue),
-          SizedBox(height: 12),
-          Text(
+          Image.asset(
+            'assets/images/logo(1).png',
+            height: 120,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) => const Icon(
+              Icons.local_drink_rounded,
+              size: 80,
+              color: AppColors.primaryBlue,
+            ),
+          ),
+          const SizedBox(height: 12),
+          const Text(
             '100% PURE MILK',
             style: TextStyle(
               fontSize: 14,

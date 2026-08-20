@@ -11,6 +11,7 @@ abstract class AppAssets {
   static const String landingHeroProducts = '$imagePath/landing_hero_products.jpg';
   static const String landingHeroScooter = '$imagePath/landing_hero_scooter.jpg';
   static const String landingBgMeadow = '$imagePath/landing_bg_meadow.jpg';
+  static const String landingBg = '$imagePath/landing.jpg';
   static const String loginHeroCow = '$imagePath/login_hero_cow.jpg';
   static const String dairyMascot = '$imagePath/dairy_mascot.jpg';
   static const String sawariyaLogo = '$imagePath/sawariya_logo.png';

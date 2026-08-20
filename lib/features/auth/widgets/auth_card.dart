@@ -27,6 +27,19 @@ class AuthCard extends StatelessWidget {
       backgroundColor: const Color(0xFFFAF7F0), // Soft Parchment / Off-White
       body: Stack(
         children: [
+          // Full-screen background image
+          Positioned.fill(
+            child: Image.asset(
+              AppAssets.landingBg,
+              fit: BoxFit.cover,
+            ),
+          ),
+          // Ambient overlay to ensure contrast
+          Positioned.fill(
+            child: Container(
+              color: Colors.black.withValues(alpha: 0.15),
+            ),
+          ),
           // 1. Background Watermark Graphics
           // Bottom-Left Watermark (Milk drops & Reeds)
           Positioned(
@@ -100,24 +113,33 @@ class AuthCard extends StatelessWidget {
                       child: isDesktop
                           ? Row(
                               children: [
-                                // Left Column: Dairy Mascot Visual Panel (4:5 full ratio)
+                                // Left Column: Dairy Mascot Visual Panel
                                 Expanded(
                                   flex: 5,
                                   child: Container(
                                     height: 520,
                                     decoration: const BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [Color(0xFFFFF8F0), Color(0xFFFAF0DC)],
-                                        begin: Alignment.topCenter,
-                                        end: Alignment.bottomCenter,
-                                      ),
+                                      color: Colors.white,
                                     ),
                                     child: Center(
                                       child: Padding(
                                         padding: const EdgeInsets.all(20),
-                                        child: AspectRatio(
-                                          aspectRatio: 4 / 5,
-                                          child: const _AuthVideoPlayer(fit: BoxFit.contain),
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Image.asset(
+                                              'assets/images/logo(1).png',
+                                              height: 90,
+                                              fit: BoxFit.contain,
+                                            ),
+                                            const SizedBox(height: 16),
+                                            Expanded(
+                                              child: Image.asset(
+                                                'assets/images/log(1).png',
+                                                fit: BoxFit.contain,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ),
@@ -140,18 +162,27 @@ class AuthCard extends StatelessWidget {
                                 Container(
                                   height: 240,
                                   decoration: const BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [Color(0xFFFFF8F0), Color(0xFFFAF0DC)],
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                    ),
+                                    color: Colors.white,
                                   ),
                                   child: Center(
                                     child: Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                      child: AspectRatio(
-                                        aspectRatio: 4 / 5,
-                                        child: const _AuthVideoPlayer(fit: BoxFit.contain),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Image.asset(
+                                            'assets/images/logo(1).png',
+                                            height: 80,
+                                            fit: BoxFit.contain,
+                                          ),
+                                          const SizedBox(width: 20),
+                                          Expanded(
+                                            child: Image.asset(
+                                              'assets/images/log(1).png',
+                                              fit: BoxFit.contain,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),

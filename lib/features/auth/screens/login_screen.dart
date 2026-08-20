@@ -113,10 +113,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     prefixIcon: const Icon(
                       Icons.phone_outlined,
                       size: 20,
-                      color: Color(0xFF1E5BB4),
+                      color: AppColors.primaryBlue,
                     ),
                     filled: true,
-                    fillColor: const Color(0xFFF0F4FA),
+                    fillColor: AppColors.inputBackground,
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 14,
@@ -124,14 +124,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(
-                        color: Color(0xFF1E5BB4),
+                        color: AppColors.primaryBlue,
                         width: 1.2,
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(
-                        color: Color(0xFF0D47A1),
+                        color: AppColors.primaryBlue,
                         width: 1.8,
                       ),
                     ),
@@ -161,13 +161,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(14),
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF0D47A1), Color(0xFF0A3475)],
+                      colors: [AppColors.primaryBlue, AppColors.primaryDark],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF0D47A1).withValues(alpha: 0.35),
+                        color: AppColors.primaryBlue.withValues(alpha: 0.35),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -225,7 +225,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         style: GoogleFonts.inter(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF0D47A1),
+                          color: AppColors.primaryBlue,
                         ),
                       ),
                     ),

@@ -32,9 +32,10 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             // Title
             const Padding(
               padding: EdgeInsets.fromLTRB(16, 12, 16, 10),
@@ -48,6 +49,25 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
               ),
             ),
 
+            // Deliver Banner
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: AspectRatio(
+                  aspectRatio: 2172 / 724,
+                  child: Image.asset(
+                    'assets/images/deliver.png',
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+
             // Horizontal Filter bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -56,8 +76,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
             const SizedBox(height: 14),
 
             // Orders list (live from Firestore)
-            Expanded(
-              child: ordersAsync.when(
+            ordersAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, _) => _buildErrorState(context, e.toString()),
                 data: (allOrders) {
@@ -81,13 +100,15 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                   }).toList();
 
                   return filteredOrders.isEmpty
-                      ? _buildEmptyState(context)
-                      : ListView.builder(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: context.responsiveHorizontalPadding,
-                            vertical: 10,
-                          ),
-                          itemCount: filteredOrders.length,
+                        ? _buildEmptyState(context)
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: context.responsiveHorizontalPadding,
+                              vertical: 10,
+                            ),
+                            itemCount: filteredOrders.length,
                           itemBuilder: (context, index) {
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 14),
@@ -97,8 +118,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                         );
                 },
               ),
-            ),
           ],
+        ),
         ),
       ),
     );

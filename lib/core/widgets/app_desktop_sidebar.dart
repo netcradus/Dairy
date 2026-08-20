@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
 import '../constants/app_strings.dart';
+import '../../providers/user_provider.dart';
 
 /// Desktop Left Sidebar Navigation Component
-class AppDesktopSidebar extends StatelessWidget {
+class AppDesktopSidebar extends ConsumerWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
@@ -15,7 +17,7 @@ class AppDesktopSidebar extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       width: AppSizes.desktopSidebarWidth,
       height: double.infinity,
@@ -142,50 +144,92 @@ class AppDesktopSidebar extends StatelessWidget {
           // Bottom Desktop Footer Profile Widget
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFECF5F0),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFCBE0D4), width: 0.8),
-              ),
-              child: const Row(
-                children: [
-                  CircleAvatar(
-                    backgroundColor: Color(0xFF005F38),
-                    radius: 18,
-                    child: Icon(Icons.person, color: Colors.white, size: 20),
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () => onTap(3),
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFECF5F0),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFCBE0D4), width: 0.8),
                   ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Sawariya Customer',
-                          style: TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF005F38),
+                  child: Row(
+                    children: [
+                      const CircleAvatar(
+                        backgroundColor: Color(0xFF005F38),
+                        radius: 18,
+                        child: Icon(Icons.person, color: Colors.white, size: 20),
+                      ),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Sawariya Customer',
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF005F38),
+                              ),
+                            ),
+                            Text(
+                              'Fresh Member',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF005F38),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Clickable Logout Icon Button
+                      GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Log Out'),
+                              content: const Text(
+                                  'Are you sure you want to log out of Sawariya Dairy?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  child: const Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(ctx);
+                                    ref
+                                        .read(userProvider.notifier)
+                                        .clearSession();
+                                  },
+                                  child: const Text('Log Out',
+                                      style: TextStyle(color: Colors.redAccent)),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        child: const MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: Padding(
+                            padding: EdgeInsets.all(4.0),
+                            child: Icon(
+                              Icons.chevron_right_rounded,
+                              color: Color(0xFF005F38),
+                              size: 18,
+                            ),
                           ),
                         ),
-                        Text(
-                          'Fresh Member',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Color(0xFF005F38),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    color: Color(0xFF005F38),
-                    size: 18,
-                  ),
-                ],
+                ),
               ),
             ),
           ),

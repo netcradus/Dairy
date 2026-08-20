@@ -35,16 +35,19 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
     final isDesktop = context.isDesktop;
 
     return Container(
-      height: preferredSize.height,
-      padding: EdgeInsets.symmetric(
-        horizontal: context.responsiveHorizontalPadding,
-        vertical: 10,
-      ),
       decoration: const BoxDecoration(
         color: AppColors.surface,
         border: Border(bottom: BorderSide(color: AppColors.border, width: 1.0)),
       ),
-      child: Row(
+      child: SafeArea(
+        bottom: false,
+        child: Container(
+          height: preferredSize.height,
+          padding: EdgeInsets.symmetric(
+            horizontal: context.responsiveHorizontalPadding,
+            vertical: 10,
+          ),
+          child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Left: Greeting and Headline
@@ -248,6 +251,8 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
             ],
           ),
         ],
+      ),
+        ),
       ),
     );
   }
