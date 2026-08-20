@@ -154,14 +154,16 @@ class AppDesktopSidebar extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: const Color(0xFFECF5F0),
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFCBE0D4), width: 0.8),
+                    border:
+                        Border.all(color: const Color(0xFFCBE0D4), width: 0.8),
                   ),
                   child: Row(
                     children: [
                       const CircleAvatar(
                         backgroundColor: Color(0xFF005F38),
                         radius: 18,
-                        child: Icon(Icons.person, color: Colors.white, size: 20),
+                        child:
+                            Icon(Icons.person, color: Colors.white, size: 20),
                       ),
                       const SizedBox(width: 10),
                       const Expanded(
@@ -194,7 +196,8 @@ class AppDesktopSidebar extends ConsumerWidget {
                             context: context,
                             builder: (ctx) => AlertDialog(
                               title: const Text('Log Out'),
-                              content: const Text('Are you sure you want to log out of Sawariya Dairy?'),
+                              content: const Text(
+                                  'Are you sure you want to log out of Sawariya Dairy?'),
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.pop(ctx),
@@ -203,9 +206,13 @@ class AppDesktopSidebar extends ConsumerWidget {
                                 TextButton(
                                   onPressed: () {
                                     Navigator.pop(ctx);
-                                    ref.read(userProvider.notifier).clearSession();
+                                    ref
+                                        .read(userProvider.notifier)
+                                        .clearSession();
                                   },
-                                  child: const Text('Log Out', style: TextStyle(color: Colors.redAccent)),
+                                  child: const Text('Log Out',
+                                      style:
+                                          TextStyle(color: Colors.redAccent)),
                                 ),
                               ],
                             ),
@@ -264,46 +271,39 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        decoration: BoxDecoration(
-          color: active
-              ? const Color(0xFF005F38)
-              : (_isHovered ? const Color(0xFFD4E6DC) : Colors.transparent),
-          borderRadius: AppSizes.borderMedium,
-        ),
-        child: Material(
-          color: Colors.transparent,
-          borderRadius: AppSizes.borderMedium,
-          child: ListTile(
-            onTap: widget.onTap,
-            shape: const RoundedRectangleBorder(
-              borderRadius: AppSizes.borderMedium,
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: AppSizes.p16,
-              vertical: 2,
-            ),
-            leading: Icon(
-              active ? widget.activeIcon : widget.icon,
+      child: Material(
+        color: _isHovered ? const Color(0xFFD4E0DC) : Colors.transparent,
+        borderRadius: AppSizes.borderMedium,
+        clipBehavior: Clip.antiAlias,
+        child: ListTile(
+          onTap: widget.onTap,
+          shape: const RoundedRectangleBorder(
+            borderRadius: AppSizes.borderMedium,
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppSizes.p16,
+            vertical: 2,
+          ),
+          // ... keep your leading, title, and trailing widgets below as they were
+          leading: Icon(
+            active ? widget.activeIcon : widget.icon,
+            color: active
+                ? Colors.white
+                : (_isHovered
+                    ? const Color(0xFF005F38)
+                    : const Color(0xFF334E41)),
+            size: 22,
+          ),
+          title: Text(
+            widget.label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: active ? FontWeight.w700 : FontWeight.w500,
               color: active
                   ? Colors.white
                   : (_isHovered
                       ? const Color(0xFF005F38)
                       : const Color(0xFF334E41)),
-              size: 22,
-            ),
-            title: Text(
-              widget.label,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-                color: active
-                    ? Colors.white
-                    : (_isHovered
-                        ? const Color(0xFF005F38)
-                        : const Color(0xFF334E41)),
-              ),
             ),
           ),
         ),

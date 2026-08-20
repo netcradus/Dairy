@@ -85,7 +85,7 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
 
               const SizedBox(width: 12),
 
-              // Location Pill (Deliver to Jaipur, 302001)
+              // Location Pill (Deliver to Gurugram, 122001)
               if (isDesktop) ...[
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -123,7 +123,7 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
                             ),
                           ),
                           Text(
-                            'Jaipur, 302001',
+                            'Gurugram, 122001',
                             style: TextStyle(
                               fontSize: 11.5,
                               fontWeight: FontWeight.w700,
