@@ -23,7 +23,6 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   final TextEditingController _searchController = TextEditingController();
   final CarouselSliderController _carouselController =
       CarouselSliderController();
-  String _selectedCategoryId = 'cat_all';
   String _searchQuery = '';
   int _bannerIndex = 0;
 
@@ -51,9 +50,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
 
   void _resetFilters() {
     _searchController.clear();
+    ref.read(selectedCategoryProvider.notifier).state = 'cat_all';
     setState(() {
       _searchQuery = '';
-      _selectedCategoryId = 'cat_all';
     });
   }
 
@@ -61,11 +60,32 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   Widget build(BuildContext context) {
     final allProducts = ref.watch(allProductsProvider);
     final cartQuantities = ref.watch(cartQuantitiesProvider);
+    final selectedCategoryId = ref.watch(selectedCategoryProvider);
 
     // Filter products by category and search query
     final filteredProducts = allProducts.where((product) {
-      final matchesCategory = _selectedCategoryId == 'cat_all' ||
-          product.categoryId == _selectedCategoryId;
+      bool matchesCategory = false;
+      if (selectedCategoryId == 'cat_all') {
+        matchesCategory = true;
+      } else if (selectedCategoryId == 'cat_milk') {
+        matchesCategory = product.categoryId == 'cat_milk';
+      } else if (selectedCategoryId == 'cat_paneer') {
+        matchesCategory = product.categoryId == 'cat_paneer' &&
+            !product.title.toLowerCase().contains('butter') &&
+            !product.title.toLowerCase().contains('makhan');
+      } else if (selectedCategoryId == 'cat_ghee') {
+        matchesCategory = product.categoryId == 'cat_ghee';
+      } else if (selectedCategoryId == 'cat_lassi') {
+        matchesCategory = product.categoryId == 'cat_curd' ||
+            product.title.toLowerCase().contains('lassi') ||
+            product.title.toLowerCase().contains('dahi');
+      } else if (selectedCategoryId == 'cat_makhan') {
+        matchesCategory = product.title.toLowerCase().contains('butter') ||
+            product.title.toLowerCase().contains('makhan');
+      } else {
+        matchesCategory = product.categoryId == selectedCategoryId;
+      }
+
       final matchesSearch = _searchQuery.isEmpty ||
           product.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           product.categoryName
@@ -74,22 +94,53 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       return matchesCategory && matchesSearch;
     }).toList();
 
-    // Defined Categories to match the 5 options in the mockup
+    // Defined Categories to match the user's requested options and logo palette
     final categoryOptions = [
-      {'id': 'cat_all', 'title': 'All', 'image': ''},
-      {'id': 'cat_milk', 'title': 'Milk', 'image': 'assets/images/milk.png'},
       {
-        'id': 'cat_makhan',
-        'title': 'Curd',
-        'image': 'assets/images/makhan.png'
+        'id': 'cat_all',
+        'title': 'All',
+        'image': '',
+        'description':
+            'Browse our entire range of premium, farm-fresh dairy products.'
+      },
+      {
+        'id': 'cat_milk',
+        'title': 'Milk',
+        'image': 'assets/images/milk.png',
+        'description': '100% pure A2 milk sourced daily from healthy cows.'
       },
       {
         'id': 'cat_paneer',
         'title': 'Paneer',
-        'image': 'assets/images/paneer.png'
+        'image': 'assets/images/paneer.png',
+        'description':
+            'Ultra-soft, protein-rich fresh cottage cheese prepared daily.'
       },
-      {'id': 'cat_ghee', 'title': 'Ghee', 'image': 'assets/images/ghee.png'},
+      {
+        'id': 'cat_ghee',
+        'title': 'Ghee',
+        'image': 'assets/images/ghee.png',
+        'description': 'Pure Bilona cow ghee hand-churned to golden perfection.'
+      },
+      {
+        'id': 'cat_lassi',
+        'title': 'Lassi',
+        'image': 'assets/images/lassi.png',
+        'description': 'Thick, creamy, and refreshing probiotic sweet lassi.'
+      },
+      {
+        'id': 'cat_makhan',
+        'title': 'Makhan',
+        'image': 'assets/images/makhana.png',
+        'description': 'Freshly churned creamy unsalted table butter.'
+      },
     ];
+
+    // Find the currently selected category title for dynamic headers
+    final selectedCat = categoryOptions.firstWhere(
+      (cat) => cat['id'] == selectedCategoryId,
+      orElse: () => {'id': 'cat_all', 'title': 'All'},
+    );
 
     final isMobile = context.isMobile;
 
@@ -244,81 +295,89 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
 
               // ── Horizontal Categories Row ──
               SizedBox(
-                height: 82,
+                height: 125,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: categoryOptions.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 20),
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
                   itemBuilder: (context, index) {
                     final cat = categoryOptions[index];
-                    final isSelected = cat['id'] == _selectedCategoryId;
+                    final isSelected = cat['id'] == selectedCategoryId;
 
                     return GestureDetector(
                       onTap: () {
-                        setState(() {
-                          _selectedCategoryId = cat['id'] as String;
-                        });
+                        ref.read(selectedCategoryProvider.notifier).state =
+                            cat['id'] as String;
+                        _showCategoryPopup(context, cat);
                       },
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            height: 50,
-                            width: 50,
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? const Color(0xFF005F38)
-                                  : Colors.white,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isSelected
-                                    ? const Color(0xFF005F38)
-                                    : const Color(0xFFCBD5E1),
-                                width: 1.0,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.02),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 1),
+                      child: AnimatedScale(
+                        duration: const Duration(milliseconds: 200),
+                        scale: isSelected ? 1.08 : 0.95,
+                        child: SizedBox(
+                          width: 80,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                height: 72,
+                                width: 72,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: cat['id'] == 'cat_all'
+                                      ? (isSelected
+                                          ? AppColors.primary.withOpacity(0.1)
+                                          : Colors.transparent)
+                                      : Colors.transparent,
+                                  border: cat['id'] == 'cat_all'
+                                      ? Border.all(
+                                          color: AppColors.primary,
+                                          width:
+                                              3.5, // Thick green stamp border
+                                        )
+                                      : (isSelected
+                                          ? Border.all(
+                                              color: AppColors.primary
+                                                  .withOpacity(0.15),
+                                              width: 1.5,
+                                            )
+                                          : null),
                                 ),
-                              ],
-                            ),
-                            child: Center(
-                              child: cat['id'] == 'cat_all'
-                                  ? Text(
-                                      'All',
-                                      style: TextStyle(
-                                        color: isSelected
-                                            ? Colors.white
-                                            : const Color(0xFF005F38),
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13.5,
-                                      ),
-                                    )
-                                  : Padding(
-                                      padding: const EdgeInsets.all(10),
-                                      child: Image.asset(
-                                        cat['image'] as String,
-                                        fit: BoxFit.contain,
-                                      ),
-                                    ),
-                            ),
+                                child: Center(
+                                  child: cat['id'] == 'cat_all'
+                                      ? Icon(
+                                          Icons
+                                              .cabin_rounded, // farm/barn-like icon
+                                          color: AppColors.primary,
+                                          size: 36,
+                                        )
+                                      : Padding(
+                                          padding: const EdgeInsets.all(2),
+                                          child: Image.asset(
+                                            cat['image'] as String,
+                                            fit: BoxFit.contain,
+                                          ),
+                                        ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                cat['id'] == 'cat_all'
+                                    ? 'ALL'
+                                    : cat['title'] as String,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w900
+                                      : FontWeight.w500,
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : const Color(0xFF667085),
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 6),
-                          Text(
-                            cat['title'] as String,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: isSelected
-                                  ? FontWeight.w800
-                                  : FontWeight.w500,
-                              color: isSelected
-                                  ? const Color(0xFF005F38)
-                                  : const Color(0xFF667085),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     );
                   },
@@ -326,13 +385,15 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
               ),
               const SizedBox(height: 18),
 
-              // ── Best Sellers Title Row ──
+              // ── Dynamic Title Row ──
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Best Sellers',
-                    style: TextStyle(
+                  Text(
+                    selectedCategoryId == 'cat_all'
+                        ? 'Products'
+                        : '${selectedCat['title']} Products',
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
                       color: Color(0xFF172033),
@@ -578,6 +639,128 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showCategoryPopup(BuildContext context, Map<String, String> cat) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          backgroundColor: Colors.white,
+          elevation: 10,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Top header close button
+                Align(
+                  alignment: Alignment.topRight,
+                  child: IconButton(
+                    icon: const Icon(Icons.close_rounded,
+                        color: Color(0xFF667085)),
+                    onPressed: () => Navigator.pop(context),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Category image with beautiful container background
+                if (cat['image']!.isNotEmpty)
+                  Container(
+                    width: 110,
+                    height: 110,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryLight,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withOpacity(0.08),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Image.asset(
+                      cat['image']!,
+                      fit: BoxFit.contain,
+                    ),
+                  )
+                else
+                  Container(
+                    width: 110,
+                    height: 110,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'All',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 20),
+                // Title
+                Text(
+                  cat['title']!,
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                // Description
+                Text(
+                  cat['description']!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF667085),
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // Explore Products button
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'Explore Products',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

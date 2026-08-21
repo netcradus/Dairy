@@ -81,6 +81,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       width: isDesktop ? 195 : 170,
                       height: 205,
                       onTap: () {
+                        ref.read(selectedCategoryProvider.notifier).state = cat.id;
                         ref.read(navigationProvider.notifier).setIndex(1);
                       },
                     );
@@ -149,7 +150,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: AspectRatio(
                   aspectRatio: 1280 / 630,
                   child: Image.asset(
-                    'assets/images/why2.png',
+                    'assets/images/home3.png',
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return const SizedBox.shrink();

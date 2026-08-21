@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 /// Sawariya Dairy Centralized Color Palette
 abstract class AppColors {
-  // Brand Colors (Logo Color Palette: Fresh Forest Green)
-  static const Color primaryBlue = Color(0xFF005F38);
-  static const Color secondaryBlue = Color(0xFF2E8B57);
-  static const Color lightBlue = Color(0xFFE8F5E9);
-  static const Color accentBlue = Color(0xFF4CAF50);
+  // Brand Colors (Logo & Banner Palette: Forest Green & Soft Cream)
+  static const Color primaryBlue = Color(0xFF28541C);
+  static const Color secondaryBlue = Color(0xFF437D2A);
+  static const Color lightBlue = Color(0xFFE8F2DD);
+  static const Color accentBlue = Color(0xFF62A044);
 
   // Surface & Background Colors
-  static const Color background = Color(0xFFF4F9F6);
+  static const Color background = Color(0xFFF6FAF0);
   static const Color surface = Color(0xFFFFFFFF);
   static const Color cardBackground = Color(0xFFFFFFFF);
   static const Color inputBackground = Color(0xFFF1F5F9);
@@ -24,11 +24,11 @@ abstract class AppColors {
   static const Color success = Color(0xFF22A06B);
   static const Color warning = Color(0xFFF59E0B);
   static const Color error = Color(0xFFE53935);
-  static const Color info = Color(0xFF005F38);
+  static const Color info = Color(0xFF28541C);
 
   // Border & Divider Colors
   static const Color border = Color(0xFFE2E8F0);
-  static const Color borderFocused = Color(0xFF005F38);
+  static const Color borderFocused = Color(0xFF28541C);
   static const Color divider = Color(0xFFEEF2F6);
 
   // Accent & Decorative Colors
@@ -49,7 +49,7 @@ abstract class AppColors {
   static const Color sidebarBg = Color(0xFF081F14);
   static const Color sidebarBgDarker = Color(0xFF04120B);
   static const Color sidebarText = Color(0xFF94A3B8);
-  static const Color sidebarActive = Color(0xFF005F38);
+  static const Color sidebarActive = Color(0xFF28541C);
   static const Color sidebarActiveText = Color(0xFFFFFFFF);
   static const Color sidebarHover = Color(0xFF0E2F1E);
   static const Color sidebarBorder = Color(0xFF1B3B2B);
@@ -65,16 +65,16 @@ abstract class AppColors {
   static const Color darkTextMuted = Color(0xFF64748B);
 
   // Primary brand
-  static const Color primary = Color(0xFF005F38);
-  static const Color primaryLight = Color(0xFFE8F5E9);
-  static const Color primaryDark = Color(0xFF004D2C);
+  static const Color primary = Color(0xFF28541C);
+  static const Color primaryLight = Color(0xFFE8F2DD);
+  static const Color primaryDark = Color(0xFF16320F);
 
   // KPI Card Theme Colors
-  static const Color revenueGreen = Color(0xFF2E8B57);
-  static const Color revenueGreenBg = Color(0xFFE8F5E9);
+  static const Color revenueGreen = Color(0xFF437D2A);
+  static const Color revenueGreenBg = Color(0xFFE8F2DD);
   
-  static const Color ordersBlue = Color(0xFF005F38);
-  static const Color ordersBlueBg = Color(0xFFE8F5E9);
+  static const Color ordersBlue = Color(0xFF28541C);
+  static const Color ordersBlueBg = Color(0xFFE8F2DD);
   
   static const Color customersOrange = Color(0xFFF97316);
   static const Color customersOrangeBg = Color(0xFFFFF4EC);

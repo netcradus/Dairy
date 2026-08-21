@@ -48,12 +48,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     _controller.forward();
 
-    // Navigate after 2 seconds
+    // Navigate after 3 seconds
     _navigateToNextScreen();
   }
 
   Future<void> _navigateToNextScreen() async {
-    await Future.delayed(const Duration(milliseconds: 2000));
+    await Future.delayed(const Duration(milliseconds: 3000));
     if (!mounted) return;
 
     // If a session already exists, go straight to the relevant home screen
@@ -159,11 +159,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                             ),
                           ],
                         ),
-                        child: const Center(
-                          child: CategoryImage(
-                            imageUrl: AppAssets.heroBannerPlaceholder,
-                            size: 104,
-                            radius: 52,
+                        child: Center(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(52),
+                            child: Image.asset(
+                              'assets/images/icon.png',
+                              width: 104,
+                              height: 104,
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
                       ),

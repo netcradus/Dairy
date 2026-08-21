@@ -123,7 +123,7 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
                         ),
                       ),
                       Text(
-                        'Jaipur, 302001',
+                        'Gurugram, 122001',
                         style: TextStyle(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w700,

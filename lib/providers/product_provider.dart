@@ -53,3 +53,7 @@ final allProductsProvider = Provider<List<Product>>((ref) {
   }
   return productMap.values.toList();
 });
+
+final selectedCategoryProvider = StateProvider<String>((ref) {
+  return 'cat_all';
+});

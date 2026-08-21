@@ -46,7 +46,8 @@ class _ProductCardState extends State<ProductCard> {
             color: _isHovered ? AppColors.primaryBlue : AppColors.border,
             width: _isHovered ? 1.5 : 1.0,
           ),
-          boxShadow: _isHovered ? AppColors.cardShadowMd : AppColors.cardShadowSm,
+          boxShadow:
+              _isHovered ? AppColors.cardShadowMd : AppColors.cardShadowSm,
         ),
         child: InkWell(
           onTap: widget.onTap,
@@ -71,76 +72,75 @@ class _ProductCardState extends State<ProductCard> {
                           borderRadius: const BorderRadius.vertical(
                             top: Radius.circular(AppSizes.radiusLarge - 1),
                           ),
-                          child: Center(
-                            child: AspectRatio(
-                              aspectRatio: 4 / 5,
-                              child: p.imageUrl.isNotEmpty
-                                  ? (p.imageUrl.startsWith('http')
-                                      ? CachedNetworkImage(
-                                          imageUrl: p.imageUrl,
-                                          fit: BoxFit.cover,
-                                          placeholder: (context, url) => Container(
-                                            color: AppColors.lightBlue,
-                                            child: const Center(
-                                              child: Icon(Icons.image_outlined,
-                                                  size: 32, color: AppColors.primaryBlue),
-                                            ),
+                          child: Padding(
+                            padding: p.title.toLowerCase().contains('milk') ||
+                                    p.imageUrl.toLowerCase().contains('milk')
+                                ? const EdgeInsets.all(12.0)
+                                : EdgeInsets.zero,
+                            child: p.imageUrl.isNotEmpty
+                                ? (p.imageUrl.startsWith('http')
+                                    ? CachedNetworkImage(
+                                        imageUrl: p.imageUrl,
+                                        fit: p.title
+                                                    .toLowerCase()
+                                                    .contains('milk') ||
+                                                p.imageUrl
+                                                    .toLowerCase()
+                                                    .contains('milk')
+                                            ? BoxFit.contain
+                                            : BoxFit.cover,
+                                        placeholder: (context, url) =>
+                                            Container(
+                                          color: AppColors.lightBlue,
+                                          child: const Center(
+                                            child: Icon(Icons.image_outlined,
+                                                size: 32,
+                                                color: AppColors.primaryBlue),
                                           ),
-                                          errorWidget: (context, url, error) => Container(
-                                            color: AppColors.lightBlue,
-                                            child: const Center(
-                                              child: Icon(Icons.image_outlined,
-                                                  size: 32, color: AppColors.textSecondary),
-                                            ),
+                                        ),
+                                        errorWidget: (context, url, error) =>
+                                            Container(
+                                          color: AppColors.lightBlue,
+                                          child: const Center(
+                                            child: Icon(Icons.image_outlined,
+                                                size: 32,
+                                                color: AppColors.textSecondary),
                                           ),
-                                        )
-                                      : Image.asset(
-                                          p.imageUrl,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) => Container(
-                                            color: AppColors.lightBlue,
-                                            child: const Center(
-                                              child: Icon(Icons.image_outlined,
-                                                  size: 32, color: AppColors.textSecondary),
-                                            ),
+                                        ),
+                                      )
+                                    : Image.asset(
+                                        p.imageUrl,
+                                        fit: p.title
+                                                    .toLowerCase()
+                                                    .contains('milk') ||
+                                                p.imageUrl
+                                                    .toLowerCase()
+                                                    .contains('milk')
+                                            ? BoxFit.contain
+                                            : BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                Container(
+                                          color: AppColors.lightBlue,
+                                          child: const Center(
+                                            child: Icon(Icons.image_outlined,
+                                                size: 32,
+                                                color: AppColors.textSecondary),
                                           ),
-                                        ))
-                                  : Container(
-                                      color: AppColors.lightBlue,
-                                      child: const Center(
-                                        child: Icon(Icons.image_outlined,
-                                            size: 32, color: AppColors.textSecondary),
-                                      ),
+                                        ),
+                                      ))
+                                : Container(
+                                    color: AppColors.lightBlue,
+                                    child: const Center(
+                                      child: Icon(Icons.image_outlined,
+                                          size: 32,
+                                          color: AppColors.textSecondary),
                                     ),
-                            ),
+                                  ),
                           ),
                         ),
                       ),
                     ),
-
-                    // Discount Tag
-                    if (p.hasDiscount)
-                      Positioned(
-                        top: 10,
-                        left: 10,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.discountTag,
-                            borderRadius: AppSizes.borderSmall,
-                            boxShadow: AppColors.cardShadowSm,
-                          ),
-                          child: Text(
-                            '${p.discountPercentage}% OFF',
-                            style: const TextStyle(
-                              color: AppColors.textOnPrimary,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
 
                     // A2 Cow Milk Badge
                     if (p.isA2CowMilk)
