@@ -19,7 +19,8 @@ class OrdersScreen extends ConsumerStatefulWidget {
 }
 
 class _OrdersScreenState extends ConsumerState<OrdersScreen> {
-  String _selectedFilter = 'All'; // 'All' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled'
+  String _selectedFilter =
+      'All'; // 'All' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled'
 
   @override
   Widget build(BuildContext context) {
@@ -66,10 +67,11 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                   ),
                 ),
               ),
-  
+
               // Deliver Banner
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
                   child: AspectRatio(
@@ -85,14 +87,14 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                 ),
               ),
               const SizedBox(height: 6),
-  
+
               // Horizontal Filter bar
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: _buildFilterBar(),
               ),
               const SizedBox(height: 14),
-  
+
               // Orders list
               filteredOrders.isEmpty
                   ? _buildEmptyState(context)
@@ -137,7 +139,9 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                 color: isSelected ? const Color(0xFF005F38) : Colors.white,
                 borderRadius: BorderRadius.circular(18),
                 border: Border.all(
-                  color: isSelected ? const Color(0xFF005F38) : const Color(0xFFE2E8F0),
+                  color: isSelected
+                      ? const Color(0xFF005F38)
+                      : const Color(0xFFE2E8F0),
                   width: 1.0,
                 ),
               ),
@@ -273,7 +277,8 @@ class _OrderCard extends ConsumerWidget {
                       order.items.length.clamp(0, 2),
                       (i) {
                         final item = order.items[i];
-                        final assetImage = _getProductImage(item.product.categoryId);
+                        final assetImage =
+                            _getProductImage(item.product.categoryId);
                         return Positioned(
                           left: i * 26.0,
                           child: Container(
@@ -282,7 +287,8 @@ class _OrderCard extends ConsumerWidget {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: const Color(0xFFF1F5F9), width: 1.5),
+                              border: Border.all(
+                                  color: const Color(0xFFF1F5F9), width: 1.5),
                             ),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(6),
@@ -310,7 +316,9 @@ class _OrderCard extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        order.items.map((i) => '${i.product.title} ${i.product.unit}').join('\n'),
+                        order.items
+                            .map((i) => '${i.product.title} ${i.product.unit}')
+                            .join('\n'),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -338,7 +346,8 @@ class _OrderCard extends ConsumerWidget {
 
                 // Status Badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                   decoration: BoxDecoration(
                     color: statusBgColor,
                     borderRadius: BorderRadius.circular(16),
@@ -406,10 +415,13 @@ class _OrderCard extends ConsumerWidget {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 8),
                           minimumSize: Size.zero,
                         ),
-                        child: const Text('Track', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        child: const Text('Track',
+                            style: TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.bold)),
                       ),
                       const SizedBox(width: 8),
                     ],
@@ -428,10 +440,13 @@ class _OrderCard extends ConsumerWidget {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 8),
                         minimumSize: Size.zero,
                       ),
-                      child: const Text('View Details', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      child: const Text('View Details',
+                          style: TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
@@ -483,7 +498,20 @@ class _OrderCard extends ConsumerWidget {
   }
 
   String _formatDate(DateTime dt) {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
     return '${dt.day} ${months[dt.month - 1]}, ${dt.year}';
   }
 }

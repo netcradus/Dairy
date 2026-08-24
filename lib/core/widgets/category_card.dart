@@ -75,7 +75,7 @@ class _CategoryCardState extends State<CategoryCard> {
                           ? (cat.imageUrl.startsWith('http')
                               ? CachedNetworkImage(
                                   imageUrl: cat.imageUrl,
-                                  fit: BoxFit.cover,
+                                  fit: BoxFit.contain,
                                   placeholder: (context, url) => const Center(
                                     child: Icon(Icons.image_outlined,
                                         color: AppColors.textMuted, size: 36),
@@ -88,7 +88,7 @@ class _CategoryCardState extends State<CategoryCard> {
                                 )
                               : Image.asset(
                                   cat.imageUrl,
-                                  fit: BoxFit.cover,
+                                  fit: BoxFit.contain,
                                   errorBuilder: (context, error, stackTrace) =>
                                       const Center(
                                     child: Icon(Icons.image_outlined,

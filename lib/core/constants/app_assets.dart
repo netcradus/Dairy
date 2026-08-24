@@ -23,9 +23,9 @@ abstract class AppAssets {
   // PNG product images for hero / banner use
   static const String milkPng = '$imagePath/milk.png';
   static const String lassiPng = '$imagePath/lassi.png';
-  static const String gheePng = '$imagePath/ghee2.png';
-  static const String paneerPng = '$imagePath/paneer2.png';
-  static const String makhanPng = '$imagePath/Makhan mishri.png';
+  static const String gheePng = '$imagePath/gheen.png';
+  static const String paneerPng = '$imagePath/paneernew.png';
+  static const String makhanPng = '$imagePath/makhanew.png';
 
   // Placeholder URLs for remote network fallback images
   static const String milkPlaceholder =

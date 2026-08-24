@@ -35,8 +35,7 @@ class OrderService {
   /// Computes subtotal, delivery charge, discount, and grand total for [items].
   ({double subtotal, double deliveryCharge, double discount, double total})
       computeTotals(List<CartItem> items) {
-    final subtotal =
-        items.fold(0.0, (sum, item) => sum + item.totalPrice);
+    final subtotal = items.fold(0.0, (sum, item) => sum + item.totalPrice);
     final delivery = subtotal == 0
         ? 0.0
         : (subtotal >= freeDeliveryThreshold ? 0.0 : deliveryCharge);
@@ -122,10 +121,9 @@ class OrderService {
         .collection('orders')
         .where('userId', isEqualTo: userId)
         .snapshots()
-        .map((snap) => snap.docs
-            .map((d) => Order.fromFirestore(d.data(), d.id))
-            .toList()
-          ..sort((a, b) => b.orderDate.compareTo(a.orderDate)));
+        .map((snap) =>
+            snap.docs.map((d) => Order.fromFirestore(d.data(), d.id)).toList()
+              ..sort((a, b) => b.orderDate.compareTo(a.orderDate)));
   }
 
   /// Updates an order's status in Firestore. When the status becomes
@@ -192,26 +190,19 @@ class OrderService {
   /// Status filtering is done client-side to avoid requiring a composite index.
   Stream<List<Order>> streamActiveOrders() {
     const activeStatuses = {'confirmed', 'preparing', 'outForDelivery'};
-    return _firestore
-        .collection('orders')
-        .snapshots()
-        .map((snap) => snap.docs
-            .map((d) => Order.fromFirestore(d.data(), d.id))
-            .where((o) => activeStatuses.contains(orderStatusToString(o.status)))
-            .toList()
-          ..sort((a, b) => b.orderDate.compareTo(a.orderDate)));
+    return _firestore.collection('orders').snapshots().map((snap) => snap.docs
+        .map((d) => Order.fromFirestore(d.data(), d.id))
+        .where((o) => activeStatuses.contains(orderStatusToString(o.status)))
+        .toList()
+      ..sort((a, b) => b.orderDate.compareTo(a.orderDate)));
   }
 
   /// Live stream of ALL orders in the `orders` collection (every status),
   /// newest first. This is the single source of truth for the delivery panel:
   /// the Requests, Active and History tabs all derive their lists from it.
   Stream<List<Order>> streamAllDeliveryOrders() {
-    return _firestore
-        .collection('orders')
-        .snapshots()
-        .map((snap) => snap.docs
-            .map((d) => Order.fromFirestore(d.data(), d.id))
-            .toList()
+    return _firestore.collection('orders').snapshots().map((snap) =>
+        snap.docs.map((d) => Order.fromFirestore(d.data(), d.id)).toList()
           ..sort((a, b) => b.orderDate.compareTo(a.orderDate)));
   }
 
@@ -219,16 +210,13 @@ class OrderService {
   /// still `pending` (awaiting acceptance) OR already assigned to [agentId].
   /// Filtering is done client-side to avoid requiring a composite index.
   Stream<List<Order>> streamDeliveryOrdersForAgent(String agentId) {
-    return _firestore
-        .collection('orders')
-        .snapshots()
-        .map((snap) => snap.docs
-            .map((d) => Order.fromFirestore(d.data(), d.id))
-            .where((o) =>
-                o.status == OrderStatus.placed ||
-                (o.assignedAgentId != null && o.assignedAgentId == agentId))
-            .toList()
-          ..sort((a, b) => b.orderDate.compareTo(a.orderDate)));
+    return _firestore.collection('orders').snapshots().map((snap) => snap.docs
+        .map((d) => Order.fromFirestore(d.data(), d.id))
+        .where((o) =>
+            o.status == OrderStatus.placed ||
+            (o.assignedAgentId != null && o.assignedAgentId == agentId))
+        .toList()
+      ..sort((a, b) => b.orderDate.compareTo(a.orderDate)));
   }
 
   /// Accepts an order on behalf of a delivery agent. Persists the acceptance to

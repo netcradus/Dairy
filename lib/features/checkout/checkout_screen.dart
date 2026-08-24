@@ -122,7 +122,7 @@ class CheckoutScreen extends ConsumerWidget {
                 width: double.infinity,
                 height: 46,
                 child: ElevatedButton(
-              onPressed: () {
+                  onPressed: () {
                     Navigator.pop(dialogCtx); // close dialog
                     Navigator.pop(context); // close checkout page
 
@@ -246,8 +246,7 @@ class CheckoutScreen extends ConsumerWidget {
                       discount: discount,
                       grandTotal: grandTotal,
                       actionButtonText: 'Place Order Now',
-                      onActionButtonPressed: () =>
-                          _onPlaceOrder(context, ref),
+                      onActionButtonPressed: () => _onPlaceOrder(context, ref),
                     ),
                   ],
                 ),

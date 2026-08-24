@@ -12,6 +12,8 @@ import '../../core/widgets/category_card.dart';
 import '../../core/widgets/section_header.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/navigation_provider.dart';
+import '../../core/widgets/product_card.dart';
+import '../product/product_details_screen.dart';
 
 /// Sawariya Dairy — Pixel-Perfect Home Screen matching attached design
 class HomeScreen extends ConsumerStatefulWidget {
@@ -34,6 +36,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final categories = ref.watch(categoriesProvider);
+    final bestSellers = ref.watch(bestSellersProvider);
+    final cartQuantities = ref.watch(cartQuantitiesProvider);
     final isDesktop = context.isDesktop;
 
     return Scaffold(
@@ -81,9 +85,61 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       width: isDesktop ? 195 : 170,
                       height: 205,
                       onTap: () {
-                        ref.read(selectedCategoryProvider.notifier).state = cat.id;
+                        ref.read(selectedCategoryProvider.notifier).state =
+                            cat.id;
                         ref.read(navigationProvider.notifier).setIndex(1);
                       },
+                    );
+                  },
+                ),
+              ),
+
+              const SizedBox(height: AppSizes.p24),
+
+              // ─── Best Sellers Section ──────────────────────────────────────────
+              SectionHeader(
+                title: 'Best Sellers',
+                subtitle: 'Customer favorites delivered fresh daily',
+                onViewAllTap: () {
+                  ref.read(selectedCategoryProvider.notifier).state = 'cat_all';
+                  ref.read(navigationProvider.notifier).setIndex(1);
+                },
+              ),
+              const SizedBox(height: AppSizes.p14),
+
+              SizedBox(
+                height: 245,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  clipBehavior: Clip.none,
+                  padding: EdgeInsets.zero,
+                  itemCount: bestSellers.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(width: AppSizes.p14),
+                  itemBuilder: (context, index) {
+                    final product = bestSellers[index];
+                    final qty = cartQuantities[product.id] ?? 0;
+                    return SizedBox(
+                      width: 175,
+                      child: ProductCard(
+                        product: product,
+                        quantity: qty,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  ProductDetailsScreen(product: product),
+                            ),
+                          );
+                        },
+                        onIncrement: () {
+                          ref.read(cartProvider.notifier).increment(product);
+                        },
+                        onDecrement: () {
+                          ref.read(cartProvider.notifier).decrement(product.id);
+                        },
+                      ),
                     );
                   },
                 ),
@@ -147,15 +203,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               // ─── Why Choose Us Banner ───
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: AspectRatio(
-                  aspectRatio: 1280 / 630,
-                  child: Image.asset(
-                    'assets/images/home3.png',
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const SizedBox.shrink();
-                    },
-                  ),
+                child: Image.asset(
+                  'assets/images/resize.png',
+                  width: double.infinity,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const SizedBox.shrink();
+                  },
                 ),
               ),
 

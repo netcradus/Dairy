@@ -57,9 +57,8 @@ class _DeliveryMapScreenState extends ConsumerState<DeliveryMapScreen> {
   void initState() {
     super.initState();
     final agentId = ref.read(deliveryAgentProvider).id;
-    _locationStream = ref
-        .read(deliveryTrackingServiceProvider)
-        .agentLocationStream(agentId);
+    _locationStream =
+        ref.read(deliveryTrackingServiceProvider).agentLocationStream(agentId);
   }
 
   @override
@@ -134,127 +133,136 @@ class _DeliveryMapScreenState extends ConsumerState<DeliveryMapScreen> {
     final ordersAsync = ref.watch(deliveryActiveOrdersStreamProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Live Delivery Map'),
-        elevation: 0,
-        backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.textPrimary,
-        actions: [
-          IconButton(
-            tooltip: sharing ? 'Stop live location' : 'Share live location',
-            icon: Icon(sharing ? Icons.pause_circle_rounded : Icons.play_circle_rounded),
-            onPressed: _toggleLiveLocation,
-          ),
-          IconButton(
-            tooltip: 'Recenter on Indore',
-            icon: const Icon(Icons.my_location_rounded),
-            onPressed: () => _focusOn(_Geo.indoreCenter, zoom: 13),
-          ),
-        ],
-      ),
-      body: ordersAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => const Center(
-          child: Text('Could not load active orders'),
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: const Text('Live Delivery Map'),
+          elevation: 0,
+          backgroundColor: AppColors.surface,
+          foregroundColor: AppColors.textPrimary,
+          actions: [
+            IconButton(
+              tooltip: sharing ? 'Stop live location' : 'Share live location',
+              icon: Icon(sharing
+                  ? Icons.pause_circle_rounded
+                  : Icons.play_circle_rounded),
+              onPressed: _toggleLiveLocation,
+            ),
+            IconButton(
+              tooltip: 'Recenter on Indore',
+              icon: const Icon(Icons.my_location_rounded),
+              onPressed: () => _focusOn(_Geo.indoreCenter, zoom: 13),
+            ),
+          ],
         ),
-        data: (orders) {
-          final activeOrders = orders
-              .where((o) =>
-                  o.status != DeliveryOrderStatus.delivered &&
-                  o.status != DeliveryOrderStatus.cancelled &&
-                  o.status != DeliveryOrderStatus.declined)
-              .toList();
+        body: ordersAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => const Center(
+            child: Text('Could not load active orders'),
+          ),
+          data: (orders) {
+            final activeOrders = orders
+                .where((o) =>
+                    o.status != DeliveryOrderStatus.delivered &&
+                    o.status != DeliveryOrderStatus.cancelled &&
+                    o.status != DeliveryOrderStatus.declined)
+                .toList();
 
-          return StreamBuilder<LatLng?>(
-            stream: _locationStream,
-            builder: (context, snapshot) {
-              final agentPos = snapshot.data ?? _Geo.fallbackAgent;
-          _agentPosition = agentPos;
+            return StreamBuilder<LatLng?>(
+              stream: _locationStream,
+              builder: (context, snapshot) {
+                final agentPos = snapshot.data ?? _Geo.fallbackAgent;
+                _agentPosition = agentPos;
 
-          // Optional auto-follow: keep the agent centered as they move.
-          if (_followAgent && snapshot.hasData) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _mapController.move(agentPos, _mapController.camera.zoom);
-            });
-          }
+                // Optional auto-follow: keep the agent centered as they move.
+                if (_followAgent && snapshot.hasData) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _mapController.move(agentPos, _mapController.camera.zoom);
+                  });
+                }
 
-          final route = <LatLng>[];
-          if (_selectedOrder != null) {
-            route
-              ..add(_Geo.pickupHub)
-              ..add(agentPos)
-              ..add(_Geo.locationForOrder(_selectedOrder!));
-          }
+                final route = <LatLng>[];
+                if (_selectedOrder != null) {
+                  route
+                    ..add(_Geo.pickupHub)
+                    ..add(agentPos)
+                    ..add(_Geo.locationForOrder(_selectedOrder!));
+                }
 
-          return Stack(
-            children: [
-              FlutterMap(
-                mapController: _mapController,
-                options: MapOptions(
-                  initialCenter: _Geo.indoreCenter,
-                  initialZoom: 13,
-                  minZoom: 4,
-                  maxZoom: 18,
-                ),
-                children: [
-                  TileLayer(
-                    urlTemplate:
-                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    subdomains: const ['a', 'b', 'c'],
-                    userAgentPackageName: 'com.example.dairy_app',
-                    // Attribution is rendered automatically by flutter_map.
-                  ),
-                  if (route.length >= 2)
-                    PolylineLayer(
-                      polylines: [
-                        Polyline(
-                          points: route,
-                          strokeWidth: 4,
-                          color: AppColors.primaryBlue.withValues(alpha: 0.7),
+                return Stack(
+                  children: [
+                    FlutterMap(
+                      mapController: _mapController,
+                      options: MapOptions(
+                        initialCenter: _Geo.indoreCenter,
+                        initialZoom: 13,
+                        minZoom: 4,
+                        maxZoom: 18,
+                      ),
+                      children: [
+                        TileLayer(
+                          urlTemplate:
+                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          subdomains: const ['a', 'b', 'c'],
+                          userAgentPackageName: 'com.example.dairy_app',
+                          // Attribution is rendered automatically by flutter_map.
                         ),
+                        if (route.length >= 2)
+                          PolylineLayer(
+                            polylines: [
+                              Polyline(
+                                points: route,
+                                strokeWidth: 4,
+                                color: AppColors.primaryBlue
+                                    .withValues(alpha: 0.7),
+                              ),
+                            ],
+                          ),
+                        MarkerLayer(
+                            markers: _buildMarkers(activeOrders, agentPos)),
                       ],
                     ),
-                  MarkerLayer(markers: _buildMarkers(activeOrders, agentPos)),
-                ],
-              ),
-              Positioned(
-                top: 12,
-                left: 12,
-                right: 12,
-                child: _AgentStatusCard(agent: agent, isLive: snapshot.hasData),
-              ),
-              Positioned(
-                right: 12,
-                bottom: 12,
-                child: FloatingActionButton.small(
-                  tooltip: _followAgent ? 'Stop following agent' : 'Follow agent',
-                  backgroundColor: _followAgent
-                      ? AppColors.primaryBlue
-                      : AppColors.surface,
-                  foregroundColor:
-                      _followAgent ? Colors.white : AppColors.primaryBlue,
-                  onPressed: () => setState(() => _followAgent = !_followAgent),
-                  child: const Icon(Icons.gps_fixed_rounded),
-                ),
-              ),
-              DraggableScrollableSheet(
-                initialChildSize: 0.32,
-                minChildSize: 0.18,
-                maxChildSize: 0.7,
-                builder: (context, scrollController) => _DeliveryListSheet(
-                  scrollController: scrollController,
-                  orders: activeOrders,
-                  selectedOrder: _selectedOrder,
-                  onTap: _selectOrder,
-                ),
-              ),
-            ],
-          );
-        },
-      );
-      },
-    ));
+                    Positioned(
+                      top: 12,
+                      left: 12,
+                      right: 12,
+                      child: _AgentStatusCard(
+                          agent: agent, isLive: snapshot.hasData),
+                    ),
+                    Positioned(
+                      right: 12,
+                      bottom: 12,
+                      child: FloatingActionButton.small(
+                        tooltip: _followAgent
+                            ? 'Stop following agent'
+                            : 'Follow agent',
+                        backgroundColor: _followAgent
+                            ? AppColors.primaryBlue
+                            : AppColors.surface,
+                        foregroundColor:
+                            _followAgent ? Colors.white : AppColors.primaryBlue,
+                        onPressed: () =>
+                            setState(() => _followAgent = !_followAgent),
+                        child: const Icon(Icons.gps_fixed_rounded),
+                      ),
+                    ),
+                    DraggableScrollableSheet(
+                      initialChildSize: 0.32,
+                      minChildSize: 0.18,
+                      maxChildSize: 0.7,
+                      builder: (context, scrollController) =>
+                          _DeliveryListSheet(
+                        scrollController: scrollController,
+                        orders: activeOrders,
+                        selectedOrder: _selectedOrder,
+                        onTap: _selectOrder,
+                      ),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        ));
   }
 }
 

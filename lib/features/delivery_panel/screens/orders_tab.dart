@@ -19,7 +19,8 @@ class OrdersTab extends ConsumerWidget {
     final textPrimary = AppColors.textPrimaryOf(context);
 
     // History is derived from Firestore (single source of truth).
-    final allOrders = history.map((o) => _HistoryOrderItem.fromOrder(o)).toList();
+    final allOrders =
+        history.map((o) => _HistoryOrderItem.fromOrder(o)).toList();
 
     // Sort by date descending
     allOrders.sort((a, b) => b.date.compareTo(a.date));
@@ -91,7 +92,8 @@ class OrdersTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildOrderCard(BuildContext context, _HistoryOrderItem order, bool isDesktop) {
+  Widget _buildOrderCard(
+      BuildContext context, _HistoryOrderItem order, bool isDesktop) {
     final textPrimary = AppColors.textPrimaryOf(context);
     final textSecondary = AppColors.textSecondaryOf(context);
     final textMuted = AppColors.textMutedOf(context);

@@ -72,23 +72,29 @@ class _ProductCardState extends State<ProductCard> {
                           borderRadius: const BorderRadius.vertical(
                             top: Radius.circular(AppSizes.radiusLarge - 1),
                           ),
-                          child: Padding(
-                            padding: p.title.toLowerCase().contains('milk') ||
-                                    p.imageUrl.toLowerCase().contains('milk')
-                                ? const EdgeInsets.all(12.0)
-                                : EdgeInsets.zero,
+                           child: Padding(
+                             padding: () {
+                               final titleLower = p.title.toLowerCase();
+                               final imgLower = p.imageUrl.toLowerCase();
+                               if (titleLower.contains('paneer') || imgLower.contains('paneer')) {
+                                 return const EdgeInsets.all(20.0);
+                               }
+                               if (titleLower.contains('makhan') || imgLower.contains('makhan') || titleLower.contains('butter') || imgLower.contains('butter')) {
+                                 return const EdgeInsets.all(20.0);
+                               }
+                               if (titleLower.contains('ghee') || imgLower.contains('ghee')) {
+                                 return const EdgeInsets.all(4.0);
+                               }
+                               if (titleLower.contains('lassi') || imgLower.contains('lassi')) {
+                                 return const EdgeInsets.all(12.0);
+                               }
+                               return const EdgeInsets.all(12.0);
+                             }(),
                             child: p.imageUrl.isNotEmpty
                                 ? (p.imageUrl.startsWith('http')
                                     ? CachedNetworkImage(
                                         imageUrl: p.imageUrl,
-                                        fit: p.title
-                                                    .toLowerCase()
-                                                    .contains('milk') ||
-                                                p.imageUrl
-                                                    .toLowerCase()
-                                                    .contains('milk')
-                                            ? BoxFit.contain
-                                            : BoxFit.cover,
+                                        fit: BoxFit.contain,
                                         placeholder: (context, url) =>
                                             Container(
                                           color: AppColors.lightBlue,
@@ -110,14 +116,7 @@ class _ProductCardState extends State<ProductCard> {
                                       )
                                     : Image.asset(
                                         p.imageUrl,
-                                        fit: p.title
-                                                    .toLowerCase()
-                                                    .contains('milk') ||
-                                                p.imageUrl
-                                                    .toLowerCase()
-                                                    .contains('milk')
-                                            ? BoxFit.contain
-                                            : BoxFit.cover,
+                                        fit: BoxFit.contain,
                                         errorBuilder:
                                             (context, error, stackTrace) =>
                                                 Container(
@@ -142,37 +141,7 @@ class _ProductCardState extends State<ProductCard> {
                       ),
                     ),
 
-                    // A2 Cow Milk Badge
-                    if (p.isA2CowMilk)
-                      Positioned(
-                        top: 10,
-                        right: 10,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.freshGreen,
-                            borderRadius: AppSizes.borderSmall,
-                            boxShadow: AppColors.cardShadowSm,
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.verified_rounded,
-                                  size: 10, color: AppColors.textOnPrimary),
-                              SizedBox(width: 2),
-                              Text(
-                                'A2 PURE',
-                                style: TextStyle(
-                                  color: AppColors.textOnPrimary,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+
                   ],
                 ),
               ),
