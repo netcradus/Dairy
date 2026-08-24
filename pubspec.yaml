@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   # Free OpenStreetMap-based maps (no API key / billing required)
   flutter_map: ^6.1.0
@@ -45,7 +47,7 @@ dependencies:
   go_router: ^13.2.0
   fl_chart: ^0.66.0
   google_fonts: ^6.1.0
-  intl: ^0.19.0
+  intl: ^0.20.3
   provider: ^6.1.1
   shared_preferences: ^2.2.2
   cached_network_image: ^3.3.1

@@ -97,6 +97,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     // Defined Categories to match the user's requested options and logo palette
     final categoryOptions = [
       {
+<<<<<<< HEAD
         'id': 'cat_all',
         'title': 'All',
         'image': '',
@@ -108,6 +109,11 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         'title': 'Milk',
         'image': 'assets/images/milk.png',
         'description': '100% pure A2 milk sourced daily from healthy cows.'
+=======
+        'id': 'cat_makhan',
+        'title': 'Curd',
+        'image': 'assets/images/makhana.png'
+>>>>>>> 3fa06e8
       },
       {
         'id': 'cat_paneer',

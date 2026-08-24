@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/constants/app_colors.dart';
@@ -21,7 +20,6 @@ class ProfileTab extends ConsumerWidget {
     final isOnline = agent.status == DeliveryStatus.onDuty;
     final settings = ref.watch(settingsProvider);
     final settingsNotifier = ref.read(settingsProvider.notifier);
-
 
     return ListView(
       padding: EdgeInsets.all(isDesktop ? 24 : 16),
@@ -58,7 +56,8 @@ class ProfileTab extends ConsumerWidget {
                           fit: BoxFit.cover,
                         ),
                       )
-                    : const Icon(Icons.person_rounded, size: 48, color: Colors.white),
+                    : const Icon(Icons.person_rounded,
+                        size: 48, color: Colors.white),
               ),
               const SizedBox(height: 16),
               Text(
@@ -79,12 +78,17 @@ class ProfileTab extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 decoration: BoxDecoration(
-                  color: isOnline ? Colors.white.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.1),
+                  color: isOnline
+                      ? Colors.white.withValues(alpha: 0.2)
+                      : Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: isOnline ? Colors.white : Colors.white.withValues(alpha: 0.3),
+                    color: isOnline
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Row(
@@ -94,7 +98,9 @@ class ProfileTab extends ConsumerWidget {
                       width: 8,
                       height: 8,
                       decoration: BoxDecoration(
-                        color: isOnline ? Colors.white : Colors.white.withValues(alpha: 0.5),
+                        color: isOnline
+                            ? Colors.white
+                            : Colors.white.withValues(alpha: 0.5),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -118,11 +124,27 @@ class ProfileTab extends ConsumerWidget {
         // Quick Stats
         Row(
           children: [
-            Expanded(child: _buildStatCard(context, 'Rating', '${agent.rating}', Icons.star_rounded, Colors.amber, isDesktop)),
+            Expanded(
+                child: _buildStatCard(context, 'Rating', '${agent.rating}',
+                    Icons.star_rounded, Colors.amber, isDesktop)),
             const SizedBox(width: 12),
-            Expanded(child: _buildStatCard(context, 'Today\'s Deliveries', '${agent.completedDeliveriesToday}/${agent.totalDeliveriesToday}', Icons.local_shipping_rounded, AppColors.success, isDesktop)),
+            Expanded(
+                child: _buildStatCard(
+                    context,
+                    'Today\'s Deliveries',
+                    '${agent.completedDeliveriesToday}/${agent.totalDeliveriesToday}',
+                    Icons.local_shipping_rounded,
+                    AppColors.success,
+                    isDesktop)),
             const SizedBox(width: 12),
-            Expanded(child: _buildStatCard(context, 'Today\'s Earnings', '₹${agent.earningsToday.toStringAsFixed(0)}', Icons.account_balance_wallet, AppColors.primary, isDesktop)),
+            Expanded(
+                child: _buildStatCard(
+                    context,
+                    'Today\'s Earnings',
+                    '₹${agent.earningsToday.toStringAsFixed(0)}',
+                    Icons.account_balance_wallet,
+                    AppColors.primary,
+                    isDesktop)),
           ],
         ),
         const SizedBox(height: 24),
@@ -137,9 +159,15 @@ class ProfileTab extends ConsumerWidget {
           'Details',
           [
             _buildDetailRow(context, 'Phone', agent.phone, Icons.phone_rounded),
-            _buildDetailRow(context, 'Vehicle', '${agent.vehicle} (${agent.vehicleNumber})', Icons.electric_rickshaw_rounded),
-            _buildDetailRow(context, 'Assigned Zone', agent.assignedZone, Icons.location_on_rounded),
-            _buildDetailRow(context, 'Partner ID', agent.id, Icons.badge_rounded),
+            _buildDetailRow(
+                context,
+                'Vehicle',
+                '${agent.vehicle} (${agent.vehicleNumber})',
+                Icons.electric_rickshaw_rounded),
+            _buildDetailRow(context, 'Assigned Zone', agent.assignedZone,
+                Icons.location_on_rounded),
+            _buildDetailRow(
+                context, 'Partner ID', agent.id, Icons.badge_rounded),
           ],
           isDesktop,
         ),
@@ -176,13 +204,6 @@ class ProfileTab extends ConsumerWidget {
               Icons.language_outlined,
               () => _showLanguageDialog(context, ref),
             ),
-            _buildSettingsRow(
-              context,
-              'Theme',
-              _themeLabel(settings.themeMode),
-              Icons.palette_outlined,
-              () => _showThemeDialog(context, ref),
-            ),
           ],
           isDesktop,
         ),
@@ -199,77 +220,13 @@ class ProfileTab extends ConsumerWidget {
               foregroundColor: AppColors.error,
               side: const BorderSide(color: AppColors.error),
               padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
           ),
         ),
-        const SizedBox(height: 16),
-        _buildDeliveryTools(context, ref),
         const SizedBox(height: 32),
       ],
-    );
-  }
-
-  Widget _buildDeliveryTools(BuildContext context, WidgetRef ref) {
-    final textPrimary = AppColors.textPrimaryOf(context);
-    final cardBg = AppColors.cardBgOf(context);
-
-    return Container(
-      decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.warning.withValues(alpha: 0.5)),
-        boxShadow: AppColors.cardShadow,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              'Switch Role',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: textPrimary,
-              ),
-            ),
-          ),
-          Material(
-            color: Colors.transparent,
-            child: ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.warning.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.swap_horiz_rounded, color: AppColors.warning),
-              ),
-              title: Text(
-                'Simulate Customer Role',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: textPrimary,
-                ),
-              ),
-              subtitle: Text(
-                'Exit the delivery panel and return to the customer app',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 12,
-                  color: AppColors.textSecondaryOf(context),
-                ),
-              ),
-              trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: () {
-                ref.read(userProvider.notifier).setRole('customer');
-                context.push('/home');
-              },
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -320,7 +277,8 @@ class ProfileTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildDutyToggleCard(BuildContext context, WidgetRef ref, DeliveryAgent agent, bool isDesktop) {
+  Widget _buildDutyToggleCard(BuildContext context, WidgetRef ref,
+      DeliveryAgent agent, bool isDesktop) {
     final textPrimary = AppColors.textPrimaryOf(context);
     final textSecondary = AppColors.textSecondaryOf(context);
     final cardBg = AppColors.cardBgOf(context);
@@ -378,7 +336,8 @@ class ProfileTab extends ConsumerWidget {
                 scale: isDesktop ? 1.0 : 0.9,
                 child: Switch(
                   value: isOnline,
-                  onChanged: (_) => ref.read(deliveryAgentProvider.notifier).toggleDuty(),
+                  onChanged: (_) =>
+                      ref.read(deliveryAgentProvider.notifier).toggleDuty(),
                   activeColor: AppColors.success,
                   activeTrackColor: AppColors.success.withValues(alpha: 0.3),
                   inactiveTrackColor: AppColors.error.withValues(alpha: 0.3),
@@ -393,11 +352,13 @@ class ProfileTab extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: AppColors.info.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.info.withValues(alpha: 0.3)),
+                border:
+                    Border.all(color: AppColors.info.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline_rounded, color: AppColors.info, size: 20),
+                  const Icon(Icons.info_outline_rounded,
+                      color: AppColors.info, size: 20),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -592,17 +553,6 @@ class ProfileTab extends ConsumerWidget {
     }
   }
 
-  String _themeLabel(ThemeMode mode) {
-    switch (mode) {
-      case ThemeMode.light:
-        return 'Light';
-      case ThemeMode.dark:
-        return 'Dark';
-      case ThemeMode.system:
-        return 'System Default';
-    }
-  }
-
   void _showNavigationDialog(BuildContext context, WidgetRef ref) {
     final current = ref.read(settingsProvider).navigationApp;
     showDialog<NavigationApp>(
@@ -622,7 +572,9 @@ class ProfileTab extends ConsumerWidget {
               activeColor: AppColors.primary,
               onChanged: (value) {
                 if (value != null) {
-                  ref.read(settingsProvider.notifier).updateNavigationApp(value);
+                  ref
+                      .read(settingsProvider.notifier)
+                      .updateNavigationApp(value);
                   Navigator.pop(ctx);
                 }
               },
@@ -689,62 +641,20 @@ class ProfileTab extends ConsumerWidget {
     );
   }
 
-  void _showThemeDialog(BuildContext context, WidgetRef ref) {
-    final current = ref.read(settingsProvider).themeMode;
-    const options = [
-      (ThemeMode.system, 'System Default'),
-      (ThemeMode.light, 'Light'),
-      (ThemeMode.dark, 'Dark'),
-    ];
-    showDialog<ThemeMode>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(
-          'Theme',
-          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: options.map((option) {
-            return RadioListTile<ThemeMode>(
-              title: Text(option.$2, style: GoogleFonts.plusJakartaSans()),
-              value: option.$1,
-              groupValue: current,
-              activeColor: AppColors.primary,
-              onChanged: (value) {
-                if (value != null) {
-                  ref.read(settingsProvider.notifier).updateThemeMode(value);
-                  Navigator.pop(ctx);
-                }
-              },
-            );
-          }).toList(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.plusJakartaSans(
-                color: AppColors.textSecondaryOf(context),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Logout', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
-        content: Text('Are you sure you want to logout?', style: GoogleFonts.plusJakartaSans()),
+        title: Text('Logout',
+            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
+        content: Text('Are you sure you want to logout?',
+            style: GoogleFonts.plusJakartaSans()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: AppColors.textSecondaryOf(context))),
+            child: Text('Cancel',
+                style: GoogleFonts.plusJakartaSans(
+                    color: AppColors.textSecondaryOf(context))),
           ),
           ElevatedButton(
             onPressed: () async {

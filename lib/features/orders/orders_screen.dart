@@ -461,7 +461,7 @@ class _OrderCard extends ConsumerWidget {
   String _getProductImage(String catId) {
     if (catId == 'cat_milk') return 'assets/images/milk.png';
     if (catId == 'cat_lassi') return 'assets/images/lassi.png';
-    if (catId == 'cat_makhan') return 'assets/images/makhan.png';
+    if (catId == 'cat_makhan') return 'assets/images/makhana.png';
     if (catId == 'cat_ghee') return 'assets/images/ghee.png';
     if (catId == 'cat_paneer') return 'assets/images/paneer.png';
     return 'assets/images/milk.png';

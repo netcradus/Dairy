@@ -1,7 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'core/localization/app_language.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'firebase_options.dart';
@@ -30,6 +32,11 @@ class MyApp extends ConsumerWidget {
     final router = ref.watch(appRouterProvider);
     final settings = ref.watch(settingsProvider);
 
+    // Keep the global tr() lookup in sync with the persisted language choice.
+    // Watching settingsProvider here also rebuilds MaterialApp (and the whole
+    // widget tree below it) whenever the user switches language.
+    AppLanguage.setLanguage(settings.languageCode);
+
     return MaterialApp.router(
       title: 'Sawariya Dairy',
       debugShowCheckedModeBanner: false,
@@ -38,7 +45,12 @@ class MyApp extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: settings.themeMode,
       locale: Locale(settings.languageCode),
-      supportedLocales: const [Locale('en'), Locale('hi')],
+      supportedLocales: AppLanguage.supportedLocales,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
     );
   }
 }
