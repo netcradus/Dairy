@@ -81,7 +81,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       {
         'id': 'cat_makhan',
         'title': 'Curd',
-        'image': 'assets/images/makhan.png'
+        'image': 'assets/images/makhana.png'
       },
       {
         'id': 'cat_paneer',
