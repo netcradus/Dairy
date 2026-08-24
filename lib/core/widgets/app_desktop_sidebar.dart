@@ -41,7 +41,7 @@ class AppDesktopSidebar extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Image.asset(
-                    'assets/images/sawariya_logo.png',
+                    'assets/images/logo(1).png',
                     fit: BoxFit.contain,
                   ),
                 ),

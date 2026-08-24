@@ -66,7 +66,7 @@ class SidebarNavigation extends StatelessWidget {
                   ),
                   clipBehavior: Clip.antiAlias,
                   child: Image.asset(
-                    'assets/images/sawariya_logo.png',
+                    'assets/images/logo(1).png',
                     fit: BoxFit.contain,
                     errorBuilder: (ctx, err, stack) => const Center(
                       child: CategoryImage(

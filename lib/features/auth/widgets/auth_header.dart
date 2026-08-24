@@ -31,7 +31,7 @@ class AuthHeader extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Image.asset(
-                'assets/images/sawariya_logo.png',
+                'assets/images/logo(1).png',
                 fit: BoxFit.contain,
               ),
             ),

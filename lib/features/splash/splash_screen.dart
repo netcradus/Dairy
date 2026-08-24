@@ -180,7 +180,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.w800,
-                          color: AppColors.primaryBlue,
+                          color: Colors.white,
                           letterSpacing: 0.5,
                         ),
                       ),
@@ -194,7 +194,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
-                          color: AppColors.textSecondary,
+                          color: Colors.white,
                           letterSpacing: 0.2,
                         ),
                       ),

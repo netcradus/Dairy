@@ -473,7 +473,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Image.asset(
-                'assets/images/logo(1).png',
+                'assets/images/icon.png',
                 fit: BoxFit.contain,
               ),
             ),
