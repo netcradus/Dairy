@@ -473,7 +473,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Image.asset(
-                'assets/images/icon2.png',
+                'assets/images/newlogo.png',
                 fit: BoxFit.contain,
               ),
             ),
@@ -692,7 +692,7 @@ class _DairyFreshVisual extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Image.asset(
-            'assets/images/logo(1).png',
+            'assets/images/newlogo.png',
             height: 120,
             fit: BoxFit.contain,
             errorBuilder: (context, error, stackTrace) => const Icon(

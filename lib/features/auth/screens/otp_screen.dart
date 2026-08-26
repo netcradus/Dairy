@@ -137,6 +137,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: AuthCard(
+          videoPath: 'assets/images/otpv.mp4',
           featureTitle: 'Secure Account Verification',
           featureSubtitle:
               'We ensure 100% security for all Sawariya Dairy customer transactions and orders.',

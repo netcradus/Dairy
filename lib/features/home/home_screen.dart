@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:video_player/video_player.dart';
 
 import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
@@ -25,7 +26,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final TextEditingController _orderIdController = TextEditingController();
-  int _bannerIndex = 0;
 
   @override
   void dispose() {
@@ -36,7 +36,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final categories = ref.watch(categoriesProvider);
-    final bestSellers = ref.watch(bestSellersProvider);
     final cartQuantities = ref.watch(cartQuantitiesProvider);
     final isDesktop = context.isDesktop;
 
@@ -49,10 +48,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               const SizedBox(height: AppSizes.p16),
 
-              // ─── 2. Hero Banner ("Pure Goodness, Delivered to Your Doorstep") ───
+              // ─── 2. Hero Banner (banner1v.mp4 Video Banner) ───
               _HeroPromotionalBanner(
-                currentIndex: _bannerIndex,
-                onPageChanged: (index) => setState(() => _bannerIndex = index),
                 onTap: () => ref.read(navigationProvider.notifier).setIndex(1),
               ),
 
@@ -89,57 +86,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             cat.id;
                         ref.read(navigationProvider.notifier).setIndex(1);
                       },
-                    );
-                  },
-                ),
-              ),
-
-              const SizedBox(height: AppSizes.p24),
-
-              // ─── Best Sellers Section ──────────────────────────────────────────
-              SectionHeader(
-                title: 'Best Sellers',
-                subtitle: 'Customer favorites delivered fresh daily',
-                onViewAllTap: () {
-                  ref.read(selectedCategoryProvider.notifier).state = 'cat_all';
-                  ref.read(navigationProvider.notifier).setIndex(1);
-                },
-              ),
-              const SizedBox(height: AppSizes.p14),
-
-              SizedBox(
-                height: 245,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  clipBehavior: Clip.none,
-                  padding: EdgeInsets.zero,
-                  itemCount: bestSellers.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(width: AppSizes.p14),
-                  itemBuilder: (context, index) {
-                    final product = bestSellers[index];
-                    final qty = cartQuantities[product.id] ?? 0;
-                    return SizedBox(
-                      width: 175,
-                      child: ProductCard(
-                        product: product,
-                        quantity: qty,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  ProductDetailsScreen(product: product),
-                            ),
-                          );
-                        },
-                        onIncrement: () {
-                          ref.read(cartProvider.notifier).increment(product);
-                        },
-                        onDecrement: () {
-                          ref.read(cartProvider.notifier).decrement(product.id);
-                        },
-                      ),
                     );
                   },
                 ),
@@ -201,17 +147,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(height: AppSizes.p24),
 
               // ─── Why Choose Us Banner ───
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Image.asset(
-                  'assets/images/resize.png',
-                  width: double.infinity,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    return const SizedBox.shrink();
-                  },
-                ),
-              ),
+              const _WhyChooseUsVideo(),
 
               const SizedBox(height: 36),
             ],
@@ -359,13 +295,9 @@ class _BadgeItem extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _HeroPromotionalBanner extends StatefulWidget {
-  final int currentIndex;
-  final ValueChanged<int> onPageChanged;
   final VoidCallback onTap;
 
   const _HeroPromotionalBanner({
-    required this.currentIndex,
-    required this.onPageChanged,
     required this.onTap,
   });
 
@@ -374,53 +306,69 @@ class _HeroPromotionalBanner extends StatefulWidget {
 }
 
 class _HeroPromotionalBannerState extends State<_HeroPromotionalBanner> {
-  final CarouselSliderController _carouselController =
-      CarouselSliderController();
+  late VideoPlayerController _controller;
+  bool _isInitialized = false;
 
-  final List<String> bannerImages = [
-    'assets/images/banner1.png',
-    'assets/images/banner3.png',
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.asset('assets/images/banner3v.mp4')
+      ..initialize().then((_) {
+        if (mounted) {
+          setState(() {
+            _isInitialized = true;
+          });
+          _controller.setLooping(true);
+          _controller.play();
+          _controller.setVolume(0.0); // Mute
+        }
+      });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final double bannerHeight =
-        context.isMobile ? 220 : (context.isTablet ? 270 : 340);
+    final double horizontalPadding = MediaQuery.of(context).size.width >= 800 ? 24.0 : 12.0;
 
-    return CarouselSlider(
-      carouselController: _carouselController,
-      options: CarouselOptions(
-        aspectRatio: 1769 / 608,
-        autoPlay: true,
-        autoPlayInterval: const Duration(seconds: 4),
-        autoPlayAnimationDuration: const Duration(milliseconds: 800),
-        enlargeCenterPage: false,
-        viewportFraction: 1.0,
-        onPageChanged: (index, reason) {
-          widget.onPageChanged(index);
-        },
+    return Center(
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: horizontalPadding),
+        constraints: const BoxConstraints(maxWidth: 1100),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: AspectRatio(
+            aspectRatio: 16 / 9,
+            child: GestureDetector(
+              onTap: widget.onTap,
+              child: !_isInitialized
+                  ? Container(
+                      color: Colors.grey[200],
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFF005F38),
+                        ),
+                      ),
+                    )
+                  : VideoPlayer(_controller),
+            ),
+          ),
+        ),
       ),
-      items: bannerImages.map((imagePath) {
-        return Builder(
-          builder: (BuildContext context) {
-            return Container(
-              width: MediaQuery.of(context).size.width,
-              margin: const EdgeInsets.symmetric(horizontal: 2.0),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(18),
-                child: Image.asset(
-                  imagePath,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    // Fallback to the beautiful custom designed brand banner if image not found
-                    return _buildFallbackBanner(context);
-                  },
-                ),
-              ),
-            );
-          },
-        );
-      }).toList(),
     );
   }
 
@@ -980,3 +928,62 @@ class _CategoryPromotionalBannerState
     );
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Why Choose Us Video Player Widget
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _WhyChooseUsVideo extends StatefulWidget {
+  const _WhyChooseUsVideo();
+
+  @override
+  State<_WhyChooseUsVideo> createState() => _WhyChooseUsVideoState();
+}
+
+class _WhyChooseUsVideoState extends State<_WhyChooseUsVideo> {
+  late VideoPlayerController _controller;
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.asset('assets/images/whyv.mp4')
+      ..initialize().then((_) {
+        if (mounted) {
+          setState(() {
+            _isInitialized = true;
+          });
+          _controller.setLooping(true);
+          _controller.play();
+          _controller.setVolume(0.0); // Mute
+        }
+      });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: AspectRatio(
+        aspectRatio: _isInitialized ? _controller.value.aspectRatio : 16 / 9,
+        child: !_isInitialized
+            ? Container(
+                color: Colors.grey[200],
+                child: const Center(
+                  child: CircularProgressIndicator(
+                    color: Color(0xFF005F38),
+                  ),
+                ),
+              )
+            : VideoPlayer(_controller),
+      ),
+    );
+  }
+}
+

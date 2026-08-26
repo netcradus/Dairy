@@ -9,6 +9,7 @@ class AuthCard extends StatelessWidget {
   final Widget child;
   final String? featureTitle;
   final String? featureSubtitle;
+  final String videoPath;
 
   const AuthCard({
     super.key,
@@ -16,6 +17,7 @@ class AuthCard extends StatelessWidget {
     this.featureTitle = 'Pure Dairy at Your Doorstep',
     this.featureSubtitle =
         'Order farm-fresh A2 milk, ghee, paneer, and butter with daily morning delivery.',
+    this.videoPath = 'assets/images/logvn.mp4',
   });
 
   @override
@@ -105,7 +107,8 @@ class AuthCard extends StatelessWidget {
                   padding: const EdgeInsets.all(2.5), // Gold Border Thickness
                   child: Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFAF7EE), // Inner Cream Parchment Surface
+                      color: const Color(
+                          0xFFFAF7EE), // Inner Cream Parchment Surface
                       borderRadius: BorderRadius.circular(21.5),
                     ),
                     child: ClipRRect(
@@ -122,25 +125,9 @@ class AuthCard extends StatelessWidget {
                                       color: Colors.white,
                                     ),
                                     child: Center(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(20),
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Image.asset(
-                                              'assets/images/logo(1).png',
-                                              height: 90,
-                                              fit: BoxFit.contain,
-                                            ),
-                                            const SizedBox(height: 16),
-                                            Expanded(
-                                              child: Image.asset(
-                                                'assets/images/log(1).png',
-                                                fit: BoxFit.contain,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                      child: _AuthVideoPlayer(
+                                        videoPath: videoPath,
+                                        fit: BoxFit.cover,
                                       ),
                                     ),
                                   ),
@@ -165,25 +152,9 @@ class AuthCard extends StatelessWidget {
                                     color: Colors.white,
                                   ),
                                   child: Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Image.asset(
-                                            'assets/images/logo(1).png',
-                                            height: 80,
-                                            fit: BoxFit.contain,
-                                          ),
-                                          const SizedBox(width: 20),
-                                          Expanded(
-                                            child: Image.asset(
-                                              'assets/images/log(1).png',
-                                              fit: BoxFit.contain,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                    child: _AuthVideoPlayer(
+                                      videoPath: videoPath,
+                                      fit: BoxFit.cover,
                                     ),
                                   ),
                                 ),
@@ -269,7 +240,11 @@ class _MilkCanWatermarkPainter extends CustomPainter {
 
 class _AuthVideoPlayer extends StatefulWidget {
   final BoxFit fit;
-  const _AuthVideoPlayer({this.fit = BoxFit.contain});
+  final String videoPath;
+  const _AuthVideoPlayer({
+    required this.videoPath,
+    this.fit = BoxFit.contain,
+  });
 
   @override
   State<_AuthVideoPlayer> createState() => _AuthVideoPlayerState();
@@ -282,7 +257,7 @@ class _AuthVideoPlayerState extends State<_AuthVideoPlayer> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.asset('assets/images/login.mp4')
+    _controller = VideoPlayerController.asset(widget.videoPath)
       ..initialize().then((_) {
         setState(() {
           _isInitialized = true;

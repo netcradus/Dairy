@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 
 import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
@@ -22,7 +23,25 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   String _selectedFilter =
       'All'; // 'All' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled'
 
+  final CarouselSliderController _carouselController = CarouselSliderController();
+  int _bannerIndex = 0;
+
+  final List<String> _banners = [
+    'assets/images/deliver.png',
+    'assets/images/deliver3.png',
+    'assets/images/deliver4.png',
+  ];
+
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   Widget build(BuildContext context) {
     final allOrders = ref.watch(allOrdersProvider);
 
@@ -68,25 +87,63 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                 ),
               ),
 
-              // Deliver Banner
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: AspectRatio(
-                    aspectRatio: 2172 / 724,
-                    child: Image.asset(
-                      'assets/images/deliver.png',
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const SizedBox.shrink();
-                      },
+                child: Column(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: CarouselSlider(
+                        carouselController: _carouselController,
+                        options: CarouselOptions(
+                          aspectRatio: 2172 / 724,
+                          viewportFraction: 1.0,
+                          autoPlay: true,
+                          autoPlayInterval: const Duration(seconds: 4),
+                          enlargeCenterPage: false,
+                          onPageChanged: (index, reason) {
+                            setState(() {
+                              _bannerIndex = index;
+                            });
+                          },
+                        ),
+                        items: _banners.map((imagePath) {
+                          return Image.asset(
+                            imagePath,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                          );
+                        }).toList(),
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(_banners.length, (index) {
+                        final isActive = index == _bannerIndex;
+                        return GestureDetector(
+                          onTap: () {
+                            _carouselController.animateToPage(index);
+                            setState(() => _bannerIndex = index);
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                            width: isActive ? 12 : 5,
+                            height: 5,
+                            decoration: BoxDecoration(
+                              color: isActive
+                                  ? const Color(0xFF005F38)
+                                  : const Color(0xFFCBD5E1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 6),
 
               // Horizontal Filter bar
               Padding(

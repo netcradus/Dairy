@@ -73,28 +73,12 @@ class _ProductCardState extends State<ProductCard> {
                             top: Radius.circular(AppSizes.radiusLarge - 1),
                           ),
                            child: Padding(
-                             padding: () {
-                               final titleLower = p.title.toLowerCase();
-                               final imgLower = p.imageUrl.toLowerCase();
-                               if (titleLower.contains('paneer') || imgLower.contains('paneer')) {
-                                 return const EdgeInsets.all(20.0);
-                               }
-                               if (titleLower.contains('makhan') || imgLower.contains('makhan') || titleLower.contains('butter') || imgLower.contains('butter')) {
-                                 return const EdgeInsets.all(20.0);
-                               }
-                               if (titleLower.contains('ghee') || imgLower.contains('ghee')) {
-                                 return const EdgeInsets.all(4.0);
-                               }
-                               if (titleLower.contains('lassi') || imgLower.contains('lassi')) {
-                                 return const EdgeInsets.all(12.0);
-                               }
-                               return const EdgeInsets.all(12.0);
-                             }(),
+                             padding: EdgeInsets.zero,
                             child: p.imageUrl.isNotEmpty
                                 ? (p.imageUrl.startsWith('http')
                                     ? CachedNetworkImage(
                                         imageUrl: p.imageUrl,
-                                        fit: BoxFit.contain,
+                                        fit: BoxFit.cover,
                                         placeholder: (context, url) =>
                                             Container(
                                           color: AppColors.lightBlue,
@@ -116,7 +100,7 @@ class _ProductCardState extends State<ProductCard> {
                                       )
                                     : Image.asset(
                                         p.imageUrl,
-                                        fit: BoxFit.contain,
+                                        fit: BoxFit.cover,
                                         errorBuilder:
                                             (context, error, stackTrace) =>
                                                 Container(

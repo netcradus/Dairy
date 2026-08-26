@@ -149,8 +149,8 @@ class _DeliveryPanelScreenState extends ConsumerState<DeliveryPanelScreen> {
               children: [
                 CircleAvatar(
                   radius: 32,
-                  backgroundColor: AppColors.primaryLight,
-                  child: Icon(Icons.person, size: 32, color: AppColors.primary),
+                  backgroundColor: Colors.transparent,
+                  backgroundImage: AssetImage('assets/images/nicon.png'),
                 ),
               ],
             ),

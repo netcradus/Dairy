@@ -7,7 +7,7 @@ import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
 import '../../providers/navigation_provider.dart';
 
-const String _logoAsset = 'assets/images/logo(1).png';
+const String _logoAsset = 'assets/images/newlogo.png';
 
 /// Returns true when the widget is at least partially within the viewport.
 bool _widgetVisible(BuildContext context) {

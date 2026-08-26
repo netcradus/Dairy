@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:video_player/video_player.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
@@ -10,6 +11,7 @@ import '../../core/widgets/empty_state.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/navigation_provider.dart';
 import '../product/product_details_screen.dart';
+import '../cart/cart_screen.dart';
 
 /// Sawariya Dairy — Redesigned Shop Catalog Screen matching the mockup
 class ShopScreen extends ConsumerStatefulWidget {
@@ -21,16 +23,10 @@ class ShopScreen extends ConsumerStatefulWidget {
 
 class _ShopScreenState extends ConsumerState<ShopScreen> {
   final TextEditingController _searchController = TextEditingController();
-  final CarouselSliderController _carouselController =
-      CarouselSliderController();
   String _searchQuery = '';
-  int _bannerIndex = 0;
 
-  final List<String> _shopBanners = [
-    'assets/images/shop1.png',
-    'assets/images/shop2.png',
-    'assets/images/shop3.png',
-  ];
+  late VideoPlayerController _videoController;
+  bool _isVideoInitialized = false;
 
   final CarouselSliderController _middleCarouselController =
       CarouselSliderController();
@@ -43,8 +39,25 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _videoController = VideoPlayerController.asset('assets/images/orderv.mp4')
+      ..initialize().then((_) {
+        if (mounted) {
+          setState(() {
+            _isVideoInitialized = true;
+          });
+          _videoController.setLooping(true);
+          _videoController.play();
+          _videoController.setVolume(0.0); // Mute
+        }
+      });
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
+    _videoController.dispose();
     super.dispose();
   }
 
@@ -95,44 +108,45 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     }).toList();
 
     // Defined Categories to match the user's requested options and logo palette
+    // Defined Categories to match the user's requested options and logo palette
     final categoryOptions = [
       {
         'id': 'cat_all',
         'title': 'All',
-        'image': '',
+        'image': 'assets/images/all.png',
         'description':
             'Browse our entire range of premium, farm-fresh dairy products.'
       },
       {
         'id': 'cat_milk',
         'title': 'Milk',
-        'image': 'assets/images/milk.png',
+        'image': 'assets/images/doodh.png',
         'description': '100% pure A2 milk sourced daily from healthy cows.'
       },
       {
-        'id': 'cat_paneer',
-        'title': 'Paneer',
-        'image': 'assets/images/paneer.png',
-        'description':
-            'Ultra-soft, protein-rich fresh cottage cheese prepared daily.'
-      },
-      {
         'id': 'cat_ghee',
-        'title': 'Ghee',
-        'image': 'assets/images/ghee.png',
-        'description': 'Pure Bilona cow ghee hand-churned to golden perfection.'
+        'title': 'Butter',
+        'image': 'assets/images/gh.png',
+        'description': 'Rich golden butter roll and slab made from fresh cream.'
       },
       {
         'id': 'cat_lassi',
         'title': 'Lassi',
-        'image': 'assets/images/lassi.png',
+        'image': 'assets/images/las.png',
         'description': 'Thick, creamy, and refreshing probiotic sweet lassi.'
       },
       {
         'id': 'cat_makhan',
         'title': 'Makhan',
-        'image': 'assets/images/makhana.png',
-        'description': 'Freshly churned creamy unsalted table butter.'
+        'image': 'assets/images/mak.png',
+        'description': 'Freshly churned creamy unsalted white table butter.'
+      },
+      {
+        'id': 'cat_paneer',
+        'title': 'Paneer',
+        'image': 'assets/images/pan.png',
+        'description':
+            'Ultra-soft, protein-rich fresh cottage cheese prepared daily.'
       },
     ];
 
@@ -177,35 +191,38 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                             size: 24,
                           ),
                           onPressed: () {
-                            ref
-                                .read(navigationProvider.notifier)
-                                .setIndex(1); // Nav to Shop / Cart
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const CartScreen()),
+                            );
                           },
                         ),
-                        Positioned(
-                          top: 4,
-                          right: 4,
-                          child: Container(
-                            padding: const EdgeInsets.all(3),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF1E6BFF),
-                              shape: BoxShape.circle,
-                            ),
-                            constraints: const BoxConstraints(
-                              minWidth: 16,
-                              minHeight: 16,
-                            ),
-                            child: const Text(
-                              '1',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 9.5,
-                                fontWeight: FontWeight.bold,
+                        if (ref.watch(cartItemCountProvider) > 0)
+                          Positioned(
+                            top: 4,
+                            right: 4,
+                            child: Container(
+                              padding: const EdgeInsets.all(3),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF1E6BFF),
+                                shape: BoxShape.circle,
                               ),
-                              textAlign: TextAlign.center,
+                              constraints: const BoxConstraints(
+                                minWidth: 16,
+                                minHeight: 16,
+                              ),
+                              child: Text(
+                                '${ref.watch(cartItemCountProvider)}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                 ],
@@ -261,38 +278,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
-
               // ── Promotional Banner ──
               _buildPromoBanner(),
-              const SizedBox(height: 8),
-
-              // Banner Indicator Dots
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(_shopBanners.length, (index) {
-                  final isActive = index == _bannerIndex;
-                  return GestureDetector(
-                    onTap: () {
-                      _carouselController.animateToPage(index);
-                      setState(() => _bannerIndex = index);
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 2.5),
-                      width: isActive ? 12 : 5,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: isActive
-                            ? const Color(0xFF005F38)
-                            : const Color(0xFFCBD5E1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  );
-                }),
-              ),
               const SizedBox(height: 16),
-
               // ── Horizontal Categories Row ──
               SizedBox(
                 height: 125,
@@ -303,6 +291,29 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                   itemBuilder: (context, index) {
                     final cat = categoryOptions[index];
                     final isSelected = cat['id'] == selectedCategoryId;
+
+                    // Color mapping matching mockups
+                    Color getBorderColor(String id) {
+                      switch (id) {
+                        case 'cat_milk': return const Color(0xFF5B9BD5);
+                        case 'cat_ghee': return const Color(0xFFEDC240);
+                        case 'cat_lassi': return const Color(0xFFD38B27);
+                        case 'cat_makhan': return const Color(0xFFF2D16D);
+                        case 'cat_paneer': return const Color(0xFF70AD47);
+                        default: return const Color(0xFF005F38);
+                      }
+                    }
+
+                    Color getBgColor(String id) {
+                      switch (id) {
+                        case 'cat_milk': return const Color(0xFFEAF5FF);
+                        case 'cat_ghee': return const Color(0xFFFFF9EE);
+                        case 'cat_lassi': return const Color(0xFFEBF3FE);
+                        case 'cat_makhan': return const Color(0xFFF0F9F4);
+                        case 'cat_paneer': return const Color(0xFFFFF5EA);
+                        default: return const Color(0xFFEAF5EF);
+                      }
+                    }
 
                     return GestureDetector(
                       onTap: () {
@@ -319,44 +330,37 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Container(
-                                height: 72,
-                                width: 72,
+                                height: 76,
+                                width: 76,
                                 decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: cat['id'] == 'cat_all'
-                                      ? (isSelected
-                                          ? AppColors.primary.withOpacity(0.1)
-                                          : Colors.transparent)
-                                      : Colors.transparent,
-                                  border: cat['id'] == 'cat_all'
-                                      ? Border.all(
-                                          color: AppColors.primary,
-                                          width:
-                                              3.5, // Thick green stamp border
-                                        )
-                                      : (isSelected
-                                          ? Border.all(
-                                              color: AppColors.primary
-                                                  .withOpacity(0.15),
-                                              width: 1.5,
-                                            )
-                                          : null),
+                                  borderRadius: BorderRadius.circular(20),
+                                  color: getBgColor(cat['id'] as String),
+                                  border: Border.all(
+                                    color: getBorderColor(cat['id'] as String),
+                                    width: isSelected ? 3.0 : 1.5,
+                                  ),
+                                  boxShadow: [
+                                    if (isSelected)
+                                      BoxShadow(
+                                        color: getBorderColor(cat['id'] as String)
+                                            .withOpacity(0.25),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 3),
+                                      )
+                                    else
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.03),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 1.5),
+                                      ),
+                                  ],
                                 ),
-                                child: Center(
-                                  child: cat['id'] == 'cat_all'
-                                      ? Icon(
-                                          Icons
-                                              .cabin_rounded, // farm/barn-like icon
-                                          color: AppColors.primary,
-                                          size: 36,
-                                        )
-                                      : Padding(
-                                          padding: const EdgeInsets.all(2),
-                                          child: Image.asset(
-                                            cat['image'] as String,
-                                            fit: BoxFit.contain,
-                                          ),
-                                        ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(18),
+                                  child: Image.asset(
+                                    cat['image'] as String,
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 8),
@@ -365,12 +369,12 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                                     ? 'ALL'
                                     : cat['title'] as String,
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 12.5,
                                   fontWeight: isSelected
                                       ? FontWeight.w900
                                       : FontWeight.w500,
                                   color: isSelected
-                                      ? AppColors.primary
+                                      ? const Color(0xFF005F38)
                                       : const Color(0xFF667085),
                                 ),
                                 textAlign: TextAlign.center,
@@ -514,51 +518,37 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   }
 
   Widget _buildPromoBanner() {
-    return CarouselSlider(
-      carouselController: _carouselController,
-      options: CarouselOptions(
-        aspectRatio: 1792 / 592,
-        viewportFraction: 1.0,
-        autoPlay: true,
-        autoPlayInterval: const Duration(seconds: 4),
-        enlargeCenterPage: false,
-        onPageChanged: (index, reason) {
-          setState(() {
-            _bannerIndex = index;
-          });
-        },
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
       ),
-      items: _shopBanners.map((imagePath) {
-        return Container(
-          width: double.infinity,
-          margin: const EdgeInsets.symmetric(horizontal: 2.0),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Image.asset(
-              imagePath,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: AspectRatio(
+          aspectRatio: 2.0, // Halve the height/size of the video banner by changing aspect ratio from 1.0 to 2.0
+          child: !_isVideoInitialized
+              ? Container(
                   color: const Color(0xFF005F38),
                   alignment: Alignment.center,
-                  child: const Text(
-                    'Sawariya Dairy',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold),
+                  child: const CircularProgressIndicator(
+                    color: Colors.white,
                   ),
-                );
-              },
-            ),
-          ),
-        );
-      }).toList(),
+                )
+              : FittedBox(
+                  fit: BoxFit.cover,
+                  child: SizedBox(
+                    width: _videoController.value.size.width,
+                    height: _videoController.value.size.height,
+                    child: VideoPlayer(_videoController),
+                  ),
+                ),
+        ),
+      ),
     );
   }
+
+
 
   Widget _buildMiddlePromoBanner() {
     return CarouselSlider(
@@ -671,46 +661,26 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 ),
                 const SizedBox(height: 8),
                 // Category image with beautiful container background
-                if (cat['image']!.isNotEmpty)
-                  Container(
-                    width: 110,
-                    height: 110,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryLight,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withOpacity(0.08),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Image.asset(
-                      cat['image']!,
-                      fit: BoxFit.contain,
-                    ),
-                  )
-                else
-                  Container(
-                    width: 110,
-                    height: 110,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'All',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                Container(
+                  width: 110,
+                  height: 110,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryLight,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withOpacity(0.08),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
                       ),
-                    ),
+                    ],
                   ),
+                  child: Image.asset(
+                    cat['image']!,
+                    fit: BoxFit.contain,
+                  ),
+                ),
                 const SizedBox(height: 20),
                 // Title
                 Text(

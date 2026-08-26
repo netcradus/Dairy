@@ -220,7 +220,7 @@ class AppHeader extends StatelessWidget {
               ),
               clipBehavior: Clip.antiAlias,
               child: Image.asset(
-                'assets/images/logo(1).png',
+                'assets/images/newlogo.png',
                 fit: BoxFit.contain,
                 errorBuilder: (ctx, err, stack) => const CategoryImage(
                   imageUrl: AppAssets.milkPlaceholder,
