@@ -17,7 +17,7 @@ class AuthCard extends StatelessWidget {
     this.featureTitle = 'Pure Dairy at Your Doorstep',
     this.featureSubtitle =
         'Order farm-fresh A2 milk, ghee, paneer, and butter with daily morning delivery.',
-    this.videoPath = 'assets/images/logvn.mp4',
+    this.videoPath = 'assets/images/newlogv.mp4',
   });
 
   @override
@@ -181,9 +181,12 @@ class AuthCard extends StatelessWidget {
                                   crossAxisAlignment:
                                       CrossAxisAlignment.stretch,
                                   children: [
-                                    _AuthVideoPlayer(
-                                      videoPath: videoPath,
-                                      fit: BoxFit.contain,
+                                    AspectRatio(
+                                      aspectRatio: 16 / 9,
+                                      child: _AuthVideoPlayer(
+                                        videoPath: videoPath,
+                                        fit: BoxFit.cover,
+                                      ),
                                     ),
                                     Container(
                                       width: double.infinity,
@@ -294,15 +297,24 @@ class _AuthVideoPlayerState extends State<_AuthVideoPlayer> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.asset(widget.videoPath)
-      ..initialize().then((_) {
+    _controller = VideoPlayerController.asset(widget.videoPath);
+    _controller.addListener(() {
+      if (_controller.value.hasError && mounted) {
+        setState(() {});
+      }
+    });
+    _controller.initialize().then((_) {
+      if (mounted) {
         setState(() {
           _isInitialized = true;
         });
         _controller.setLooping(true);
         _controller.play();
         _controller.setVolume(0.0); // Mute
-      });
+      }
+    }).catchError((error) {
+      debugPrint('Error initializing auth video: $error');
+    });
   }
 
   @override
@@ -313,6 +325,27 @@ class _AuthVideoPlayerState extends State<_AuthVideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
+    if (_controller.value.hasError) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline,
+                  color: Colors.redAccent, size: 36),
+              const SizedBox(height: 8),
+              Text(
+                'Video Playback Error: ${_controller.value.errorDescription}',
+                style: const TextStyle(color: Colors.redAccent, fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     if (!_isInitialized) {
       return const AspectRatio(
         aspectRatio: 16 / 9,

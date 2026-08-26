@@ -39,17 +39,24 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   @override
   void initState() {
     super.initState();
-    _videoController = VideoPlayerController.asset('assets/images/orderv.mp4')
-      ..initialize().then((_) {
-        if (mounted) {
-          setState(() {
-            _isVideoInitialized = true;
-          });
-          _videoController.setLooping(true);
-          _videoController.play();
-          _videoController.setVolume(0.0); // Mute
-        }
-      });
+    _videoController = VideoPlayerController.asset('assets/images/orderv.mp4');
+    _videoController.addListener(() {
+      if (_videoController.value.hasError && mounted) {
+        setState(() {});
+      }
+    });
+    _videoController.initialize().then((_) {
+      if (mounted) {
+        setState(() {
+          _isVideoInitialized = true;
+        });
+        _videoController.setLooping(true);
+        _videoController.play();
+        _videoController.setVolume(0.0); // Mute
+      }
+    }).catchError((error) {
+      debugPrint('Error initializing shop video: $error');
+    });
   }
 
   @override
@@ -537,24 +544,34 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: AspectRatio(
-          aspectRatio:
-              2.0, // Halve the height/size of the video banner by changing aspect ratio from 1.0 to 2.0
-          child: !_isVideoInitialized
+          aspectRatio: 2.0,
+          child: _videoController.value.hasError
               ? Container(
                   color: const Color(0xFF005F38),
+                  padding: const EdgeInsets.all(8),
                   alignment: Alignment.center,
-                  child: const CircularProgressIndicator(
-                    color: Colors.white,
+                  child: Text(
+                    'Playback Error: ${_videoController.value.errorDescription}',
+                    style: const TextStyle(color: Colors.white, fontSize: 11),
+                    textAlign: TextAlign.center,
                   ),
                 )
-              : FittedBox(
-                  fit: BoxFit.cover,
-                  child: SizedBox(
-                    width: _videoController.value.size.width,
-                    height: _videoController.value.size.height,
-                    child: VideoPlayer(_videoController),
-                  ),
-                ),
+              : (!_isVideoInitialized
+                  ? Container(
+                      color: const Color(0xFF005F38),
+                      alignment: Alignment.center,
+                      child: const CircularProgressIndicator(
+                        color: Colors.white,
+                      ),
+                    )
+                  : FittedBox(
+                      fit: BoxFit.cover,
+                      child: SizedBox(
+                        width: _videoController.value.size.width,
+                        height: _videoController.value.size.height,
+                        child: VideoPlayer(_videoController),
+                      ),
+                    )),
         ),
       ),
     );

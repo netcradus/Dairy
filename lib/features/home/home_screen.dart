@@ -309,17 +309,24 @@ class _HeroPromotionalBannerState extends State<_HeroPromotionalBanner> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.asset('assets/images/banner3v.mp4')
-      ..initialize().then((_) {
-        if (mounted) {
-          setState(() {
-            _isInitialized = true;
-          });
-          _controller.setLooping(true);
-          _controller.play();
-          _controller.setVolume(0.0); // Mute
-        }
-      });
+    _controller = VideoPlayerController.asset('assets/images/banner3v.mp4');
+    _controller.addListener(() {
+      if (_controller.value.hasError && mounted) {
+        setState(() {});
+      }
+    });
+    _controller.initialize().then((_) {
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+        _controller.setLooping(true);
+        _controller.play();
+        _controller.setVolume(0.0); // Mute
+      }
+    }).catchError((error) {
+      debugPrint('Error initializing hero promo video: $error');
+    });
   }
 
   @override
@@ -353,16 +360,29 @@ class _HeroPromotionalBannerState extends State<_HeroPromotionalBanner> {
             aspectRatio: 16 / 9,
             child: GestureDetector(
               onTap: widget.onTap,
-              child: !_isInitialized
+              child: _controller.value.hasError
                   ? Container(
                       color: Colors.grey[200],
-                      child: const Center(
-                        child: CircularProgressIndicator(
-                          color: Color(0xFF005F38),
+                      padding: const EdgeInsets.all(8),
+                      child: Center(
+                        child: Text(
+                          'Playback Error: ${_controller.value.errorDescription}',
+                          style: const TextStyle(
+                              color: Colors.redAccent, fontSize: 11),
+                          textAlign: TextAlign.center,
                         ),
                       ),
                     )
-                  : VideoPlayer(_controller),
+                  : (!_isInitialized
+                      ? Container(
+                          color: Colors.grey[200],
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: Color(0xFF005F38),
+                            ),
+                          ),
+                        )
+                      : VideoPlayer(_controller)),
             ),
           ),
         ),
@@ -945,17 +965,24 @@ class _WhyChooseUsVideoState extends State<_WhyChooseUsVideo> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.asset('assets/images/whyv.mp4')
-      ..initialize().then((_) {
-        if (mounted) {
-          setState(() {
-            _isInitialized = true;
-          });
-          _controller.setLooping(true);
-          _controller.play();
-          _controller.setVolume(0.0); // Mute
-        }
-      });
+    _controller = VideoPlayerController.asset('assets/images/whyv.mp4');
+    _controller.addListener(() {
+      if (_controller.value.hasError && mounted) {
+        setState(() {});
+      }
+    });
+    _controller.initialize().then((_) {
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+        _controller.setLooping(true);
+        _controller.play();
+        _controller.setVolume(0.0); // Mute
+      }
+    }).catchError((error) {
+      debugPrint('Error initializing why choose us video: $error');
+    });
   }
 
   @override
@@ -970,16 +997,29 @@ class _WhyChooseUsVideoState extends State<_WhyChooseUsVideo> {
       borderRadius: BorderRadius.circular(16),
       child: AspectRatio(
         aspectRatio: _isInitialized ? _controller.value.aspectRatio : 16 / 9,
-        child: !_isInitialized
+        child: _controller.value.hasError
             ? Container(
                 color: Colors.grey[200],
-                child: const Center(
-                  child: CircularProgressIndicator(
-                    color: Color(0xFF005F38),
+                padding: const EdgeInsets.all(8),
+                child: Center(
+                  child: Text(
+                    'Playback Error: ${_controller.value.errorDescription}',
+                    style:
+                        const TextStyle(color: Colors.redAccent, fontSize: 11),
+                    textAlign: TextAlign.center,
                   ),
                 ),
               )
-            : VideoPlayer(_controller),
+            : (!_isInitialized
+                ? Container(
+                    color: Colors.grey[200],
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF005F38),
+                      ),
+                    ),
+                  )
+                : VideoPlayer(_controller)),
       ),
     );
   }
