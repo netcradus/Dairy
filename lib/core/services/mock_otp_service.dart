@@ -8,9 +8,10 @@ import 'package:flutter/foundation.dart';
 class MockOtpService {
   // In-memory cache to store generated OTPs for each mobile number
   final Map<String, String> _otpCache = {};
-  
+
   // Stream controller to broadcast OTPs for visual testing or debug logs
-  final _otpStreamController = StreamController<MockOtpNotification>.broadcast();
+  final _otpStreamController =
+      StreamController<MockOtpNotification>.broadcast();
   Stream<MockOtpNotification> get otpStream => _otpStreamController.stream;
 
   /// Sends a 6-digit OTP to the specified mobile number.
@@ -20,7 +21,9 @@ class MockOtpService {
     await Future.delayed(const Duration(milliseconds: 1000));
 
     String otp;
-    if (mobileNumber == '9999999999' || mobileNumber == '8888888888' || mobileNumber == '7777777777') {
+    if (mobileNumber == '9999999999' ||
+        mobileNumber == '8888888888' ||
+        mobileNumber == '7777777777') {
       // Fixed OTP for easy automated testing/manual demo testing
       otp = '123456';
     } else {
@@ -57,7 +60,7 @@ class MockOtpService {
       _otpCache.remove(mobileNumber);
       return true;
     }
-    
+
     // For demo convenience, also accept '123456' universally if no OTP was sent yet
     if (enteredOtp == '123456') {
       return true;

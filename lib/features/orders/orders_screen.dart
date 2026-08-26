@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
-import '../../core/constants/app_assets.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
 import '../../models/order.dart';
 import '../../providers/order_provider.dart';
@@ -23,7 +20,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   String _selectedFilter =
       'All'; // 'All' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled'
 
-  final CarouselSliderController _carouselController = CarouselSliderController();
+  final CarouselSliderController _carouselController =
+      CarouselSliderController();
   int _bannerIndex = 0;
 
   final List<String> _banners = [
@@ -42,6 +40,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
     super.dispose();
   }
 
+  @override
   Widget build(BuildContext context) {
     final allOrders = ref.watch(allOrdersProvider);
 
@@ -64,8 +63,6 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       }
       return true;
     }).toList();
-
-    final isMobile = context.isMobile;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -516,12 +513,12 @@ class _OrderCard extends ConsumerWidget {
   }
 
   String _getProductImage(String catId) {
-    if (catId == 'cat_milk') return 'assets/images/milk.png';
-    if (catId == 'cat_lassi') return 'assets/images/lassi.png';
-    if (catId == 'cat_makhan') return 'assets/images/makhan.png';
-    if (catId == 'cat_ghee') return 'assets/images/ghee.png';
-    if (catId == 'cat_paneer') return 'assets/images/paneer.png';
-    return 'assets/images/milk.png';
+    if (catId == 'cat_milk') return 'assets/images/nnd.png';
+    if (catId == 'cat_lassi') return 'assets/images/nnl.png';
+    if (catId == 'cat_makhan') return 'assets/images/nnm.png';
+    if (catId == 'cat_ghee') return 'assets/images/nng.png';
+    if (catId == 'cat_paneer') return 'assets/images/nnp.png';
+    return 'assets/images/nnd.png';
   }
 
   Color _statusColor(OrderStatus status) {

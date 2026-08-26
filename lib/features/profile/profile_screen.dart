@@ -10,7 +10,6 @@ import 'edit_profile_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../subscription/subscriptions_screen.dart';
 import 'about_screen.dart';
-import 'customer_support_screen.dart';
 
 /// Demo delivery-partner account.
 const String _deliveryAccountPhone = '7777777777';
@@ -39,7 +38,8 @@ class ProfileScreen extends ConsumerWidget {
                   _buildProfileHeaderCard(context, ref),
 
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -83,68 +83,99 @@ class ProfileScreen extends ConsumerWidget {
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFFF1F5F9), width: 1.0),
+                            border: Border.all(
+                                color: const Color(0xFFF1F5F9), width: 1.0),
                           ),
-                          child: Column(
-                            children: [
-                              _buildMenuTile(
-                                context,
-                                Icons.person_outline_rounded,
-                                'My Profile',
-                                'Manage your personal details',
-                                () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const EditProfileScreen()));
-                                },
-                              ),
-                              const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                              _buildMenuTile(
-                                context,
-                                Icons.location_on_outlined,
-                                'Delivery Addresses',
-                                'Add or edit delivery addresses',
-                                () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const AddressScreen()));
-                                },
-                              ),
-                              const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                              _buildMenuTile(
-                                context,
-                                Icons.payment_outlined,
-                                'Payment Methods',
-                                'Manage your payment options',
-                                () {},
-                              ),
-                              const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                              _buildMenuTile(
-                                context,
-                                Icons.autorenew_rounded,
-                                'My Subscriptions',
-                                'Manage milk & product subscriptions',
-                                () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const SubscriptionsScreen()));
-                                },
-                              ),
-                              const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                              _buildMenuTile(
-                                context,
-                                Icons.notifications_none_rounded,
-                                'Notifications',
-                                'Manage your notification preferences',
-                                () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen()));
-                                },
-                              ),
-                              const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                              _buildMenuTile(
-                                context,
-                                Icons.info_outline_rounded,
-                                'About Sawariya Dairy',
-                                'Know more about us',
-                                () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen()));
-                                },
-                              ),
-                            ],
+                          child: Material(
+                            color: Colors.transparent,
+                            borderRadius: BorderRadius.circular(16),
+                            clipBehavior: Clip.antiAlias,
+                            child: Column(
+                              children: [
+                                _buildMenuTile(
+                                  context,
+                                  Icons.person_outline_rounded,
+                                  'My Profile',
+                                  'Manage your personal details',
+                                  () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (_) =>
+                                                const EditProfileScreen()));
+                                  },
+                                ),
+                                const Divider(
+                                    height: 1, color: Color(0xFFF1F5F9)),
+                                _buildMenuTile(
+                                  context,
+                                  Icons.location_on_outlined,
+                                  'Delivery Addresses',
+                                  'Add or edit delivery addresses',
+                                  () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (_) =>
+                                                const AddressScreen()));
+                                  },
+                                ),
+                                const Divider(
+                                    height: 1, color: Color(0xFFF1F5F9)),
+                                _buildMenuTile(
+                                  context,
+                                  Icons.payment_outlined,
+                                  'Payment Methods',
+                                  'Manage your payment options',
+                                  () {},
+                                ),
+                                const Divider(
+                                    height: 1, color: Color(0xFFF1F5F9)),
+                                _buildMenuTile(
+                                  context,
+                                  Icons.autorenew_rounded,
+                                  'My Subscriptions',
+                                  'Manage milk & product subscriptions',
+                                  () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (_) =>
+                                                const SubscriptionsScreen()));
+                                  },
+                                ),
+                                const Divider(
+                                    height: 1, color: Color(0xFFF1F5F9)),
+                                _buildMenuTile(
+                                  context,
+                                  Icons.notifications_none_rounded,
+                                  'Notifications',
+                                  'Manage your notification preferences',
+                                  () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (_) =>
+                                                const NotificationsScreen()));
+                                  },
+                                ),
+                                const Divider(
+                                    height: 1, color: Color(0xFFF1F5F9)),
+                                _buildMenuTile(
+                                  context,
+                                  Icons.info_outline_rounded,
+                                  'About Sawariya Dairy',
+                                  'Know more about us',
+                                  () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (_) =>
+                                                const AboutScreen()));
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
                         ),
 
@@ -257,11 +288,13 @@ class ProfileScreen extends ConsumerWidget {
 
                   // Membership Badge
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF005F38), width: 1.0),
+                      border: Border.all(
+                          color: const Color(0xFF005F38), width: 1.0),
                     ),
                     child: const Text(
                       'Fresh Member',
@@ -306,7 +339,9 @@ class ProfileScreen extends ConsumerWidget {
               ),
               GestureDetector(
                 onTap: () {
-                  ref.read(navigationProvider.notifier).setIndex(2); // Navigate to Orders Tab
+                  ref
+                      .read(navigationProvider.notifier)
+                      .setIndex(2); // Navigate to Orders Tab
                 },
                 child: const Row(
                   children: [
@@ -335,10 +370,13 @@ class ProfileScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildOrderStatColumn(Icons.shopping_bag_outlined, 'All Orders', '12'),
-              _buildOrderStatColumn(Icons.inventory_2_outlined, 'Processing', '3'),
+              _buildOrderStatColumn(
+                  Icons.shopping_bag_outlined, 'All Orders', '12'),
+              _buildOrderStatColumn(
+                  Icons.inventory_2_outlined, 'Processing', '3'),
               _buildOrderStatColumn(Icons.check_box_outlined, 'Delivered', '8'),
-              _buildOrderStatColumn(Icons.cancel_presentation_outlined, 'Cancelled', '1'),
+              _buildOrderStatColumn(
+                  Icons.cancel_presentation_outlined, 'Cancelled', '1'),
             ],
           ),
         ],
@@ -430,37 +468,43 @@ class ProfileScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFF1F5F9), width: 1.0),
       ),
-      child: ListTile(
-        dense: true,
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: const BoxDecoration(
-            color: Color(0xFFFEF2F2),
-            shape: BoxShape.circle,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
+        child: ListTile(
+          dense: true,
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: const BoxDecoration(
+              color: Color(0xFFFEF2F2),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.logout_rounded,
+                color: Colors.redAccent, size: 18),
           ),
-          child: const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 18),
-        ),
-        title: const Text(
-          'Logout',
-          style: TextStyle(
-            fontSize: 13.5,
-            fontWeight: FontWeight.w700,
-            color: Colors.redAccent,
+          title: const Text(
+            'Logout',
+            style: TextStyle(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w700,
+              color: Colors.redAccent,
+            ),
           ),
-        ),
-        subtitle: const Text(
-          'Log out of your account',
-          style: TextStyle(
-            fontSize: 11,
-            color: Color(0xFF98A2B3),
+          subtitle: const Text(
+            'Log out of your account',
+            style: TextStyle(
+              fontSize: 11,
+              color: Color(0xFF98A2B3),
+            ),
           ),
+          trailing: const Icon(
+            Icons.chevron_right_rounded,
+            color: Color(0xFFCBD5E1),
+            size: 18,
+          ),
+          onTap: () => showLogoutDialog(context, ref),
         ),
-        trailing: const Icon(
-          Icons.chevron_right_rounded,
-          color: Color(0xFFCBD5E1),
-          size: 18,
-        ),
-        onTap: () => showLogoutDialog(context, ref),
       ),
     );
   }
@@ -470,7 +514,8 @@ class ProfileScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Log Out'),
-        content: const Text('Are you sure you want to log out of Sawariya Dairy?'),
+        content:
+            const Text('Are you sure you want to log out of Sawariya Dairy?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -481,7 +526,8 @@ class ProfileScreen extends ConsumerWidget {
               Navigator.pop(ctx);
               ref.read(userProvider.notifier).clearSession();
             },
-            child: const Text('Log Out', style: TextStyle(color: Colors.redAccent)),
+            child: const Text('Log Out',
+                style: TextStyle(color: Colors.redAccent)),
           ),
         ],
       ),

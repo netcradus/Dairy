@@ -25,10 +25,10 @@ class MainLayoutScreen extends ConsumerWidget {
     final isDesktop = context.isDesktop;
 
     final List<Widget> pages = [
-      const HomeScreen(),         // 0 – Home
-      const ShopScreen(),         // 1 – Shop
-      const OrdersScreen(),       // 2 – Orders
-      const ProfileScreen(),      // 3 – Profile
+      const HomeScreen(), // 0 – Home
+      const ShopScreen(), // 1 – Shop
+      const OrdersScreen(), // 2 – Orders
+      const ProfileScreen(), // 3 – Profile
     ];
 
     if (isDesktop) {
@@ -59,8 +59,7 @@ class MainLayoutScreen extends ConsumerWidget {
                     onCartTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                            builder: (_) => const CartScreen()),
+                        MaterialPageRoute(builder: (_) => const CartScreen()),
                       );
                     },
                   ),

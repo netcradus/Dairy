@@ -67,9 +67,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final completer = Completer<bool>();
 
     try {
-      final formattedPhone = mobileNumber.startsWith('+')
-          ? mobileNumber
-          : '+91$mobileNumber';
+      final formattedPhone =
+          mobileNumber.startsWith('+') ? mobileNumber : '+91$mobileNumber';
 
       await _auth.verifyPhoneNumber(
         phoneNumber: formattedPhone,
@@ -115,9 +114,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final completer = Completer<bool>();
 
     try {
-      final formattedPhone = mobileNumber.startsWith('+')
-          ? mobileNumber
-          : '+91$mobileNumber';
+      final formattedPhone =
+          mobileNumber.startsWith('+') ? mobileNumber : '+91$mobileNumber';
 
       await _auth.verifyPhoneNumber(
         phoneNumber: formattedPhone,

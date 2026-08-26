@@ -59,7 +59,10 @@ class StatusBadge extends StatelessWidget {
     if (lower.contains('route') || lower.contains('out for delivery')) {
       color = AppColors.statusOutForDelivery;
       bg = const Color(0xFFE8F6FD);
-    } else if (lower.contains('delivered') || lower.contains('completed') || lower.contains('active') || lower.contains('success')) {
+    } else if (lower.contains('delivered') ||
+        lower.contains('completed') ||
+        lower.contains('active') ||
+        lower.contains('success')) {
       color = AppColors.statusDelivered;
       bg = const Color(0xFFE8FAF2);
     } else if (lower.contains('pending') || lower.contains('low balance')) {

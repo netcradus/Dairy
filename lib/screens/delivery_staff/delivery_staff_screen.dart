@@ -72,8 +72,10 @@ class DeliveryStaffScreen extends StatelessWidget {
                       children: [
                         CircleAvatar(
                           radius: 22,
-                          backgroundColor: AppColors.primaryLight.withValues(alpha: 0.2),
-                          child: const Icon(Icons.person, color: AppColors.primary),
+                          backgroundColor:
+                              AppColors.primaryLight.withValues(alpha: 0.2),
+                          child: const Icon(Icons.person,
+                              color: AppColors.primary),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -103,7 +105,8 @@ class DeliveryStaffScreen extends StatelessWidget {
                     ),
                     Row(
                       children: [
-                        Icon(Icons.electric_rickshaw_outlined, size: 16, color: textMuted),
+                        Icon(Icons.electric_rickshaw_outlined,
+                            size: 16, color: textMuted),
                         const SizedBox(width: 6),
                         Text(
                           rider.vehicle,
@@ -128,7 +131,8 @@ class DeliveryStaffScreen extends StatelessWidget {
                         ),
                         Row(
                           children: [
-                            const Icon(Icons.star_rounded, size: 16, color: Colors.amber),
+                            const Icon(Icons.star_rounded,
+                                size: 16, color: Colors.amber),
                             const SizedBox(width: 4),
                             Text(
                               '${rider.rating} Rating',

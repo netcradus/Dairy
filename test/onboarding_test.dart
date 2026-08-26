@@ -5,7 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dairy_app/features/onboarding/onboarding_screen.dart';
 
 void main() {
-  testWidgets('Onboarding Next button advances pages', (WidgetTester tester) async {
+  testWidgets('Onboarding Next button advances pages',
+      (WidgetTester tester) async {
     await tester.pumpWidget(
       const ProviderScope(
         child: MaterialApp(

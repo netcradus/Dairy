@@ -1,4 +1,7 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Internet permission required by video_player / ExoPlayer -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <!-- Location permissions for real-time delivery agent GPS tracking -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />

@@ -37,7 +37,8 @@ class AppButton extends StatelessWidget {
             child: CircularProgressIndicator(
               strokeWidth: 2.5,
               valueColor: AlwaysStoppedAnimation<Color>(
-                variant == AppButtonVariant.outlined || variant == AppButtonVariant.text
+                variant == AppButtonVariant.outlined ||
+                        variant == AppButtonVariant.text
                     ? AppColors.primaryBlue
                     : AppColors.textOnPrimary,
               ),
@@ -69,12 +70,14 @@ class AppButton extends StatelessWidget {
         button = ElevatedButton(
           onPressed: isLoading ? null : onPressed,
           style: ElevatedButton.styleFrom(
-            minimumSize: Size(isFullWidth ? double.infinity : (width ?? 0), effectiveHeight),
+            minimumSize: Size(
+                isFullWidth ? double.infinity : (width ?? 0), effectiveHeight),
             backgroundColor: AppColors.primaryBlue,
             foregroundColor: AppColors.textOnPrimary,
             elevation: 2,
             shadowColor: AppColors.primaryBlue.withValues(alpha: 0.3),
-            shape: const RoundedRectangleBorder(borderRadius: AppSizes.borderMedium),
+            shape: const RoundedRectangleBorder(
+                borderRadius: AppSizes.borderMedium),
           ),
           child: childWidget,
         );
@@ -84,11 +87,13 @@ class AppButton extends StatelessWidget {
         button = ElevatedButton(
           onPressed: isLoading ? null : onPressed,
           style: ElevatedButton.styleFrom(
-            minimumSize: Size(isFullWidth ? double.infinity : (width ?? 0), effectiveHeight),
+            minimumSize: Size(
+                isFullWidth ? double.infinity : (width ?? 0), effectiveHeight),
             backgroundColor: AppColors.lightBlue,
             foregroundColor: AppColors.primaryBlue,
             elevation: 0,
-            shape: const RoundedRectangleBorder(borderRadius: AppSizes.borderMedium),
+            shape: const RoundedRectangleBorder(
+                borderRadius: AppSizes.borderMedium),
           ),
           child: childWidget,
         );
@@ -98,10 +103,12 @@ class AppButton extends StatelessWidget {
         button = OutlinedButton(
           onPressed: isLoading ? null : onPressed,
           style: OutlinedButton.styleFrom(
-            minimumSize: Size(isFullWidth ? double.infinity : (width ?? 0), effectiveHeight),
+            minimumSize: Size(
+                isFullWidth ? double.infinity : (width ?? 0), effectiveHeight),
             side: const BorderSide(color: AppColors.primaryBlue, width: 1.5),
             foregroundColor: AppColors.primaryBlue,
-            shape: const RoundedRectangleBorder(borderRadius: AppSizes.borderMedium),
+            shape: const RoundedRectangleBorder(
+                borderRadius: AppSizes.borderMedium),
           ),
           child: childWidget,
         );
@@ -111,9 +118,11 @@ class AppButton extends StatelessWidget {
         button = TextButton(
           onPressed: isLoading ? null : onPressed,
           style: TextButton.styleFrom(
-            minimumSize: Size(isFullWidth ? double.infinity : (width ?? 0), effectiveHeight),
+            minimumSize: Size(
+                isFullWidth ? double.infinity : (width ?? 0), effectiveHeight),
             foregroundColor: AppColors.primaryBlue,
-            shape: const RoundedRectangleBorder(borderRadius: AppSizes.borderSmall),
+            shape: const RoundedRectangleBorder(
+                borderRadius: AppSizes.borderSmall),
           ),
           child: childWidget,
         );

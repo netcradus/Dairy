@@ -1,6 +1,7 @@
 /// Input Validation Utility
 abstract class AppValidators {
-  static String? validateRequired(String? value, [String fieldName = 'This field']) {
+  static String? validateRequired(String? value,
+      [String fieldName = 'This field']) {
     if (value == null || value.trim().isEmpty) {
       return '$fieldName is required';
     }

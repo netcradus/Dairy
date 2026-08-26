@@ -65,10 +65,12 @@ class SupportScreen extends StatelessWidget {
                         width: 42,
                         height: 42,
                         decoration: BoxDecoration(
-                          color: AppColors.customersOrangeBg.withValues(alpha: 0.2),
+                          color: AppColors.customersOrangeBg
+                              .withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.support_agent_rounded, color: AppColors.customersOrange),
+                        child: const Icon(Icons.support_agent_rounded,
+                            color: AppColors.customersOrange),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -87,9 +89,11 @@ class SupportScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 8),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: AppColors.customersOrangeBg.withValues(alpha: 0.3),
+                                    color: AppColors.customersOrangeBg
+                                        .withValues(alpha: 0.3),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Text(

@@ -30,8 +30,9 @@ class _CustomerSupportScreenState extends State<CustomerSupportScreen> {
     },
     {
       'q': 'What are your delivery timings?',
-      'a': 'Fresh dairy is delivered every morning between 6:00 AM and 9:00 AM, '
-          'and evening slots between 5:00 PM and 8:00 PM.',
+      'a':
+          'Fresh dairy is delivered every morning between 6:00 AM and 9:00 AM, '
+              'and evening slots between 5:00 PM and 8:00 PM.',
     },
     {
       'q': 'What if I receive a damaged or spoiled product?',
@@ -76,7 +77,7 @@ class _CustomerSupportScreenState extends State<CustomerSupportScreen> {
 
   void _whatsapp() => _launch(
         'https://wa.me/${_supportPhone.replaceAll(RegExp(r'\s+'), '')}'
-        '?text=${Uri.encodeComponent('Hi Sawariya Dairy, I need help with my order.')}',
+            '?text=${Uri.encodeComponent('Hi Sawariya Dairy, I need help with my order.')}',
         'Could not open WhatsApp',
       );
 
@@ -92,7 +93,8 @@ class _CustomerSupportScreenState extends State<CustomerSupportScreen> {
       _messageController.clear();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Your query has been received. Our team will contact you shortly.'),
+          content: Text(
+              'Your query has been received. Our team will contact you shortly.'),
           backgroundColor: AppColors.success,
         ),
       );
@@ -267,8 +269,9 @@ class _CustomerSupportScreenState extends State<CustomerSupportScreen> {
                         TextFormField(
                           controller: _nameController,
                           decoration: _inputDecoration('Your Name'),
-                          validator: (v) =>
-                              (v == null || v.trim().isEmpty) ? 'Please enter your name' : null,
+                          validator: (v) => (v == null || v.trim().isEmpty)
+                              ? 'Please enter your name'
+                              : null,
                         ),
                         const SizedBox(height: AppSizes.p14),
                         TextFormField(
@@ -279,7 +282,8 @@ class _CustomerSupportScreenState extends State<CustomerSupportScreen> {
                             if (v == null || v.trim().isEmpty) {
                               return 'Please enter your phone number';
                             }
-                            if (v.trim().length < 10) return 'Enter a valid number';
+                            if (v.trim().length < 10)
+                              return 'Enter a valid number';
                             return null;
                           },
                         ),
@@ -288,8 +292,9 @@ class _CustomerSupportScreenState extends State<CustomerSupportScreen> {
                           controller: _messageController,
                           maxLines: 4,
                           decoration: _inputDecoration('How can we help?'),
-                          validator: (v) =>
-                              (v == null || v.trim().isEmpty) ? 'Please describe your issue' : null,
+                          validator: (v) => (v == null || v.trim().isEmpty)
+                              ? 'Please describe your issue'
+                              : null,
                         ),
                         const SizedBox(height: AppSizes.p20),
                         SizedBox(

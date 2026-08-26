@@ -4,12 +4,10 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
 import '../../core/widgets/product_card.dart';
 import '../../core/widgets/empty_state.dart';
 import '../../providers/product_provider.dart';
-import '../../providers/navigation_provider.dart';
 import '../product/product_details_screen.dart';
 import '../cart/cart_screen.dart';
 
@@ -295,23 +293,35 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                     // Color mapping matching mockups
                     Color getBorderColor(String id) {
                       switch (id) {
-                        case 'cat_milk': return const Color(0xFF5B9BD5);
-                        case 'cat_ghee': return const Color(0xFFEDC240);
-                        case 'cat_lassi': return const Color(0xFFD38B27);
-                        case 'cat_makhan': return const Color(0xFFF2D16D);
-                        case 'cat_paneer': return const Color(0xFF70AD47);
-                        default: return const Color(0xFF005F38);
+                        case 'cat_milk':
+                          return const Color(0xFF5B9BD5);
+                        case 'cat_ghee':
+                          return const Color(0xFFEDC240);
+                        case 'cat_lassi':
+                          return const Color(0xFFD38B27);
+                        case 'cat_makhan':
+                          return const Color(0xFFF2D16D);
+                        case 'cat_paneer':
+                          return const Color(0xFF70AD47);
+                        default:
+                          return const Color(0xFF005F38);
                       }
                     }
 
                     Color getBgColor(String id) {
                       switch (id) {
-                        case 'cat_milk': return const Color(0xFFEAF5FF);
-                        case 'cat_ghee': return const Color(0xFFFFF9EE);
-                        case 'cat_lassi': return const Color(0xFFEBF3FE);
-                        case 'cat_makhan': return const Color(0xFFF0F9F4);
-                        case 'cat_paneer': return const Color(0xFFFFF5EA);
-                        default: return const Color(0xFFEAF5EF);
+                        case 'cat_milk':
+                          return const Color(0xFFEAF5FF);
+                        case 'cat_ghee':
+                          return const Color(0xFFFFF9EE);
+                        case 'cat_lassi':
+                          return const Color(0xFFEBF3FE);
+                        case 'cat_makhan':
+                          return const Color(0xFFF0F9F4);
+                        case 'cat_paneer':
+                          return const Color(0xFFFFF5EA);
+                        default:
+                          return const Color(0xFFEAF5EF);
                       }
                     }
 
@@ -342,8 +352,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                                   boxShadow: [
                                     if (isSelected)
                                       BoxShadow(
-                                        color: getBorderColor(cat['id'] as String)
-                                            .withOpacity(0.25),
+                                        color:
+                                            getBorderColor(cat['id'] as String)
+                                                .withOpacity(0.25),
                                         blurRadius: 8,
                                         offset: const Offset(0, 3),
                                       )
@@ -526,7 +537,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: AspectRatio(
-          aspectRatio: 2.0, // Halve the height/size of the video banner by changing aspect ratio from 1.0 to 2.0
+          aspectRatio:
+              2.0, // Halve the height/size of the video banner by changing aspect ratio from 1.0 to 2.0
           child: !_isVideoInitialized
               ? Container(
                   color: const Color(0xFF005F38),
@@ -547,8 +559,6 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       ),
     );
   }
-
-
 
   Widget _buildMiddlePromoBanner() {
     return CarouselSlider(

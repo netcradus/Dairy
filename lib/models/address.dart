@@ -24,7 +24,8 @@ class Address {
     this.isDefault = false,
   });
 
-  String get fullAddressText => '$houseFlat, $streetArea, $city, $state - $pinCode';
+  String get fullAddressText =>
+      '$houseFlat, $streetArea, $city, $state - $pinCode';
 
   Address copyWith({
     String? id,
@@ -52,4 +53,3 @@ class Address {
     );
   }
 }
-

@@ -12,7 +12,8 @@ class ErrorStateWidget extends StatelessWidget {
   const ErrorStateWidget({
     super.key,
     this.title = 'Oops! Something went wrong',
-    this.message = 'Unable to load content right now. Please check your connection and try again.',
+    this.message =
+        'Unable to load content right now. Please check your connection and try again.',
     required this.onRetry,
   });
 
@@ -81,7 +82,6 @@ class ErrorStateWidget extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 28),
-            
             SizedBox(
               width: 170,
               child: AppButton(

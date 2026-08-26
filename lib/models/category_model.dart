@@ -45,7 +45,8 @@ class DairyPayment {
   final String customerName;
   final String orderOrWalletId;
   final double amount;
-  final String method; // 'UPI', 'Razorpay', 'Cash On Delivery', 'Wallet Auto-Debit'
+  final String
+      method; // 'UPI', 'Razorpay', 'Cash On Delivery', 'Wallet Auto-Debit'
   final String status; // 'Success', 'Pending', 'Failed'
   final String timestamp;
 
@@ -64,7 +65,8 @@ class CustomerComplaint {
   final String id;
   final String customerName;
   final String phone;
-  final String issueType; // 'Late Delivery', 'Damaged Pouch', 'Wrong Quantity', 'Quality Concern'
+  final String
+      issueType; // 'Late Delivery', 'Damaged Pouch', 'Wrong Quantity', 'Quality Concern'
   final String description;
   final String priority; // 'High', 'Medium', 'Low'
   final String status; // 'Open', 'In Progress', 'Resolved'

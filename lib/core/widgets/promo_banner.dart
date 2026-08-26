@@ -175,7 +175,11 @@ class PromoBanner extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: AppSizes.borderXLarge,
         gradient: LinearGradient(
-          colors: [_gradientStart, AppColors.primaryBlue.withValues(alpha: banner.id == 'b1' ? 1 : 0), _gradientEnd],
+          colors: [
+            _gradientStart,
+            AppColors.primaryBlue.withValues(alpha: banner.id == 'b1' ? 1 : 0),
+            _gradientEnd
+          ],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
@@ -219,7 +223,8 @@ class PromoBanner extends StatelessWidget {
 
           // Content
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSizes.p24, vertical: AppSizes.p20),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSizes.p24, vertical: AppSizes.p20),
             child: Row(
               children: [
                 Expanded(
@@ -229,11 +234,13 @@ class PromoBanner extends StatelessWidget {
                     children: [
                       // Tag Badge
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: AppSizes.borderSmall,
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.3)),
                         ),
                         child: Text(
                           banner.tag,

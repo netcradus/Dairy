@@ -58,8 +58,8 @@ class SettingsScreen extends ConsumerWidget {
                       subtitle: 'Order & delivery alerts on this device',
                       enabled: settings.notificationsEnabled,
                       trailing: Switch(
-                         value: settings.pushNotifications,
-                         activeColor: AppColors.primary,
+                        value: settings.pushNotifications,
+                        activeColor: AppColors.primary,
                         onChanged: settings.notificationsEnabled
                             ? notifier.updatePushNotifications
                             : null,
@@ -72,8 +72,8 @@ class SettingsScreen extends ConsumerWidget {
                       subtitle: 'Summary & promotional emails',
                       enabled: settings.notificationsEnabled,
                       trailing: Switch(
-                         value: settings.emailNotifications,
-                         activeColor: AppColors.primary,
+                        value: settings.emailNotifications,
+                        activeColor: AppColors.primary,
                         onChanged: settings.notificationsEnabled
                             ? notifier.updateEmailNotifications
                             : null,
@@ -203,7 +203,9 @@ class SettingsScreen extends ConsumerWidget {
               activeColor: AppColors.primary,
               onChanged: (value) {
                 if (value != null) {
-                  ref.read(settingsProvider.notifier).updateNavigationApp(value);
+                  ref
+                      .read(settingsProvider.notifier)
+                      .updateNavigationApp(value);
                   Navigator.pop(ctx);
                 }
               },

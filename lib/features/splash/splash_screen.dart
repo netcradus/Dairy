@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
-import '../../core/widgets/category_image.dart';
 import '../../providers/onboarding_provider.dart';
 import '../../providers/user_provider.dart';
 

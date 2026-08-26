@@ -37,11 +37,12 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => _buildErrorView(context),
       data: (orders) {
-        final activeOrders = orders.where((o) =>
-          o.status == DeliveryOrderStatus.accepted ||
-          o.status == DeliveryOrderStatus.pickup ||
-          o.status == DeliveryOrderStatus.outForDelivery
-        ).toList();
+        final activeOrders = orders
+            .where((o) =>
+                o.status == DeliveryOrderStatus.accepted ||
+                o.status == DeliveryOrderStatus.pickup ||
+                o.status == DeliveryOrderStatus.outForDelivery)
+            .toList();
 
         if (activeOrders.isEmpty) {
           return _buildEmptyView(context);
@@ -113,14 +114,17 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
             ),
             const SizedBox(height: 32),
             ElevatedButton.icon(
-              onPressed: () => ref.read(deliveryAgentProvider.notifier).toggleDuty(),
+              onPressed: () =>
+                  ref.read(deliveryAgentProvider.notifier).toggleDuty(),
               icon: const Icon(Icons.power_settings_new_rounded),
               label: const Text('Go Online'),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
             ),
           ],
@@ -129,7 +133,8 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
     );
   }
 
-  Widget _buildEmptyView(BuildContext context) {    final textPrimary = AppColors.textPrimaryOf(context);
+  Widget _buildEmptyView(BuildContext context) {
+    final textPrimary = AppColors.textPrimaryOf(context);
     final textSecondary = AppColors.textSecondaryOf(context);
 
     return Center(
@@ -319,7 +324,8 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
                         item,
                         style: GoogleFonts.plusJakartaSans(fontSize: 11),
                       ),
-                      backgroundColor: AppColors.primaryLight.withValues(alpha: 0.1),
+                      backgroundColor:
+                          AppColors.primaryLight.withValues(alpha: 0.1),
                       side: const BorderSide(color: AppColors.primaryLight),
                       visualDensity: VisualDensity.compact,
                     ))
@@ -390,7 +396,6 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
   }
 
   Widget _buildActionButtons(DeliveryOrder order) {
-
     switch (order.status) {
       case DeliveryOrderStatus.accepted:
         return Row(
@@ -404,7 +409,8 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
                   foregroundColor: AppColors.info,
                   side: const BorderSide(color: AppColors.info),
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ),
@@ -418,7 +424,8 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ),
@@ -434,7 +441,8 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
                   backgroundColor: AppColors.success,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ),
@@ -452,7 +460,8 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
                   foregroundColor: AppColors.info,
                   side: const BorderSide(color: AppColors.info),
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ),
@@ -466,7 +475,8 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ),
@@ -482,7 +492,8 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
                   backgroundColor: AppColors.info,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ),
@@ -500,7 +511,8 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
                   foregroundColor: AppColors.info,
                   side: const BorderSide(color: AppColors.info),
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ),
@@ -514,7 +526,8 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ),
@@ -528,7 +541,8 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
                   backgroundColor: AppColors.success,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ),
@@ -569,7 +583,11 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Customer Details', style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w700, color: textPrimary)),
+                  Text('Customer Details',
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: textPrimary)),
                   const SizedBox(height: 12),
                   _buildDetailRow('Name', order.customerName),
                   _buildDetailRow('Phone', order.customerPhone),
@@ -585,7 +603,11 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Pickup Details', style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w700, color: textPrimary)),
+                  Text('Pickup Details',
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: textPrimary)),
                   const SizedBox(height: 12),
                   _buildDetailRow('Location', order.pickupLocation),
                   _buildDetailRow('Phone', order.pickupPhone),
@@ -600,18 +622,26 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Items', style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w700, color: textPrimary)),
+                  Text('Items',
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: textPrimary)),
                   const SizedBox(height: 12),
                   ...order.items.map((item) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      children: [
-                        Icon(Icons.circle_rounded, size: 8, color: textMuted),
-                        const SizedBox(width: 12),
-                        Expanded(child: Text(item, style: GoogleFonts.plusJakartaSans(fontSize: 14, color: textSecondary))),
-                      ],
-                    ),
-                  )),
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Row(
+                          children: [
+                            Icon(Icons.circle_rounded,
+                                size: 8, color: textMuted),
+                            const SizedBox(width: 12),
+                            Expanded(
+                                child: Text(item,
+                                    style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 14, color: textSecondary))),
+                          ],
+                        ),
+                      )),
                 ],
               ),
             ),
@@ -623,12 +653,20 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Earnings', style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w700, color: textPrimary)),
+                  Text('Earnings',
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: textPrimary)),
                   const SizedBox(height: 12),
-                  _buildDetailRow('Delivery Fee', '₹${order.deliveryFee.toStringAsFixed(0)}'),
-                  _buildDetailRow('Order Amount', '₹${order.amount.toStringAsFixed(0)}'),
+                  _buildDetailRow('Delivery Fee',
+                      '₹${order.deliveryFee.toStringAsFixed(0)}'),
+                  _buildDetailRow(
+                      'Order Amount', '₹${order.amount.toStringAsFixed(0)}'),
                   const Divider(),
-                  _buildDetailRow('Total Earnings', '₹${(order.amount + order.deliveryFee).toStringAsFixed(0)}', isTotal: true),
+                  _buildDetailRow('Total Earnings',
+                      '₹${(order.amount + order.deliveryFee).toStringAsFixed(0)}',
+                      isTotal: true),
                 ],
               ),
             ),
@@ -674,12 +712,16 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Confirm Delivery', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
-        content: Text('Mark order #${order.orderId} as delivered?', style: GoogleFonts.plusJakartaSans()),
+        title: Text('Confirm Delivery',
+            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
+        content: Text('Mark order #${order.orderId} as delivered?',
+            style: GoogleFonts.plusJakartaSans()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: AppColors.textSecondaryOf(context))),
+            child: Text('Cancel',
+                style: GoogleFonts.plusJakartaSans(
+                    color: AppColors.textSecondaryOf(context))),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -703,32 +745,32 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
               }
               // Add to history
               ref.read(deliveryHistoryProvider.notifier).addToHistory(
-                DeliveryHistoryItem(
-                  orderId: order.orderId,
-                  customerName: order.customerName,
-                  status: 'Delivered',
-                  earnings: order.deliveryFee,
-                  date: DateTime.now(),
-                  distance: order.distance,
-                ),
-              );
+                    DeliveryHistoryItem(
+                      orderId: order.orderId,
+                      customerName: order.customerName,
+                      status: 'Delivered',
+                      earnings: order.deliveryFee,
+                      date: DateTime.now(),
+                      distance: order.distance,
+                    ),
+                  );
               // Update agent earnings
               final agent = ref.read(deliveryAgentProvider);
               ref.read(deliveryAgentProvider.notifier).updateStats(
-                completedDeliveries: agent.completedDeliveriesToday + 1,
-                earnings: agent.earningsToday + order.deliveryFee,
-              );
+                    completedDeliveries: agent.completedDeliveriesToday + 1,
+                    earnings: agent.earningsToday + order.deliveryFee,
+                  );
               // Add earnings record
               ref.read(deliveryEarningsProvider.notifier).addEarnings(
-                DeliveryEarnings(
-                  date: DateTime.now(),
-                  baseEarnings: order.deliveryFee,
-                  tips: 0,
-                  bonuses: 0,
-                  deliveriesCount: 1,
-                  total: order.deliveryFee,
-                ),
-              );
+                    DeliveryEarnings(
+                      date: DateTime.now(),
+                      baseEarnings: order.deliveryFee,
+                      tips: 0,
+                      bonuses: 0,
+                      deliveriesCount: 1,
+                      total: order.deliveryFee,
+                    ),
+                  );
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -752,21 +794,25 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not launch dialer'), backgroundColor: AppColors.error),
+          const SnackBar(
+              content: Text('Could not launch dialer'),
+              backgroundColor: AppColors.error),
         );
       }
     }
   }
 
   void _navigateToPickup(String location) async {
-    final uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(location)}');
+    final uri = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(location)}');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
 
   void _navigateToCustomer(String address) async {
-    final uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(address)}');
+    final uri = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(address)}');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }

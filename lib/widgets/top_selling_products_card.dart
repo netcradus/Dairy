@@ -16,7 +16,8 @@ class TopSellingProductsCard extends StatelessWidget {
     final cardBorder = AppColors.cardBorderOf(context);
     final textPrimary = AppColors.textPrimaryOf(context);
     final textSecondary = AppColors.textSecondaryOf(context);
-    final currencyFormatter = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final currencyFormatter =
+        NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -48,7 +49,8 @@ class TopSellingProductsCard extends StatelessWidget {
                 onTap: () => provider.setNavIndex(2),
                 borderRadius: BorderRadius.circular(4),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   child: Text(
                     'View All',
                     style: GoogleFonts.plusJakartaSans(
@@ -73,7 +75,9 @@ class TopSellingProductsCard extends StatelessWidget {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkBackground : AppColors.background,
+                      color: isDark
+                          ? AppColors.darkBackground
+                          : AppColors.background,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: cardBorder),
                     ),

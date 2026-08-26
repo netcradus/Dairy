@@ -9,7 +9,8 @@ abstract class NetworkService {
 /// Mock Implementation of NetworkService for Phase 1
 class MockNetworkService implements NetworkService {
   @override
-  Future<dynamic> get(String path, {Map<String, dynamic>? queryParameters}) async {
+  Future<dynamic> get(String path,
+      {Map<String, dynamic>? queryParameters}) async {
     await Future.delayed(const Duration(milliseconds: 300));
     return {'status': 'success', 'data': []};
   }

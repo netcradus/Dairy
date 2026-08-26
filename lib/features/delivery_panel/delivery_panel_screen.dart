@@ -31,16 +31,30 @@ class DeliveryPanelScreen extends ConsumerStatefulWidget {
   const DeliveryPanelScreen({super.key});
 
   @override
-  ConsumerState<DeliveryPanelScreen> createState() => _DeliveryPanelScreenState();
+  ConsumerState<DeliveryPanelScreen> createState() =>
+      _DeliveryPanelScreenState();
 }
 
 class _DeliveryPanelScreenState extends ConsumerState<DeliveryPanelScreen> {
   static const List<_BottomNavItem> _navItems = [
-    _BottomNavItem(icon: Icons.assignment_outlined, activeIcon: Icons.assignment, label: 'Requests'),
-    _BottomNavItem(icon: Icons.local_shipping_outlined, activeIcon: Icons.local_shipping, label: 'Active'),
-    _BottomNavItem(icon: Icons.history_outlined, activeIcon: Icons.history, label: 'Orders'),
-    _BottomNavItem(icon: Icons.account_balance_wallet, activeIcon: Icons.account_balance_wallet, label: 'Earnings'),
-    _BottomNavItem(icon: Icons.person_outline, activeIcon: Icons.person, label: 'Profile'),
+    _BottomNavItem(
+        icon: Icons.assignment_outlined,
+        activeIcon: Icons.assignment,
+        label: 'Requests'),
+    _BottomNavItem(
+        icon: Icons.local_shipping_outlined,
+        activeIcon: Icons.local_shipping,
+        label: 'Active'),
+    _BottomNavItem(
+        icon: Icons.history_outlined,
+        activeIcon: Icons.history,
+        label: 'Orders'),
+    _BottomNavItem(
+        icon: Icons.account_balance_wallet,
+        activeIcon: Icons.account_balance_wallet,
+        label: 'Earnings'),
+    _BottomNavItem(
+        icon: Icons.person_outline, activeIcon: Icons.person, label: 'Profile'),
   ];
 
   static const List<Widget> _pages = [
@@ -109,7 +123,8 @@ class _DeliveryPanelScreenState extends ConsumerState<DeliveryPanelScreen> {
       ),
       child: BottomNavigationBar(
         currentIndex: currentIndex,
-        onTap: (index) => ref.read(deliveryPanelTabProvider.notifier).setTab(index),
+        onTap: (index) =>
+            ref.read(deliveryPanelTabProvider.notifier).setTab(index),
         backgroundColor: AppColors.surface,
         elevation: 0,
         type: BottomNavigationBarType.fixed,
@@ -117,11 +132,13 @@ class _DeliveryPanelScreenState extends ConsumerState<DeliveryPanelScreen> {
         unselectedItemColor: AppColors.textSecondary,
         selectedFontSize: 12,
         unselectedFontSize: 12,
-        items: _navItems.map((item) => BottomNavigationBarItem(
-          icon: Icon(item.icon),
-          activeIcon: Icon(item.activeIcon),
-          label: item.label,
-        )).toList(),
+        items: _navItems
+            .map((item) => BottomNavigationBarItem(
+                  icon: Icon(item.icon),
+                  activeIcon: Icon(item.activeIcon),
+                  label: item.label,
+                ))
+            .toList(),
       ),
     );
   }
@@ -168,7 +185,8 @@ class _DeliveryPanelScreenState extends ConsumerState<DeliveryPanelScreen> {
                     color: isSelected
                         ? AppColors.primaryLight.withValues(alpha: 0.1)
                         : Colors.transparent,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                     child: ListTile(
                       leading: Icon(
                         isSelected ? item.activeIcon : item.icon,
@@ -178,12 +196,15 @@ class _DeliveryPanelScreenState extends ConsumerState<DeliveryPanelScreen> {
                         item.label,
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 14,
-                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                          fontWeight:
+                              isSelected ? FontWeight.w700 : FontWeight.w500,
                           color: isSelected ? AppColors.primary : textPrimary,
                         ),
                       ),
                       selected: isSelected,
-                      onTap: () => ref.read(deliveryPanelTabProvider.notifier).setTab(index),
+                      onTap: () => ref
+                          .read(deliveryPanelTabProvider.notifier)
+                          .setTab(index),
                     ),
                   ),
                 );
@@ -264,14 +285,20 @@ class _DeliveryPanelScreenState extends ConsumerState<DeliveryPanelScreen> {
             onPressed: () => context.push('/delivery-map'),
           ),
           IconButton(
-            tooltip: sharing ? 'Stop sharing live location' : 'Share live location',
-            icon: Icon(sharing ? Icons.location_on_rounded : Icons.location_off_rounded),
-            onPressed: () => ref.read(agentLiveLocationProvider.notifier).toggle(),
+            tooltip:
+                sharing ? 'Stop sharing live location' : 'Share live location',
+            icon: Icon(sharing
+                ? Icons.location_on_rounded
+                : Icons.location_off_rounded),
+            onPressed: () =>
+                ref.read(agentLiveLocationProvider.notifier).toggle(),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
- color: isOnline ? AppColors.success.withValues(alpha: 0.1) : AppColors.error.withValues(alpha: 0.1),
+              color: isOnline
+                  ? AppColors.success.withValues(alpha: 0.1)
+                  : AppColors.error.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: isOnline ? AppColors.success : AppColors.error,
@@ -305,7 +332,8 @@ class _DeliveryPanelScreenState extends ConsumerState<DeliveryPanelScreen> {
     );
   }
 
-  PreferredSizeWidget _buildMobileAppBar(bool isOnline, int currentIndex, bool sharing) {
+  PreferredSizeWidget _buildMobileAppBar(
+      bool isOnline, int currentIndex, bool sharing) {
     final textPrimary = AppColors.textPrimaryOf(context);
     final cardBg = AppColors.cardBgOf(context);
 
@@ -327,15 +355,20 @@ class _DeliveryPanelScreenState extends ConsumerState<DeliveryPanelScreen> {
           onPressed: () => context.push('/delivery-map'),
         ),
         IconButton(
-          tooltip: sharing ? 'Stop sharing live location' : 'Share live location',
-          icon: Icon(sharing ? Icons.location_on_rounded : Icons.location_off_rounded),
-          onPressed: () => ref.read(agentLiveLocationProvider.notifier).toggle(),
+          tooltip:
+              sharing ? 'Stop sharing live location' : 'Share live location',
+          icon: Icon(
+              sharing ? Icons.location_on_rounded : Icons.location_off_rounded),
+          onPressed: () =>
+              ref.read(agentLiveLocationProvider.notifier).toggle(),
         ),
         Container(
           margin: const EdgeInsets.only(right: 16),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: isOnline ? AppColors.success.withValues(alpha: 0.1) : AppColors.error.withValues(alpha: 0.1),
+            color: isOnline
+                ? AppColors.success.withValues(alpha: 0.1)
+                : AppColors.error.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: isOnline ? AppColors.success : AppColors.error,

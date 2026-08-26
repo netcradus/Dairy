@@ -53,34 +53,34 @@ class AdminProvider extends ChangeNotifier {
 
   // --- KPI Metrics ---
   List<KpiMetric> get kpiMetrics => [
-    const KpiMetric(
-      title: "Today's Revenue",
-      value: '₹4,85,240',
-      growthText: '↑ 12.5% vs Yesterday',
-      isPositive: true,
-      icon: Icons.currency_rupee_rounded,
-      themeColor: AppColors.revenueGreen,
-      themeBgColor: AppColors.revenueGreenBg,
-    ),
-    const KpiMetric(
-      title: "Today's Orders",
-      value: '524',
-      growthText: '↑ 8.7% vs Yesterday',
-      isPositive: true,
-      icon: Icons.shopping_bag_outlined,
-      themeColor: AppColors.ordersBlue,
-      themeBgColor: AppColors.ordersBlueBg,
-    ),
-    const KpiMetric(
-      title: 'Total Customers',
-      value: '4,821',
-      growthText: '↑ 15.3% vs Last Month',
-      isPositive: true,
-      icon: Icons.people_outline_rounded,
-      themeColor: AppColors.customersOrange,
-      themeBgColor: AppColors.customersOrangeBg,
-    ),
-  ];
+        const KpiMetric(
+          title: "Today's Revenue",
+          value: '₹4,85,240',
+          growthText: '↑ 12.5% vs Yesterday',
+          isPositive: true,
+          icon: Icons.currency_rupee_rounded,
+          themeColor: AppColors.revenueGreen,
+          themeBgColor: AppColors.revenueGreenBg,
+        ),
+        const KpiMetric(
+          title: "Today's Orders",
+          value: '524',
+          growthText: '↑ 8.7% vs Yesterday',
+          isPositive: true,
+          icon: Icons.shopping_bag_outlined,
+          themeColor: AppColors.ordersBlue,
+          themeBgColor: AppColors.ordersBlueBg,
+        ),
+        const KpiMetric(
+          title: 'Total Customers',
+          value: '4,821',
+          growthText: '↑ 15.3% vs Last Month',
+          isPositive: true,
+          icon: Icons.people_outline_rounded,
+          themeColor: AppColors.customersOrange,
+          themeBgColor: AppColors.customersOrangeBg,
+        ),
+      ];
 
   // --- Products Data ---
   final List<DairyProduct> _products = [
@@ -208,7 +208,8 @@ class AdminProvider extends ChangeNotifier {
   void toggleProductStock(String id) {
     final index = _products.indexWhere((p) => p.id == id);
     if (index != -1) {
-      _products[index] = _products[index].copyWith(inStock: !_products[index].inStock);
+      _products[index] =
+          _products[index].copyWith(inStock: !_products[index].inStock);
       notifyListeners();
     }
   }
@@ -478,7 +479,8 @@ class AdminProvider extends ChangeNotifier {
     const DairyCategory(
       id: 'CAT-01',
       name: 'Milk & Creams',
-      description: 'Farm-fresh pure cow milk, buffalo milk & pasteurized full cream',
+      description:
+          'Farm-fresh pure cow milk, buffalo milk & pasteurized full cream',
       productCount: 6,
       icon: Icons.local_drink_rounded,
       color: Color(0xFF1E6BFF),
@@ -623,7 +625,8 @@ class AdminProvider extends ChangeNotifier {
       customerName: 'Sneha Patel',
       phone: '+91 99887 76655',
       issueType: 'Late Delivery',
-      description: 'Morning milk reached at 7:45 AM instead of committed 6:30 AM slot.',
+      description:
+          'Morning milk reached at 7:45 AM instead of committed 6:30 AM slot.',
       priority: 'Medium',
       status: 'In Progress',
       createdAt: 'Today, 08:00 AM',
@@ -633,7 +636,8 @@ class AdminProvider extends ChangeNotifier {
       customerName: 'Ramesh Chawla',
       phone: '+91 98112 00998',
       issueType: 'Damaged Seal',
-      description: 'Pouch corner was slightly punctured upon arrival. Requesting replacement.',
+      description:
+          'Pouch corner was slightly punctured upon arrival. Requesting replacement.',
       priority: 'High',
       status: 'Resolved',
       createdAt: 'Yesterday, 07:15 AM',

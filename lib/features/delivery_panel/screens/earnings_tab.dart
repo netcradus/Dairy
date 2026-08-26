@@ -25,9 +25,11 @@ class EarningsTab extends ConsumerWidget {
     final weekDeliveries = notifier.weekDeliveries;
 
     // Calculate breakdown from all earnings
-    final totalBaseEarnings = earnings.fold<double>(0.0, (sum, e) => sum + e.baseEarnings);
+    final totalBaseEarnings =
+        earnings.fold<double>(0.0, (sum, e) => sum + e.baseEarnings);
     final totalTips = earnings.fold<double>(0.0, (sum, e) => sum + e.tips);
-    final totalBonuses = earnings.fold<double>(0.0, (sum, e) => sum + e.bonuses);
+    final totalBonuses =
+        earnings.fold<double>(0.0, (sum, e) => sum + e.bonuses);
     final totalEarnings = earnings.fold<double>(0.0, (sum, e) => sum + e.total);
 
     return ListView(
@@ -206,11 +208,16 @@ class EarningsTab extends ConsumerWidget {
       ),
       child: Column(
         children: [
-          _buildBreakdownRow(context, 'Base Earnings', '₹${baseEarnings.toStringAsFixed(0)}', AppColors.primary),
-          _buildBreakdownRow(context, 'Tips', '₹${tips.toStringAsFixed(0)}', AppColors.warning),
-          _buildBreakdownRow(context, 'Bonuses', '₹${bonuses.toStringAsFixed(0)}', AppColors.info),
+          _buildBreakdownRow(context, 'Base Earnings',
+              '₹${baseEarnings.toStringAsFixed(0)}', AppColors.primary),
+          _buildBreakdownRow(context, 'Tips', '₹${tips.toStringAsFixed(0)}',
+              AppColors.warning),
+          _buildBreakdownRow(context, 'Bonuses',
+              '₹${bonuses.toStringAsFixed(0)}', AppColors.info),
           const Divider(),
-          _buildBreakdownRow(context, 'Total', '₹${total.toStringAsFixed(0)}', AppColors.success, isTotal: true),
+          _buildBreakdownRow(context, 'Total', '₹${total.toStringAsFixed(0)}',
+              AppColors.success,
+              isTotal: true),
         ],
       ),
     );
@@ -252,7 +259,8 @@ class EarningsTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildDailyEarningsItem(BuildContext context, DeliveryEarnings earnings, bool isDesktop) {
+  Widget _buildDailyEarningsItem(
+      BuildContext context, DeliveryEarnings earnings, bool isDesktop) {
     final textPrimary = AppColors.textPrimaryOf(context);
     final textSecondary = AppColors.textSecondaryOf(context);
     final textMuted = AppColors.textMutedOf(context);
@@ -278,7 +286,9 @@ class EarningsTab extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: isToday ? AppColors.primaryLight.withValues(alpha: 0.1) : AppColors.success.withValues(alpha: 0.1),
+              color: isToday
+                  ? AppColors.primaryLight.withValues(alpha: 0.1)
+                  : AppColors.success.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -320,7 +330,8 @@ class EarningsTab extends ConsumerWidget {
                     if (isToday) ...[
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: AppColors.primaryLight.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(4),
@@ -374,12 +385,33 @@ class EarningsTab extends ConsumerWidget {
   }
 
   String _getMonthShort(int month) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
     return months[month - 1];
   }
 
   String _getDayName(int weekday) {
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const days = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday'
+    ];
     return days[weekday - 1];
   }
 

@@ -50,7 +50,8 @@ class AddressScreen extends ConsumerWidget {
                           ),
                         );
                       },
-                      icon: const Icon(Icons.add_location_alt_rounded, size: 18),
+                      icon:
+                          const Icon(Icons.add_location_alt_rounded, size: 18),
                       label: const Text('Add New'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryBlue,
@@ -63,7 +64,6 @@ class AddressScreen extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: AppSizes.p16),
-
                 if (addresses.isEmpty) ...[
                   Container(
                     padding: const EdgeInsets.all(AppSizes.p24),

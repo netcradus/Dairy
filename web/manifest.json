@@ -3,9 +3,9 @@
     "short_name": "Sawariya Dairy",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#FAF7EE",
+    "theme_color": "#005F38",
+    "description": "Premium A2 Cow Milk, Ghee, Paneer & Butter from Sawariya Dairy.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

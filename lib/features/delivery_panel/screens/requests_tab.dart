@@ -50,8 +50,12 @@ class _RequestsTabState extends ConsumerState<RequestsTab> {
         .toList();
     final agent = ref.watch(deliveryAgentProvider);
     final isOnline = agent.status == DeliveryStatus.onDuty;
-    final pendingRequests = requests.where((r) => r.status == DeliveryOrderStatus.pendingAcceptance).toList();
-    final acceptedRequests = requests.where((r) => r.status == DeliveryOrderStatus.accepted).toList();
+    final pendingRequests = requests
+        .where((r) => r.status == DeliveryOrderStatus.pendingAcceptance)
+        .toList();
+    final acceptedRequests = requests
+        .where((r) => r.status == DeliveryOrderStatus.accepted)
+        .toList();
 
     final textPrimary = AppColors.textPrimaryOf(context);
 
@@ -76,7 +80,8 @@ class _RequestsTabState extends ConsumerState<RequestsTab> {
             ),
           ),
           const SizedBox(height: 12),
-          ...pendingRequests.map((request) => _buildRequestCard(request, isUrgent: true)),
+          ...pendingRequests
+              .map((request) => _buildRequestCard(request, isUrgent: true)),
           const SizedBox(height: 24),
         ],
         if (acceptedRequests.isNotEmpty) ...[
@@ -89,7 +94,8 @@ class _RequestsTabState extends ConsumerState<RequestsTab> {
             ),
           ),
           const SizedBox(height: 12),
-          ...acceptedRequests.map((request) => _buildRequestCard(request, isUrgent: false)),
+          ...acceptedRequests
+              .map((request) => _buildRequestCard(request, isUrgent: false)),
         ],
       ],
     );
@@ -137,14 +143,17 @@ class _RequestsTabState extends ConsumerState<RequestsTab> {
             ),
             const SizedBox(height: 32),
             ElevatedButton.icon(
-              onPressed: () => ref.read(deliveryAgentProvider.notifier).toggleDuty(),
+              onPressed: () =>
+                  ref.read(deliveryAgentProvider.notifier).toggleDuty(),
               icon: const Icon(Icons.power_settings_new_rounded),
               label: const Text('Go Online'),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
             ),
           ],
@@ -300,7 +309,8 @@ class _RequestsTabState extends ConsumerState<RequestsTab> {
                         item,
                         style: GoogleFonts.plusJakartaSans(fontSize: 11),
                       ),
-                      backgroundColor: AppColors.primaryLight.withValues(alpha: 0.1),
+                      backgroundColor:
+                          AppColors.primaryLight.withValues(alpha: 0.1),
                       side: const BorderSide(color: AppColors.primaryLight),
                       visualDensity: VisualDensity.compact,
                     ))
@@ -319,7 +329,8 @@ class _RequestsTabState extends ConsumerState<RequestsTab> {
                       foregroundColor: AppColors.error,
                       side: const BorderSide(color: AppColors.error),
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ),
@@ -333,7 +344,8 @@ class _RequestsTabState extends ConsumerState<RequestsTab> {
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ),
@@ -350,7 +362,8 @@ class _RequestsTabState extends ConsumerState<RequestsTab> {
                   backgroundColor: AppColors.info,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ),
@@ -363,12 +376,15 @@ class _RequestsTabState extends ConsumerState<RequestsTab> {
   Widget _buildCountdownTimer(int seconds, bool isExpiring) {
     final minutes = (seconds / 60).floor();
     final secs = seconds % 60;
-    final timeStr = '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+    final timeStr =
+        '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: isExpiring ? AppColors.error.withValues(alpha: 0.1) : AppColors.warning.withValues(alpha: 0.1),
+        color: isExpiring
+            ? AppColors.error.withValues(alpha: 0.1)
+            : AppColors.warning.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isExpiring ? AppColors.error : AppColors.warning,
@@ -404,9 +420,7 @@ class _RequestsTabState extends ConsumerState<RequestsTab> {
     try {
       // Persist acceptance to Firestore (single source of truth). The order
       // moves from Requests to Active automatically via the live stream.
-      await ref
-          .read(orderServiceProvider)
-          .acceptOrder(order.id, agent.id);
+      await ref.read(orderServiceProvider).acceptOrder(order.id, agent.id);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

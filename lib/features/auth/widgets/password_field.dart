@@ -81,8 +81,7 @@ class _PasswordFieldState extends State<PasswordField> {
             ),
             focusedBorder: const OutlineInputBorder(
               borderRadius: AppSizes.borderMedium,
-              borderSide:
-                  BorderSide(color: AppColors.primaryBlue, width: 1.5),
+              borderSide: BorderSide(color: AppColors.primaryBlue, width: 1.5),
             ),
             errorBorder: const OutlineInputBorder(
               borderRadius: AppSizes.borderMedium,

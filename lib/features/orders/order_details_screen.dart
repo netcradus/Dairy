@@ -49,8 +49,8 @@ class OrderDetailsScreen extends ConsumerWidget {
                     children: [
                       Expanded(
                         flex: 3,
-                        child: _buildLeftColumn(context, ref, liveOrder,
-                            isCancelled, canCancel),
+                        child: _buildLeftColumn(
+                            context, ref, liveOrder, isCancelled, canCancel),
                       ),
                       const SizedBox(width: 24),
                       Expanded(
@@ -162,13 +162,11 @@ class OrderDetailsScreen extends ConsumerWidget {
             ),
           ),
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
             decoration: BoxDecoration(
               color: statusColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
-              border:
-                  Border.all(color: statusColor.withValues(alpha: 0.4)),
+              border: Border.all(color: statusColor.withValues(alpha: 0.4)),
             ),
             child: Text(
               o.status.label,
@@ -306,8 +304,7 @@ class OrderDetailsScreen extends ConsumerWidget {
             o.deliveryCharge == 0.0
                 ? 'FREE'
                 : '₹${o.deliveryCharge.toStringAsFixed(2)}',
-            valueColor:
-                o.deliveryCharge == 0.0 ? AppColors.freshGreen : null,
+            valueColor: o.deliveryCharge == 0.0 ? AppColors.freshGreen : null,
           ),
           if (o.discount > 0) ...[
             const SizedBox(height: 8),
@@ -518,13 +515,11 @@ class OrderDetailsScreen extends ConsumerWidget {
     );
   }
 
-  void _confirmCancel(
-      BuildContext context, WidgetRef ref, String orderId) {
+  void _confirmCancel(BuildContext context, WidgetRef ref, String orderId) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Cancel Order?'),
         content: const Text(
           'Are you sure you want to cancel this order? This action cannot be undone.',
@@ -540,8 +535,7 @@ class OrderDetailsScreen extends ConsumerWidget {
               await ref.read(orderServiceProvider).cancelOrder(orderId);
               ref.read(ordersProvider.notifier).cancelOrder(orderId);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text('Order cancelled successfully.')),
+                const SnackBar(content: Text('Order cancelled successfully.')),
               );
             },
             style: ElevatedButton.styleFrom(
@@ -557,8 +551,18 @@ class OrderDetailsScreen extends ConsumerWidget {
 
   String _formatDate(DateTime dt) {
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
     final hour = dt.hour > 12 ? dt.hour - 12 : dt.hour;
     final amPm = dt.hour >= 12 ? 'PM' : 'AM';
@@ -580,8 +584,8 @@ class _PriceRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label,
-            style: const TextStyle(
-                fontSize: 13, color: AppColors.textSecondary)),
+            style:
+                const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
         Text(
           value,
           style: TextStyle(

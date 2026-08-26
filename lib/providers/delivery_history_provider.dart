@@ -32,20 +32,21 @@ final deliveryHistoryStreamProvider =
       .map((snap) {
     final orders = snap.docs
         .map((doc) {
-      final data = doc.data() as Map<String, dynamic>?;
-      if (data == null) return null;
-      return model.Order.fromFirestore(data, doc.id);
-    })
+          final data = doc.data() as Map<String, dynamic>?;
+          if (data == null) return null;
+          return model.Order.fromFirestore(data, doc.id);
+        })
         .whereType<model.Order>()
         .where((order) {
-      if (filter == OrderHistoryFilter.completed) {
-        return order.status == model.OrderStatus.delivered;
-      }
-      if (filter == OrderHistoryFilter.cancelled) {
-        return order.status == model.OrderStatus.cancelled;
-      }
-      return true; // OrderHistoryFilter.all
-    }).toList();
+          if (filter == OrderHistoryFilter.completed) {
+            return order.status == model.OrderStatus.delivered;
+          }
+          if (filter == OrderHistoryFilter.cancelled) {
+            return order.status == model.OrderStatus.cancelled;
+          }
+          return true; // OrderHistoryFilter.all
+        })
+        .toList();
 
     // Sort descending by creation time (newest first).
     orders.sort((a, b) => b.orderDate.compareTo(a.orderDate));

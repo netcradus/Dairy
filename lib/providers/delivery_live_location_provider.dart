@@ -79,7 +79,8 @@ class AgentLiveLocationNotifier extends StateNotifier<bool> {
   }
 
   Future<void> _writeCurrentPosition() async {
-    final position = await _ref.read(locationServiceProvider).getCurrentPosition();
+    final position =
+        await _ref.read(locationServiceProvider).getCurrentPosition();
     if (position != null) _write(position.latitude, position.longitude);
   }
 

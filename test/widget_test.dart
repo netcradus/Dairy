@@ -11,7 +11,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dairy_app/main.dart';
 
 void main() {
-  testWidgets('Splash screen shows Sawariya Dairy title', (WidgetTester tester) async {
+  testWidgets('Splash screen shows Sawariya Dairy title',
+      (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(
       const ProviderScope(
@@ -26,4 +27,3 @@ void main() {
     await tester.pump(const Duration(milliseconds: 2500));
   });
 }
-

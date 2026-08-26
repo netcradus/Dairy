@@ -14,7 +14,8 @@ class ProductsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<AdminProvider>();
     final isDesktop = ResponsiveLayout.isDesktop(context);
-    final currencyFormatter = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final currencyFormatter =
+        NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
 
     final filteredProducts = provider.products.where((p) {
       if (provider.searchQuery.isEmpty) return true;
@@ -61,7 +62,8 @@ class ProductsScreen extends StatelessWidget {
               const SizedBox(width: 12),
               ElevatedButton.icon(
                 onPressed: () => _showProductDialog(context, provider, null),
-                icon: const Icon(Icons.add_box_rounded, size: 18, color: Colors.white),
+                icon: const Icon(Icons.add_box_rounded,
+                    size: 18, color: Colors.white),
                 label: Text(
                   'Add Product',
                   style: GoogleFonts.plusJakartaSans(
@@ -72,8 +74,10 @@ class ProductsScreen extends StatelessWidget {
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
               ),
             ],
@@ -86,7 +90,8 @@ class ProductsScreen extends StatelessWidget {
                   child: Center(
                     child: Text(
                       'No products found in catalog.',
-                      style: GoogleFonts.plusJakartaSans(color: AppColors.textMuted),
+                      style: GoogleFonts.plusJakartaSans(
+                          color: AppColors.textMuted),
                     ),
                   ),
                 )
@@ -95,7 +100,9 @@ class ProductsScreen extends StatelessWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: filteredProducts.length,
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: isDesktop ? 3 : (ResponsiveLayout.isTablet(context) ? 2 : 1),
+                    crossAxisCount: isDesktop
+                        ? 3
+                        : (ResponsiveLayout.isTablet(context) ? 2 : 1),
                     mainAxisExtent: 230,
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
@@ -121,7 +128,8 @@ class ProductsScreen extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   color: AppColors.background,
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: AppColors.cardBorder),
+                                  border:
+                                      Border.all(color: AppColors.cardBorder),
                                 ),
                                 alignment: Alignment.center,
                                 child: Text(
@@ -158,18 +166,24 @@ class ProductsScreen extends StatelessWidget {
                               ),
                               // Edit & Delete Icons
                               IconButton(
-                                icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
+                                icon: const Icon(Icons.edit_outlined,
+                                    size: 18, color: AppColors.primary),
                                 tooltip: 'Edit Product',
                                 padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
-                                onPressed: () => _showProductDialog(context, provider, product),
+                                constraints: const BoxConstraints(
+                                    minWidth: 30, minHeight: 30),
+                                onPressed: () => _showProductDialog(
+                                    context, provider, product),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.delete_outline_rounded, size: 18, color: Color(0xFFEF4444)),
+                                icon: const Icon(Icons.delete_outline_rounded,
+                                    size: 18, color: Color(0xFFEF4444)),
                                 tooltip: 'Delete Product',
                                 padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
-                                onPressed: () => _showDeleteConfirmation(context, provider, product),
+                                constraints: const BoxConstraints(
+                                    minWidth: 30, minHeight: 30),
+                                onPressed: () => _showDeleteConfirmation(
+                                    context, provider, product),
                               ),
                             ],
                           ),
@@ -178,7 +192,8 @@ class ProductsScreen extends StatelessWidget {
                             children: [
                               _buildBadge(product.category, AppColors.primary),
                               const SizedBox(width: 6),
-                              _buildBadge(product.fatContent, AppColors.statusPreparing),
+                              _buildBadge(product.fatContent,
+                                  AppColors.statusPreparing),
                             ],
                           ),
                           const Spacer(),
@@ -213,7 +228,9 @@ class ProductsScreen extends StatelessWidget {
                                     style: GoogleFonts.plusJakartaSans(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
-                                      color: product.inStock ? AppColors.revenueGreen : AppColors.statusCancelled,
+                                      color: product.inStock
+                                          ? AppColors.revenueGreen
+                                          : AppColors.statusCancelled,
                                     ),
                                   ),
                                   Transform.scale(
@@ -221,8 +238,10 @@ class ProductsScreen extends StatelessWidget {
                                     child: Switch(
                                       value: product.inStock,
                                       activeColor: AppColors.revenueGreen,
-                                      activeTrackColor: AppColors.revenueGreen.withValues(alpha: 0.3),
-                                      onChanged: (val) => provider.toggleProductStock(product.id),
+                                      activeTrackColor: AppColors.revenueGreen
+                                          .withValues(alpha: 0.3),
+                                      onChanged: (val) => provider
+                                          .toggleProductStock(product.id),
                                     ),
                                   ),
                                 ],
@@ -257,15 +276,20 @@ class ProductsScreen extends StatelessWidget {
     );
   }
 
-  void _showProductDialog(BuildContext context, AdminProvider provider, DairyProduct? existing) {
+  void _showProductDialog(
+      BuildContext context, AdminProvider provider, DairyProduct? existing) {
     final isEdit = existing != null;
     final nameCtrl = TextEditingController(text: existing?.name ?? '');
     final subtitleCtrl = TextEditingController(text: existing?.subtitle ?? '');
-    final priceCtrl = TextEditingController(text: existing != null ? '${existing.price.toInt()}' : '65');
+    final priceCtrl = TextEditingController(
+        text: existing != null ? '${existing.price.toInt()}' : '65');
     final unitCtrl = TextEditingController(text: existing?.unit ?? '1 Litre');
-    final fatCtrl = TextEditingController(text: existing?.fatContent ?? '3.5% Fat');
-    final stockCtrl = TextEditingController(text: '${existing?.stockQuantity ?? 100}');
-    final categoryCtrl = TextEditingController(text: existing?.category ?? 'Milk & Creams');
+    final fatCtrl =
+        TextEditingController(text: existing?.fatContent ?? '3.5% Fat');
+    final stockCtrl =
+        TextEditingController(text: '${existing?.stockQuantity ?? 100}');
+    final categoryCtrl =
+        TextEditingController(text: existing?.category ?? 'Milk & Creams');
     final emojiCtrl = TextEditingController(text: existing?.emoji ?? '🥛');
 
     showDialog(
@@ -284,12 +308,14 @@ class ProductsScreen extends StatelessWidget {
               children: [
                 TextField(
                   controller: nameCtrl,
-                  decoration: const InputDecoration(labelText: 'Product Name (e.g. Pure Cow Milk 1L)'),
+                  decoration: const InputDecoration(
+                      labelText: 'Product Name (e.g. Pure Cow Milk 1L)'),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: subtitleCtrl,
-                  decoration: const InputDecoration(labelText: 'Subtitle / Description'),
+                  decoration: const InputDecoration(
+                      labelText: 'Subtitle / Description'),
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -298,7 +324,8 @@ class ProductsScreen extends StatelessWidget {
                       child: TextField(
                         controller: priceCtrl,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(labelText: 'Price (₹)'),
+                        decoration:
+                            const InputDecoration(labelText: 'Price (₹)'),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -306,7 +333,8 @@ class ProductsScreen extends StatelessWidget {
                       child: TextField(
                         controller: stockCtrl,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(labelText: 'Stock Quantity'),
+                        decoration:
+                            const InputDecoration(labelText: 'Stock Quantity'),
                       ),
                     ),
                   ],
@@ -317,14 +345,16 @@ class ProductsScreen extends StatelessWidget {
                     Expanded(
                       child: TextField(
                         controller: unitCtrl,
-                        decoration: const InputDecoration(labelText: 'Unit (e.g. 500ml, 1L)'),
+                        decoration: const InputDecoration(
+                            labelText: 'Unit (e.g. 500ml, 1L)'),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: TextField(
                         controller: fatCtrl,
-                        decoration: const InputDecoration(labelText: 'Fat % (e.g. 4.5% Fat)'),
+                        decoration: const InputDecoration(
+                            labelText: 'Fat % (e.g. 4.5% Fat)'),
                       ),
                     ),
                   ],
@@ -335,14 +365,16 @@ class ProductsScreen extends StatelessWidget {
                     Expanded(
                       child: TextField(
                         controller: categoryCtrl,
-                        decoration: const InputDecoration(labelText: 'Category'),
+                        decoration:
+                            const InputDecoration(labelText: 'Category'),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: TextField(
                         controller: emojiCtrl,
-                        decoration: const InputDecoration(labelText: 'Emoji Icon'),
+                        decoration:
+                            const InputDecoration(labelText: 'Emoji Icon'),
                       ),
                     ),
                   ],
@@ -365,35 +397,52 @@ class ProductsScreen extends StatelessWidget {
                       name: nameCtrl.text.trim(),
                       subtitle: subtitleCtrl.text.trim(),
                       price: double.tryParse(priceCtrl.text) ?? existing.price,
-                      stockQuantity: int.tryParse(stockCtrl.text) ?? existing.stockQuantity,
+                      stockQuantity: int.tryParse(stockCtrl.text) ??
+                          existing.stockQuantity,
                       unit: unitCtrl.text.trim(),
                       fatContent: fatCtrl.text.trim(),
                       category: categoryCtrl.text.trim(),
-                      emoji: emojiCtrl.text.trim().isEmpty ? '🥛' : emojiCtrl.text.trim(),
+                      emoji: emojiCtrl.text.trim().isEmpty
+                          ? '🥛'
+                          : emojiCtrl.text.trim(),
                     ),
                   );
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Product "${nameCtrl.text}" updated successfully!')),
+                    SnackBar(
+                        content: Text(
+                            'Product "${nameCtrl.text}" updated successfully!')),
                   );
                 } else {
                   provider.addProduct(
                     DairyProduct(
                       id: 'PRD-${DateTime.now().millisecondsSinceEpoch % 10000}',
                       name: nameCtrl.text.trim(),
-                      subtitle: subtitleCtrl.text.trim().isEmpty ? fatCtrl.text.trim() : subtitleCtrl.text.trim(),
-                      category: categoryCtrl.text.trim().isEmpty ? 'Milk & Creams' : categoryCtrl.text.trim(),
-                      unit: unitCtrl.text.trim().isEmpty ? '1 Litre' : unitCtrl.text.trim(),
+                      subtitle: subtitleCtrl.text.trim().isEmpty
+                          ? fatCtrl.text.trim()
+                          : subtitleCtrl.text.trim(),
+                      category: categoryCtrl.text.trim().isEmpty
+                          ? 'Milk & Creams'
+                          : categoryCtrl.text.trim(),
+                      unit: unitCtrl.text.trim().isEmpty
+                          ? '1 Litre'
+                          : unitCtrl.text.trim(),
                       price: double.tryParse(priceCtrl.text) ?? 60.0,
                       ordersCount: 0,
                       totalRevenue: 0.0,
                       stockQuantity: int.tryParse(stockCtrl.text) ?? 100,
-                      fatContent: fatCtrl.text.trim().isEmpty ? '3.5% Fat' : fatCtrl.text.trim(),
+                      fatContent: fatCtrl.text.trim().isEmpty
+                          ? '3.5% Fat'
+                          : fatCtrl.text.trim(),
                       packaging: 'Fresh Pouch',
-                      emoji: emojiCtrl.text.trim().isEmpty ? '🥛' : emojiCtrl.text.trim(),
+                      emoji: emojiCtrl.text.trim().isEmpty
+                          ? '🥛'
+                          : emojiCtrl.text.trim(),
                     ),
                   );
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Product "${nameCtrl.text}" added to catalog!')),
+                    SnackBar(
+                        content: Text(
+                            'Product "${nameCtrl.text}" added to catalog!')),
                   );
                 }
                 Navigator.pop(ctx);
@@ -401,7 +450,8 @@ class ProductsScreen extends StatelessWidget {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
             child: Text(
               isEdit ? 'Save Changes' : 'Add Product',
@@ -413,7 +463,8 @@ class ProductsScreen extends StatelessWidget {
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, AdminProvider provider, DairyProduct product) {
+  void _showDeleteConfirmation(
+      BuildContext context, AdminProvider provider, DairyProduct product) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -430,7 +481,8 @@ class ProductsScreen extends StatelessWidget {
         ),
         content: Text(
           'Are you sure you want to remove "${product.name}" from your product inventory?',
-          style: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColors.textSecondary),
+          style: GoogleFonts.plusJakartaSans(
+              fontSize: 13, color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
@@ -447,7 +499,8 @@ class ProductsScreen extends StatelessWidget {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
             child: const Text('Delete', style: TextStyle(color: Colors.white)),
           ),

@@ -48,210 +48,212 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
             vertical: 10,
           ),
           child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Left: Greeting and Headline
-          Flexible(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  _greeting(),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                const Text(
-                  'Fresh dairy, delivered daily!',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
-                    letterSpacing: -0.3,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(width: 12),
-
-          // Location Pill (Deliver to Jaipur, 302001)
-          if (isDesktop) ...[
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.border, width: 1.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.location_on_outlined,
-                    size: 16,
-                    color: AppColors.primaryBlue,
-                  ),
-                  SizedBox(width: 6),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Deliver to',
-                        style: TextStyle(
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textSecondary,
-                        ),
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Left: Greeting and Headline
+              Flexible(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _greeting(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textSecondary,
                       ),
-                      Text(
-                        'Gurugram, 122001',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
+                    ),
+                    const SizedBox(height: 2),
+                    const Text(
+                      'Fresh dairy, delivered daily!',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              // Location Pill (Deliver to Jaipur, 302001)
+              if (isDesktop) ...[
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.border, width: 1.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.03),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
-                  SizedBox(width: 6),
-                  Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    size: 16,
-                    color: AppColors.textSecondary,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-          ],
-
-          // Search Field
-          if (isDesktop)
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 280, minWidth: 160),
-              child: SizedBox(
-                height: 40,
-                child: TextField(
-                  readOnly: true,
-                  onTap: onSearchTap,
-                  decoration: InputDecoration(
-                    hintText: 'Search milk, curd, paneer, ghee...',
-                    hintStyle: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textMuted,
-                    ),
-                    prefixIcon: const Icon(
-                      Icons.search_rounded,
-                      size: 18,
-                      color: AppColors.textSecondary,
-                    ),
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: 0,
-                      horizontal: 10,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                        color: Color(0xFFCBD5E1),
-                        width: 0.8,
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.location_on_outlined,
+                        size: 16,
+                        color: AppColors.primaryBlue,
                       ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                        color: Color(0xFFCBD5E1),
-                        width: 0.8,
+                      SizedBox(width: 6),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Deliver to',
+                            style: TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          Text(
+                            'Gurugram, 122001',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
+                      SizedBox(width: 6),
+                      Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        size: 16,
+                        color: AppColors.textSecondary,
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            )
-          else
-            IconButton(
-              icon: const Icon(
-                Icons.search_rounded,
-                color: AppColors.textPrimary,
-              ),
-              onPressed: onSearchTap,
-            ),
+                const SizedBox(width: 12),
+              ],
 
-          const SizedBox(width: AppSizes.p8),
+              // Search Field
+              if (isDesktop)
+                ConstrainedBox(
+                  constraints:
+                      const BoxConstraints(maxWidth: 280, minWidth: 160),
+                  child: SizedBox(
+                    height: 40,
+                    child: TextField(
+                      readOnly: true,
+                      onTap: onSearchTap,
+                      decoration: InputDecoration(
+                        hintText: 'Search milk, curd, paneer, ghee...',
+                        hintStyle: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textMuted,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.search_rounded,
+                          size: 18,
+                          color: AppColors.textSecondary,
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 0,
+                          horizontal: 10,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFCBD5E1),
+                            width: 0.8,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFCBD5E1),
+                            width: 0.8,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              else
+                IconButton(
+                  icon: const Icon(
+                    Icons.search_rounded,
+                    color: AppColors.textPrimary,
+                  ),
+                  onPressed: onSearchTap,
+                ),
 
-          // Notification Button
-          IconButton(
-            icon: const Icon(
-              Icons.notifications_none_rounded,
-              color: AppColors.textPrimary,
-              size: 23,
-            ),
-            onPressed: onNotificationTap,
-          ),
+              const SizedBox(width: AppSizes.p8),
 
-          const SizedBox(width: AppSizes.p4),
-
-          // Cart Button with Badge
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
+              // Notification Button
               IconButton(
                 icon: const Icon(
-                  Icons.shopping_cart_outlined,
+                  Icons.notifications_none_rounded,
                   color: AppColors.textPrimary,
                   size: 23,
                 ),
-                onPressed: onCartTap,
+                onPressed: onNotificationTap,
               ),
-              if (cartItemCount > 0)
-                Positioned(
-                  top: 4,
-                  right: 4,
-                  child: Container(
-                    padding: const EdgeInsets.all(3),
-                    decoration: const BoxDecoration(
-                      color: AppColors.primaryBlue,
-                      shape: BoxShape.circle,
+
+              const SizedBox(width: AppSizes.p4),
+
+              // Cart Button with Badge
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  IconButton(
+                    icon: const Icon(
+                      Icons.shopping_cart_outlined,
+                      color: AppColors.textPrimary,
+                      size: 23,
                     ),
-                    constraints: const BoxConstraints(
-                      minWidth: 17,
-                      minHeight: 17,
-                    ),
-                    child: Text(
-                      '$cartItemCount',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+                    onPressed: onCartTap,
                   ),
-                ),
+                  if (cartItemCount > 0)
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration: const BoxDecoration(
+                          color: AppColors.primaryBlue,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 17,
+                          minHeight: 17,
+                        ),
+                        child: Text(
+                          '$cartItemCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ],
           ),
-        ],
-      ),
         ),
       ),
     );

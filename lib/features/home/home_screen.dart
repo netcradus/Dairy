@@ -13,8 +13,6 @@ import '../../core/widgets/category_card.dart';
 import '../../core/widgets/section_header.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/navigation_provider.dart';
-import '../../core/widgets/product_card.dart';
-import '../product/product_details_screen.dart';
 
 /// Sawariya Dairy — Pixel-Perfect Home Screen matching attached design
 class HomeScreen extends ConsumerStatefulWidget {
@@ -36,7 +34,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final categories = ref.watch(categoriesProvider);
-    final cartQuantities = ref.watch(cartQuantitiesProvider);
     final isDesktop = context.isDesktop;
 
     return Scaffold(
@@ -333,7 +330,8 @@ class _HeroPromotionalBannerState extends State<_HeroPromotionalBanner> {
 
   @override
   Widget build(BuildContext context) {
-    final double horizontalPadding = MediaQuery.of(context).size.width >= 800 ? 24.0 : 12.0;
+    final double horizontalPadding =
+        MediaQuery.of(context).size.width >= 800 ? 24.0 : 12.0;
 
     return Center(
       child: Container(
@@ -986,4 +984,3 @@ class _WhyChooseUsVideoState extends State<_WhyChooseUsVideo> {
     );
   }
 }
-

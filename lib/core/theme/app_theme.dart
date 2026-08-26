@@ -171,7 +171,8 @@ abstract class AppTheme {
         backgroundColor: AppColors.surface,
         elevation: 0,
         selectedIconTheme: const IconThemeData(color: AppColors.primaryBlue),
-        unselectedIconTheme: const IconThemeData(color: AppColors.textSecondary),
+        unselectedIconTheme:
+            const IconThemeData(color: AppColors.textSecondary),
         selectedLabelTextStyle: textTheme.labelLarge?.copyWith(
           color: AppColors.primaryBlue,
         ),
@@ -186,8 +187,10 @@ abstract class AppTheme {
         backgroundColor: AppColors.lightBlue,
         selectedColor: AppColors.primaryBlue,
         disabledColor: AppColors.border,
-        labelStyle: textTheme.labelLarge?.copyWith(color: AppColors.primaryBlue),
-        secondaryLabelStyle: textTheme.labelLarge?.copyWith(color: AppColors.textOnPrimary),
+        labelStyle:
+            textTheme.labelLarge?.copyWith(color: AppColors.primaryBlue),
+        secondaryLabelStyle:
+            textTheme.labelLarge?.copyWith(color: AppColors.textOnPrimary),
         padding: const EdgeInsets.symmetric(
           horizontal: AppSizes.p12,
           vertical: AppSizes.p8,

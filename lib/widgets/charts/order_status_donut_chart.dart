@@ -29,7 +29,11 @@ class _OrderStatusDonutChartState extends State<OrderStatusDonutChart> {
       {'label': 'Pending', 'value': 86, 'color': AppColors.statusPending},
       {'label': 'Confirmed', 'value': 42, 'color': AppColors.statusConfirmed},
       {'label': 'Preparing', 'value': 31, 'color': AppColors.statusPreparing},
-      {'label': 'Out for Delivery', 'value': 54, 'color': AppColors.statusOutForDelivery},
+      {
+        'label': 'Out for Delivery',
+        'value': 54,
+        'color': AppColors.statusOutForDelivery
+      },
       {'label': 'Delivered', 'value': 280, 'color': AppColors.statusDelivered},
       {'label': 'Cancelled', 'value': 12, 'color': AppColors.statusCancelled},
     ];
@@ -66,7 +70,8 @@ class _OrderStatusDonutChartState extends State<OrderStatusDonutChart> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkBackground : AppColors.background,
+                  color:
+                      isDark ? AppColors.darkBackground : AppColors.background,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: cardBorder),
                 ),
@@ -74,7 +79,8 @@ class _OrderStatusDonutChartState extends State<OrderStatusDonutChart> {
                   child: DropdownButton<String>(
                     value: provider.orderStatusTimeFilter,
                     dropdownColor: cardBg,
-                    icon: Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: textSecondary),
+                    icon: Icon(Icons.keyboard_arrow_down_rounded,
+                        size: 16, color: textSecondary),
                     isDense: true,
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 11,
@@ -83,8 +89,10 @@ class _OrderStatusDonutChartState extends State<OrderStatusDonutChart> {
                     ),
                     items: const [
                       DropdownMenuItem(value: 'Today', child: Text('Today')),
-                      DropdownMenuItem(value: 'Yesterday', child: Text('Yesterday')),
-                      DropdownMenuItem(value: 'This Week', child: Text('This Week')),
+                      DropdownMenuItem(
+                          value: 'Yesterday', child: Text('Yesterday')),
+                      DropdownMenuItem(
+                          value: 'This Week', child: Text('This Week')),
                     ],
                     onChanged: (val) {
                       if (val != null) provider.setOrderStatusTimeFilter(val);
@@ -108,7 +116,8 @@ class _OrderStatusDonutChartState extends State<OrderStatusDonutChart> {
                       PieChart(
                         PieChartData(
                           pieTouchData: PieTouchData(
-                            touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                            touchCallback:
+                                (FlTouchEvent event, pieTouchResponse) {
                               setState(() {
                                 if (!event.isInterestedForInteractions ||
                                     pieTouchResponse == null ||

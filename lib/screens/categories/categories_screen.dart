@@ -51,7 +51,8 @@ class CategoriesScreen extends StatelessWidget {
               const SizedBox(width: 12),
               ElevatedButton.icon(
                 onPressed: () => _showCategoryDialog(context, provider, null),
-                icon: const Icon(Icons.add_circle_outline_rounded, size: 18, color: Colors.white),
+                icon: const Icon(Icons.add_circle_outline_rounded,
+                    size: 18, color: Colors.white),
                 label: Text(
                   'Add Category',
                   style: GoogleFonts.plusJakartaSans(
@@ -62,8 +63,10 @@ class CategoriesScreen extends StatelessWidget {
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
               ),
             ],
@@ -75,7 +78,8 @@ class CategoriesScreen extends StatelessWidget {
             physics: const NeverScrollableScrollPhysics(),
             itemCount: provider.categories.length,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: isDesktop ? 3 : (ResponsiveLayout.isTablet(context) ? 2 : 1),
+              crossAxisCount:
+                  isDesktop ? 3 : (ResponsiveLayout.isTablet(context) ? 2 : 1),
               mainAxisExtent: 200,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
@@ -110,7 +114,8 @@ class CategoriesScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 10),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
                             color: AppColors.background,
                             borderRadius: BorderRadius.circular(12),
@@ -128,18 +133,24 @@ class CategoriesScreen extends StatelessWidget {
                         const Spacer(),
                         // Edit & Delete Action Buttons
                         IconButton(
-                          icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
+                          icon: const Icon(Icons.edit_outlined,
+                              size: 18, color: AppColors.primary),
                           tooltip: 'Edit Category',
                           padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                          onPressed: () => _showCategoryDialog(context, provider, cat),
+                          constraints:
+                              const BoxConstraints(minWidth: 32, minHeight: 32),
+                          onPressed: () =>
+                              _showCategoryDialog(context, provider, cat),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.delete_outline_rounded, size: 18, color: Color(0xFFEF4444)),
+                          icon: const Icon(Icons.delete_outline_rounded,
+                              size: 18, color: Color(0xFFEF4444)),
                           tooltip: 'Delete Category',
                           padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                          onPressed: () => _showDeleteConfirmation(context, provider, cat),
+                          constraints:
+                              const BoxConstraints(minWidth: 32, minHeight: 32),
+                          onPressed: () =>
+                              _showDeleteConfirmation(context, provider, cat),
                         ),
                       ],
                     ),
@@ -176,12 +187,14 @@ class CategoriesScreen extends StatelessWidget {
     );
   }
 
-  void _showCategoryDialog(BuildContext context, AdminProvider provider, DairyCategory? existing) {
+  void _showCategoryDialog(
+      BuildContext context, AdminProvider provider, DairyCategory? existing) {
     final isEdit = existing != null;
     final nameCtrl = TextEditingController(text: existing?.name ?? '');
     final descCtrl = TextEditingController(text: existing?.description ?? '');
     final emojiCtrl = TextEditingController(text: existing?.emoji ?? '🥛');
-    final countCtrl = TextEditingController(text: '${existing?.productCount ?? 0}');
+    final countCtrl =
+        TextEditingController(text: '${existing?.productCount ?? 0}');
 
     showDialog(
       context: context,
@@ -198,13 +211,16 @@ class CategoriesScreen extends StatelessWidget {
             children: [
               TextField(
                 controller: nameCtrl,
-                decoration: const InputDecoration(labelText: 'Category Name', hintText: 'e.g. Milk & Creams'),
+                decoration: const InputDecoration(
+                    labelText: 'Category Name', hintText: 'e.g. Milk & Creams'),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: descCtrl,
                 maxLines: 2,
-                decoration: const InputDecoration(labelText: 'Description', hintText: 'Short description of products'),
+                decoration: const InputDecoration(
+                    labelText: 'Description',
+                    hintText: 'Short description of products'),
               ),
               const SizedBox(height: 12),
               Row(
@@ -212,7 +228,8 @@ class CategoriesScreen extends StatelessWidget {
                   Expanded(
                     child: TextField(
                       controller: emojiCtrl,
-                      decoration: const InputDecoration(labelText: 'Emoji Icon', hintText: '🥛, 🧀, 🍯'),
+                      decoration: const InputDecoration(
+                          labelText: 'Emoji Icon', hintText: '🥛, 🧀, 🍯'),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -220,7 +237,8 @@ class CategoriesScreen extends StatelessWidget {
                     child: TextField(
                       controller: countCtrl,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'Product Count'),
+                      decoration:
+                          const InputDecoration(labelText: 'Product Count'),
                     ),
                   ),
                 ],
@@ -241,12 +259,17 @@ class CategoriesScreen extends StatelessWidget {
                     existing.copyWith(
                       name: nameCtrl.text.trim(),
                       description: descCtrl.text.trim(),
-                      emoji: emojiCtrl.text.trim().isEmpty ? '🥛' : emojiCtrl.text.trim(),
-                      productCount: int.tryParse(countCtrl.text) ?? existing.productCount,
+                      emoji: emojiCtrl.text.trim().isEmpty
+                          ? '🥛'
+                          : emojiCtrl.text.trim(),
+                      productCount:
+                          int.tryParse(countCtrl.text) ?? existing.productCount,
                     ),
                   );
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Category "${nameCtrl.text}" updated successfully!')),
+                    SnackBar(
+                        content: Text(
+                            'Category "${nameCtrl.text}" updated successfully!')),
                   );
                 } else {
                   provider.addCategory(
@@ -257,11 +280,15 @@ class CategoriesScreen extends StatelessWidget {
                       productCount: int.tryParse(countCtrl.text) ?? 0,
                       icon: Icons.category_rounded,
                       color: AppColors.primary,
-                      emoji: emojiCtrl.text.trim().isEmpty ? '🥛' : emojiCtrl.text.trim(),
+                      emoji: emojiCtrl.text.trim().isEmpty
+                          ? '🥛'
+                          : emojiCtrl.text.trim(),
                     ),
                   );
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Category "${nameCtrl.text}" added successfully!')),
+                    SnackBar(
+                        content: Text(
+                            'Category "${nameCtrl.text}" added successfully!')),
                   );
                 }
                 Navigator.pop(ctx);
@@ -269,7 +296,8 @@ class CategoriesScreen extends StatelessWidget {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
             child: Text(
               isEdit ? 'Save Changes' : 'Create Category',
@@ -281,7 +309,8 @@ class CategoriesScreen extends StatelessWidget {
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, AdminProvider provider, DairyCategory category) {
+  void _showDeleteConfirmation(
+      BuildContext context, AdminProvider provider, DairyCategory category) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -298,7 +327,8 @@ class CategoriesScreen extends StatelessWidget {
         ),
         content: Text(
           'Are you sure you want to delete the category "${category.name}"? This action cannot be undone.',
-          style: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColors.textSecondary),
+          style: GoogleFonts.plusJakartaSans(
+              fontSize: 13, color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
@@ -310,12 +340,15 @@ class CategoriesScreen extends StatelessWidget {
               provider.deleteCategory(category.id);
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Category "${category.name}" deleted successfully.')),
+                SnackBar(
+                    content: Text(
+                        'Category "${category.name}" deleted successfully.')),
               );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
             child: const Text('Delete', style: TextStyle(color: Colors.white)),
           ),

@@ -59,7 +59,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('OTP sent successfully! Please verify your mobile number.'),
+          content:
+              Text('OTP sent successfully! Please verify your mobile number.'),
           backgroundColor: AppColors.freshGreen,
         ),
       );
@@ -67,7 +68,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       context.push('/otp', extra: mobile);
     } else {
       final errorState = ref.read(authProvider);
-      final errorMsg = errorState.status.error?.toString() ?? 'Registration failed. Please try again.';
+      final errorMsg = errorState.status.error?.toString() ??
+          'Registration failed. Please try again.';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(errorMsg.replaceAll('Exception: ', '')),
@@ -108,7 +110,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   label: 'Full Name',
                   hint: 'Enter your full name',
                   controller: _fullNameController,
-                  prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
+                  prefixIcon:
+                      const Icon(Icons.person_outline_rounded, size: 20),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Please enter your full name';

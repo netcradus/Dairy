@@ -87,11 +87,12 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
           backgroundColor: AppColors.freshGreen,
         ),
       );
-      
+
       // session is saved, GoRouter redirect will automatically handle routing
     } else {
       final errorState = ref.read(authProvider);
-      final errorMsg = errorState.status.error?.toString() ?? 'Invalid OTP code';
+      final errorMsg =
+          errorState.status.error?.toString() ?? 'Invalid OTP code';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(errorMsg.replaceAll('Exception: ', '')),
@@ -131,137 +132,132 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final isLoading = authState.status.isLoading;
-    final displayDestination = authState.mobileNumber ?? widget.targetDestination ?? '+91 98765 43210';
+    final displayDestination =
+        authState.mobileNumber ?? widget.targetDestination ?? '+91 98765 43210';
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: AuthCard(
-          videoPath: 'assets/images/otpv.mp4',
-          featureTitle: 'Secure Account Verification',
-          featureSubtitle:
-              'We ensure 100% security for all Sawariya Dairy customer transactions and orders.',
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Header
-              AuthHeader(
-                title: 'Verify Your Number',
-                subtitle:
-                    'Enter the 6-digit OTP sent to $displayDestination.',
-              ),
+    return AuthCard(
+      videoPath: 'assets/images/otpv.mp4',
+      featureTitle: 'Secure Account Verification',
+      featureSubtitle:
+          'We ensure 100% security for all Sawariya Dairy customer transactions and orders.',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Header
+          AuthHeader(
+            title: 'Verify Your Number',
+            subtitle: 'Enter the 6-digit OTP sent to $displayDestination.',
+          ),
 
-              const SizedBox(height: AppSizes.p12),
+          const SizedBox(height: AppSizes.p12),
 
-              // Change Number Option
-              GestureDetector(
-                onTap: () {
-                  context.pop();
-                },
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.edit_outlined,
-                        size: 14, color: AppColors.primaryBlue),
-                    SizedBox(width: 4),
-                    Text(
-                      'Change Number',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primaryBlue,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: AppSizes.p24),
-
-              // 6-Digit Pin Input Field
-              OtpInputField(
-                onChanged: (code) {
-                  setState(() {
-                    _otpCode = code;
-                  });
-                },
-                onCompleted: (code) {
-                  setState(() {
-                    _otpCode = code;
-                  });
-                  _handleVerifyOtp();
-                },
-              ),
-
-              const SizedBox(height: AppSizes.p24),
-
-              // Countdown Timer & Resend Option
-              Center(
-                child: _canResend
-                    ? Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            "Didn't receive the OTP? ",
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: _handleResendOtp,
-                            child: const Text(
-                              'Resend OTP',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.primaryBlue,
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
-                    : Text(
-                        'Resend OTP in 00:${_startSeconds.toString().padLeft(2, '0')}s',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-              ),
-
-              const SizedBox(height: AppSizes.p24),
-
-              // Submit Verify Button
-              LoadingButton(
-                text: 'Verify OTP',
-                isLoading: isLoading,
-                onPressed: _handleVerifyOtp,
-              ),
-
-              const SizedBox(height: AppSizes.p16),
-
-              // Back to Login Link
-              Center(
-                child: TextButton(
-                  onPressed: () {
-                    context.go('/login');
-                  },
-                  child: const Text(
-                    'Back to Login',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textSecondary,
-                    ),
+          // Change Number Option
+          GestureDetector(
+            onTap: () {
+              context.pop();
+            },
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.edit_outlined,
+                    size: 14, color: AppColors.primaryBlue),
+                SizedBox(width: 4),
+                Text(
+                  'Change Number',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryBlue,
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+
+          const SizedBox(height: AppSizes.p24),
+
+          // 6-Digit Pin Input Field
+          OtpInputField(
+            onChanged: (code) {
+              setState(() {
+                _otpCode = code;
+              });
+            },
+            onCompleted: (code) {
+              setState(() {
+                _otpCode = code;
+              });
+              _handleVerifyOtp();
+            },
+          ),
+
+          const SizedBox(height: AppSizes.p24),
+
+          // Countdown Timer & Resend Option
+          Center(
+            child: _canResend
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "Didn't receive the OTP? ",
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: _handleResendOtp,
+                        child: const Text(
+                          'Resend OTP',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primaryBlue,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                : Text(
+                    'Resend OTP in 00:${_startSeconds.toString().padLeft(2, '0')}s',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+          ),
+
+          const SizedBox(height: AppSizes.p24),
+
+          // Submit Verify Button
+          LoadingButton(
+            text: 'Verify OTP',
+            isLoading: isLoading,
+            onPressed: _handleVerifyOtp,
+          ),
+
+          const SizedBox(height: AppSizes.p16),
+
+          // Back to Login Link
+          Center(
+            child: TextButton(
+              onPressed: () {
+                context.go('/login');
+              },
+              child: const Text(
+                'Back to Login',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

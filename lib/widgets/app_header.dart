@@ -115,7 +115,8 @@ class AppHeader extends StatelessWidget {
           height: 42,
           child: TextField(
             onChanged: provider.setSearchQuery,
-            style: GoogleFonts.plusJakartaSans(fontSize: 13, color: textPrimary),
+            style:
+                GoogleFonts.plusJakartaSans(fontSize: 13, color: textPrimary),
             decoration: InputDecoration(
               hintText: 'Search anything...',
               prefixIcon: const Icon(
@@ -150,11 +151,15 @@ class AppHeader extends StatelessWidget {
           ),
           child: IconButton(
             icon: Icon(
-              provider.isDarkMode ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+              provider.isDarkMode
+                  ? Icons.light_mode_rounded
+                  : Icons.dark_mode_rounded,
               size: 20,
               color: provider.isDarkMode ? Colors.amber : AppColors.sidebarBg,
             ),
-            tooltip: provider.isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+            tooltip: provider.isDarkMode
+                ? 'Switch to Light Mode'
+                : 'Switch to Dark Mode',
             onPressed: () => provider.toggleTheme(),
           ),
         ),
@@ -173,10 +178,13 @@ class AppHeader extends StatelessWidget {
             boxShadow: AppColors.cardShadow,
           ),
           child: IconButton(
-            icon: Icon(Icons.exit_to_app_rounded, size: 20, color: textSecondary),
+            icon:
+                Icon(Icons.exit_to_app_rounded, size: 20, color: textSecondary),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Sawariya Dairy Admin Panel is synced and online.')),
+                const SnackBar(
+                    content: Text(
+                        'Sawariya Dairy Admin Panel is synced and online.')),
               );
             },
           ),
@@ -258,7 +266,9 @@ class AppHeader extends StatelessWidget {
             // Mobile Theme Toggle
             IconButton(
               icon: Icon(
-                provider.isDarkMode ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                provider.isDarkMode
+                    ? Icons.light_mode_rounded
+                    : Icons.dark_mode_rounded,
                 size: 20,
                 color: provider.isDarkMode ? Colors.amber : AppColors.sidebarBg,
               ),
@@ -314,7 +324,8 @@ class AppHeader extends StatelessWidget {
             boxShadow: AppColors.cardShadow,
           ),
           child: IconButton(
-            icon: Icon(Icons.notifications_none_rounded, size: 20, color: textSecondary),
+            icon: Icon(Icons.notifications_none_rounded,
+                size: 20, color: textSecondary),
             onPressed: () {
               provider.clearNotifications();
               showModalBottomSheet(
@@ -341,18 +352,22 @@ class AppHeader extends StatelessWidget {
                       const ListTile(
                         leading: CircleAvatar(
                           backgroundColor: AppColors.ordersBlueBg,
-                          child: Icon(Icons.local_shipping, color: AppColors.primary, size: 20),
+                          child: Icon(Icons.local_shipping,
+                              color: AppColors.primary, size: 20),
                         ),
                         title: Text('Morning Dispatch Complete'),
-                        subtitle: Text('486 milk packets delivered successfully.'),
+                        subtitle:
+                            Text('486 milk packets delivered successfully.'),
                       ),
                       const ListTile(
                         leading: CircleAvatar(
                           backgroundColor: AppColors.customersOrangeBg,
-                          child: Icon(Icons.person_add, color: AppColors.customersOrange, size: 20),
+                          child: Icon(Icons.person_add,
+                              color: AppColors.customersOrange, size: 20),
                         ),
                         title: Text('New Subscription Added'),
-                        subtitle: Text('Rahul Sharma subscribed to 2L A2 Cow Milk.'),
+                        subtitle:
+                            Text('Rahul Sharma subscribed to 2L A2 Cow Milk.'),
                       ),
                     ],
                   ),

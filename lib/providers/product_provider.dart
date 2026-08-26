@@ -17,7 +17,8 @@ final categoryRepositoryProvider = Provider<CategoryRepository>((ref) {
 });
 
 /// Provides the Cloud Firestore-backed product/category repository.
-final firestoreProductRepoProvider = Provider<FirestoreProductRepository>((ref) {
+final firestoreProductRepoProvider =
+    Provider<FirestoreProductRepository>((ref) {
   return FirestoreProductRepository();
 });
 

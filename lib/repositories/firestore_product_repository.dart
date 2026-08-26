@@ -41,7 +41,9 @@ class FirestoreProductRepository {
   /// One-time fetch of all categories (useful with a [FutureBuilder]).
   Future<List<Category>> fetchCategories() async {
     final snap = await _categories.get();
-    return snap.docs.map((d) => Category.fromFirestore(d.data(), d.id)).toList();
+    return snap.docs
+        .map((d) => Category.fromFirestore(d.data(), d.id))
+        .toList();
   }
 
   /// Writes (or overwrites) a product document.

@@ -76,7 +76,9 @@ class CartScreen extends ConsumerWidget {
                   height: 48,
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      ref.read(navigationProvider.notifier).setIndex(1); // Nav to Shop
+                      ref
+                          .read(navigationProvider.notifier)
+                          .setIndex(1); // Nav to Shop
                     },
                     icon: const Icon(Icons.storefront_rounded),
                     label: const Text(
@@ -113,10 +115,12 @@ class CartScreen extends ConsumerWidget {
                 const SnackBar(content: Text('Cart cleared')),
               );
             },
-            icon: const Icon(Icons.delete_sweep_rounded, color: AppColors.error),
+            icon:
+                const Icon(Icons.delete_sweep_rounded, color: AppColors.error),
             label: const Text(
               'Clear Cart',
-              style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                  color: AppColors.error, fontWeight: FontWeight.w600),
             ),
           ),
           const SizedBox(width: 8),
@@ -235,7 +239,8 @@ class CartScreen extends ConsumerWidget {
       ),
       child: const Row(
         children: [
-          Icon(Icons.verified_user_rounded, color: AppColors.primaryBlue, size: 18),
+          Icon(Icons.verified_user_rounded,
+              color: AppColors.primaryBlue, size: 18),
           SizedBox(width: 8),
           Text(
             '100% Fresh Dairy Direct from Sawariya Farms',

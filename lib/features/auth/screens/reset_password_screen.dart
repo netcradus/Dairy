@@ -35,14 +35,16 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final authNotifier = ref.read(authProvider.notifier);
-    final success = await authNotifier.resetPassword(_newPasswordController.text);
+    final success =
+        await authNotifier.resetPassword(_newPasswordController.text);
 
     if (!mounted) return;
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Password reset successfully! Please login with your new password.'),
+          content: Text(
+              'Password reset successfully! Please login with your new password.'),
           backgroundColor: AppColors.freshGreen,
         ),
       );

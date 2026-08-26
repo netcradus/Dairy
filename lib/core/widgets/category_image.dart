@@ -19,8 +19,8 @@ class CategoryImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isNetwork = imageUrl.startsWith('http://') ||
-        imageUrl.startsWith('https://');
+    final isNetwork =
+        imageUrl.startsWith('http://') || imageUrl.startsWith('https://');
 
     final image = isNetwork
         ? Image.network(

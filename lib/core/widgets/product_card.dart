@@ -72,13 +72,13 @@ class _ProductCardState extends State<ProductCard> {
                           borderRadius: const BorderRadius.vertical(
                             top: Radius.circular(AppSizes.radiusLarge - 1),
                           ),
-                           child: Padding(
-                             padding: EdgeInsets.zero,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
                             child: p.imageUrl.isNotEmpty
                                 ? (p.imageUrl.startsWith('http')
                                     ? CachedNetworkImage(
                                         imageUrl: p.imageUrl,
-                                        fit: BoxFit.cover,
+                                        fit: BoxFit.contain,
                                         placeholder: (context, url) =>
                                             Container(
                                           color: AppColors.lightBlue,
@@ -100,7 +100,7 @@ class _ProductCardState extends State<ProductCard> {
                                       )
                                     : Image.asset(
                                         p.imageUrl,
-                                        fit: BoxFit.cover,
+                                        fit: BoxFit.contain,
                                         errorBuilder:
                                             (context, error, stackTrace) =>
                                                 Container(
@@ -124,8 +124,6 @@ class _ProductCardState extends State<ProductCard> {
                         ),
                       ),
                     ),
-
-
                   ],
                 ),
               ),

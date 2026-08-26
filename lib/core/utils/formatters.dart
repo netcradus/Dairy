@@ -28,7 +28,8 @@ abstract class AppFormatters {
   }
 
   /// Calculate discount percentage
-  static int calculateDiscountPercentage(double originalPrice, double discountedPrice) {
+  static int calculateDiscountPercentage(
+      double originalPrice, double discountedPrice) {
     if (originalPrice <= 0 || discountedPrice >= originalPrice) return 0;
     return (((originalPrice - discountedPrice) / originalPrice) * 100).round();
   }

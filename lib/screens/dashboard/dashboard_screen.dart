@@ -34,8 +34,8 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildKpiMetrics(
-      BuildContext context, AdminProvider provider, bool isDesktop, bool isTablet) {
+  Widget _buildKpiMetrics(BuildContext context, AdminProvider provider,
+      bool isDesktop, bool isTablet) {
     final metrics = provider.kpiMetrics;
 
     if (isDesktop) {
@@ -112,4 +112,3 @@ class DashboardScreen extends StatelessWidget {
     }
   }
 }
-

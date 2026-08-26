@@ -27,7 +27,8 @@ class NotificationsScreen extends ConsumerWidget {
     return DateFormat.MMMd().format(timestamp);
   }
 
-  void _openNotification(BuildContext context, WidgetRef ref, NotificationItem item) {
+  void _openNotification(
+      BuildContext context, WidgetRef ref, NotificationItem item) {
     ref.read(notificationsProvider.notifier).markRead(item.id);
 
     if (item.orderId != null) {
@@ -88,7 +89,7 @@ class NotificationsScreen extends ConsumerWidget {
           const SizedBox(width: 8),
         ],
       ),
-        body: notifications.isEmpty
+      body: notifications.isEmpty
           ? _buildEmptyState(context, ref)
           : ListView.separated(
               padding: EdgeInsets.symmetric(
@@ -221,7 +222,9 @@ class _NotificationTile extends StatelessWidget {
           color: AppColors.surface,
           borderRadius: AppSizes.borderLarge,
           border: Border.all(
-            color: item.isRead ? AppColors.border : AppColors.primaryBlue.withValues(alpha: 0.3),
+            color: item.isRead
+                ? AppColors.border
+                : AppColors.primaryBlue.withValues(alpha: 0.3),
             width: item.isRead ? 1 : 1.5,
           ),
           boxShadow: const [
@@ -238,96 +241,98 @@ class _NotificationTile extends StatelessWidget {
           child: ListTile(
             onTap: onTap,
             contentPadding: const EdgeInsets.symmetric(
-            horizontal: AppSizes.p14,
-            vertical: AppSizes.p12,
-          ),
-          leading: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
+              horizontal: AppSizes.p14,
+              vertical: AppSizes.p12,
             ),
-            child: Icon(item.type.icon, size: 22, color: iconColor),
-          ),
-          title: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  item.title,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight:
-                        item.isRead ? FontWeight.w600 : FontWeight.bold,
-                    color: AppColors.textPrimary,
+            leading: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(item.type.icon, size: 22, color: iconColor),
+            ),
+            title: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    item.title,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight:
+                          item.isRead ? FontWeight.w600 : FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                timeAgo,
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 4),
-              Text(
-                item.body,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                  height: 1.4,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              if (item.isActionable) ...[
-                const SizedBox(height: 6),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: const BoxDecoration(
-                      color: AppColors.lightBlue,
-                      borderRadius: AppSizes.borderSmall,
-                    ),
-                    child: const Text(
-                      'Tap to view',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primaryBlue,
-                      ),
-                    ),
+                const SizedBox(width: 8),
+                Text(
+                  timeAgo,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
-            ],
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (!item.isRead)
-                Container(
-                  width: 10,
-                  height: 10,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primaryBlue,
-                    shape: BoxShape.circle,
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                Text(
+                  item.body,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                    height: 1.4,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              const SizedBox(width: 6),
-              const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary, size: 18),
-            ],
+                if (item.isActionable) ...[
+                  const SizedBox(height: 6),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: const BoxDecoration(
+                        color: AppColors.lightBlue,
+                        borderRadius: AppSizes.borderSmall,
+                      ),
+                      child: const Text(
+                        'Tap to view',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primaryBlue,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (!item.isRead)
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primaryBlue,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                const SizedBox(width: 6),
+                const Icon(Icons.chevron_right_rounded,
+                    color: AppColors.textSecondary, size: 18),
+              ],
+            ),
           ),
-        ),
         ),
       ),
     );
