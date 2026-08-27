@@ -17,7 +17,7 @@ class AuthCard extends StatelessWidget {
     this.featureTitle = 'Pure Dairy at Your Doorstep',
     this.featureSubtitle =
         'Order farm-fresh A2 milk, ghee, paneer, and butter with daily morning delivery.',
-    this.videoPath = 'assets/images/newlogv.mp4',
+    this.videoPath = 'assets/images/loginv2.mp4',
   });
 
   @override
@@ -41,7 +41,7 @@ class AuthCard extends StatelessWidget {
                 : width * 0.85)
             : 960;
 
-    final double? cardHeight = isHorizontal ? 520 : null;
+    final double? cardHeight = isHorizontal ? 520 : (height * 0.85).clamp(500.0, 680.0);
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -166,36 +166,25 @@ class AuthCard extends StatelessWidget {
                                 return Row(
                                   children: [
                                     Expanded(
-                                      flex: 1,
+                                      flex: 5,
                                       child: mediaSection,
                                     ),
                                     Expanded(
-                                      flex: 1,
+                                      flex: 5,
                                       child: formSection,
                                     ),
                                   ],
                                 );
                               } else {
                                 return Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
                                   children: [
-                                    AspectRatio(
-                                      aspectRatio: 16 / 9,
-                                      child: _AuthVideoPlayer(
-                                        videoPath: videoPath,
-                                        fit: BoxFit.cover,
-                                      ),
+                                    Expanded(
+                                      flex: 5,
+                                      child: mediaSection,
                                     ),
-                                    Container(
-                                      width: double.infinity,
-                                      color: const Color(0xFFFAF7EE),
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: isMobile ? 16.0 : 32.0,
-                                        vertical: 24.0,
-                                      ),
-                                      child: child,
+                                    Expanded(
+                                      flex: 5,
+                                      child: formSection,
                                     ),
                                   ],
                                 );

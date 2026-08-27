@@ -12,6 +12,10 @@ android {
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
+    androidResources {
+        noCompress("mp4", "mkv", "avi", "mov")
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21

@@ -79,7 +79,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               subtitle: 'Sign in using your mobile number',
             ),
 
-            const SizedBox(height: AppSizes.p24),
+            const SizedBox(height: 12),
 
             // Mobile Number Input Field
             Text(
@@ -90,7 +90,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 color: const Color(0xFF1E293B),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
 
             TextFormField(
               controller: _mobileController,
@@ -118,8 +118,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 fillColor: AppColors.inputBackground,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
-                  vertical: 14,
-                  // vertical: 14,
+                  vertical: 12,
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -152,7 +151,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             ),
 
-            const SizedBox(height: AppSizes.p24),
+            const SizedBox(height: 14),
 
             // Send OTP Primary Button
             Container(

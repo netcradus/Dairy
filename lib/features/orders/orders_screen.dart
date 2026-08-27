@@ -26,7 +26,6 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
 
   final List<String> _banners = [
     'assets/images/deliver.png',
-    'assets/images/deliver3.png',
     'assets/images/deliver4.png',
   ];
 

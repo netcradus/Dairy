@@ -309,23 +309,18 @@ class _HeroPromotionalBannerState extends State<_HeroPromotionalBanner> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.asset('assets/images/banner3v.mp4');
-    _controller.addListener(() {
-      if (_controller.value.hasError && mounted) {
-        setState(() {});
-      }
-    });
+    _controller = VideoPlayerController.asset(
+      'assets/images/banner3v.mp4',
+    );
     _controller.initialize().then((_) {
-      if (mounted) {
-        setState(() {
-          _isInitialized = true;
-        });
-        _controller.setLooping(true);
-        _controller.play();
-        _controller.setVolume(0.0); // Mute
-      }
-    }).catchError((error) {
-      debugPrint('Error initializing hero promo video: $error');
+      if (!mounted) return;
+      _controller
+        ..setLooping(true)
+        ..setVolume(0)
+        ..play();
+      setState(() {
+        _isInitialized = true;
+      });
     });
   }
 
@@ -965,23 +960,18 @@ class _WhyChooseUsVideoState extends State<_WhyChooseUsVideo> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.asset('assets/images/whyv.mp4');
-    _controller.addListener(() {
-      if (_controller.value.hasError && mounted) {
-        setState(() {});
-      }
-    });
+    _controller = VideoPlayerController.asset(
+      'assets/images/whyv.mp4',
+    );
     _controller.initialize().then((_) {
-      if (mounted) {
-        setState(() {
-          _isInitialized = true;
-        });
-        _controller.setLooping(true);
-        _controller.play();
-        _controller.setVolume(0.0); // Mute
-      }
-    }).catchError((error) {
-      debugPrint('Error initializing why choose us video: $error');
+      if (!mounted) return;
+      _controller
+        ..setLooping(true)
+        ..setVolume(0)
+        ..play();
+      setState(() {
+        _isInitialized = true;
+      });
     });
   }
 

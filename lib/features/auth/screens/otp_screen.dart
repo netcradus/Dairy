@@ -150,7 +150,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
             subtitle: 'Enter the 6-digit OTP sent to $displayDestination.',
           ),
 
-          const SizedBox(height: AppSizes.p12),
+          const SizedBox(height: 8),
 
           // Change Number Option
           GestureDetector(
@@ -175,7 +175,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
             ),
           ),
 
-          const SizedBox(height: AppSizes.p24),
+          const SizedBox(height: 12),
 
           // 6-Digit Pin Input Field
           OtpInputField(
@@ -192,7 +192,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
             },
           ),
 
-          const SizedBox(height: AppSizes.p24),
+          const SizedBox(height: 12),
 
           // Countdown Timer & Resend Option
           Center(
@@ -230,7 +230,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                   ),
           ),
 
-          const SizedBox(height: AppSizes.p24),
+          const SizedBox(height: 12),
 
           // Submit Verify Button
           LoadingButton(
@@ -239,7 +239,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
             onPressed: _handleVerifyOtp,
           ),
 
-          const SizedBox(height: AppSizes.p16),
+          const SizedBox(height: 8),
 
           // Back to Login Link
           Center(

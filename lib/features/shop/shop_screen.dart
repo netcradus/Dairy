@@ -39,23 +39,18 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   @override
   void initState() {
     super.initState();
-    _videoController = VideoPlayerController.asset('assets/images/orderv.mp4');
-    _videoController.addListener(() {
-      if (_videoController.value.hasError && mounted) {
-        setState(() {});
-      }
-    });
+    _videoController = VideoPlayerController.asset(
+      'assets/images/orderv.mp4',
+    );
     _videoController.initialize().then((_) {
-      if (mounted) {
-        setState(() {
-          _isVideoInitialized = true;
-        });
-        _videoController.setLooping(true);
-        _videoController.play();
-        _videoController.setVolume(0.0); // Mute
-      }
-    }).catchError((error) {
-      debugPrint('Error initializing shop video: $error');
+      if (!mounted) return;
+      _videoController
+        ..setLooping(true)
+        ..setVolume(0)
+        ..play();
+      setState(() {
+        _isVideoInitialized = true;
+      });
     });
   }
 
