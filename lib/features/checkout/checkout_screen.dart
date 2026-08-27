@@ -14,10 +14,10 @@ import '../../models/order.dart';
 import '../../providers/address_provider.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/navigation_provider.dart';
-import '../../providers/order_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../services/order_service.dart';
 import '../address/address_screen.dart';
+import '../../core/localization/app_language.dart';
 
 /// StateProvider for current payment method choice
 final paymentMethodProvider = StateProvider<PaymentMethodType>((ref) {
@@ -32,7 +32,7 @@ class CheckoutScreen extends ConsumerWidget {
     final cartItems = ref.read(cartItemsProvider);
     if (cartItems.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Your cart is empty!')),
+        SnackBar(content: Text(tr('Your cart is empty'))),
       );
       return;
     }
@@ -68,8 +68,7 @@ class CheckoutScreen extends ConsumerWidget {
     }
     Navigator.pop(context); // close loading dialog
 
-    // Persist locally too so it shows immediately in the Orders screen
-    ref.read(ordersProvider.notifier).addOrder(newOrder);
+    // Firestore stream will automatically reflect the new order.
     // Clear the cart after an order is placed
     ref.read(cartProvider.notifier).clearCart();
 
@@ -187,7 +186,7 @@ class CheckoutScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Checkout & Order Review'),
+        title: Text(tr('Checkout & Order Review')),
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -270,13 +269,13 @@ class CheckoutScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Row(
+              Row(
                 children: [
                   Icon(Icons.location_on_rounded, color: AppColors.primaryBlue),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Text(
-                    'Delivery Address',
-                    style: TextStyle(
+                    tr('Delivery Address'),
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,

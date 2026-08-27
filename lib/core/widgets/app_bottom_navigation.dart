@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
-import '../constants/app_strings.dart';
+import '../localization/app_language.dart';
 
 /// Mobile Bottom Navigation Bar (Home, Shop, Orders, Profile)
 class AppBottomNavigation extends StatelessWidget {
@@ -33,26 +33,26 @@ class AppBottomNavigation extends StatelessWidget {
         unselectedItemColor: AppColors.textSecondary,
         selectedFontSize: 12,
         unselectedFontSize: 12,
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home_rounded),
-            label: AppStrings.navHome,
+            icon: const Icon(Icons.home_outlined),
+            activeIcon: const Icon(Icons.home_rounded),
+            label: tr('Home'),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.grid_view_outlined),
-            activeIcon: Icon(Icons.grid_view_rounded),
-            label: AppStrings.navShop,
+            icon: const Icon(Icons.grid_view_outlined),
+            activeIcon: const Icon(Icons.grid_view_rounded),
+            label: tr('Shop'),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.local_shipping_outlined),
-            activeIcon: Icon(Icons.local_shipping_rounded),
-            label: AppStrings.navOrders,
+            icon: const Icon(Icons.local_shipping_outlined),
+            activeIcon: const Icon(Icons.local_shipping_rounded),
+            label: tr('Orders'),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline_rounded),
-            activeIcon: Icon(Icons.person_rounded),
-            label: AppStrings.navProfile,
+            icon: const Icon(Icons.person_outline_rounded),
+            activeIcon: const Icon(Icons.person_rounded),
+            label: tr('Profile'),
           ),
         ],
       ),

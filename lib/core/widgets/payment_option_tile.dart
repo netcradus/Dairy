@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
+import '../localization/app_language.dart';
 
 enum PaymentMethodType { cashOnDelivery, onlinePayment }
 
@@ -22,12 +23,12 @@ class PaymentOptionTile extends StatelessWidget {
     final isSelected = method == selectedMethod;
 
     final String title = method == PaymentMethodType.cashOnDelivery
-        ? 'Cash on Delivery (COD)'
-        : 'Online Payment (UPI / Cards / NetBanking)';
+        ? tr('Cash on Delivery (COD)')
+        : tr('Online Payment (UPI / Cards / NetBanking)');
 
     final String subtitle = method == PaymentMethodType.cashOnDelivery
-        ? 'Pay cash or UPI upon fresh delivery at your doorstep'
-        : 'Instant 100% secure payment via GPay, PhonePe, Paytm or Card';
+        ? tr('Pay cash or UPI upon fresh delivery at your doorstep')
+        : tr('Instant 100% secure payment via GPay, PhonePe, Paytm or Card');
 
     final IconData icon = method == PaymentMethodType.cashOnDelivery
         ? Icons.payments_rounded

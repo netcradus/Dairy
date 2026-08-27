@@ -252,4 +252,115 @@ const Map<String, String> appStringsEn = {
   'No pending requests': 'No pending requests',
   'New delivery requests will appear here':
       'New delivery requests will appear here',
+
+  // ─── App bar ──────────────────────────────────────────────────────────────
+  'Good morning, 👋': 'Good morning, 👋',
+  'Good afternoon, 👋': 'Good afternoon, 👋',
+  'Good evening, 👋': 'Good evening, 👋',
+  'Fresh dairy, delivered daily!': 'Fresh dairy, delivered daily!',
+  'Search milk, curd, paneer, ghee...': 'Search milk, curd, paneer, ghee...',
+  'Deliver to': 'Deliver to',
+  'Sawariya Customer': 'Sawariya Customer',
+
+  // ─── Home extras ──────────────────────────────────────────────────────────
+  'Customer favorites delivered fresh daily':
+      'Customer favorites delivered fresh daily',
+  'Real-time updates on your fresh delivery':
+      'Real-time updates on your fresh delivery',
+  'Farm fresh milk & dairy products,\nhygienically packed for your family.':
+      'Farm fresh milk & dairy products,\nhygienically packed for your family.',
+  '100%\nPure': '100%\nPure',
+  'No Added\nPreservatives': 'No Added\nPreservatives',
+  'Hygienically\nPacked': 'Hygienically\nPacked',
+  'Trusted by\nThousands': 'Trusted by\nThousands',
+  'Freshness You Can Trust': 'Freshness You Can Trust',
+  'Sawariya Dairy Specials': 'Sawariya Dairy Specials',
+  'Enter your Order ID': 'Enter your Order ID',
+  'FSSAI Certified': 'FSSAI Certified',
+  'Safe & Certified': 'Safe & Certified',
+  'Free Delivery': 'Free Delivery',
+  'On all orders': 'On all orders',
+  'Same-Day Fresh': 'Same-Day Fresh',
+  'Timely & Fresh': 'Timely & Fresh',
+  'Easy Returns': 'Easy Returns',
+  'Hassle-free returns': 'Hassle-free returns',
+
+  // ─── Price summary ────────────────────────────────────────────────────────
+  'Order Bill Summary': 'Order Bill Summary',
+  'Item Subtotal': 'Item Subtotal',
+  'FREE': 'FREE',
+  'Special Offer Discount (10%)': 'Special Offer Discount (10%)',
+  'more for FREE delivery!': 'more for FREE delivery!',
+  'Place Order Now': 'Place Order Now',
+
+  // ─── Payment options ──────────────────────────────────────────────────────
+  'Cash on Delivery (COD)': 'Cash on Delivery (COD)',
+  'Online Payment (UPI / Cards / NetBanking)':
+      'Online Payment (UPI / Cards / NetBanking)',
+  'Pay cash or UPI upon fresh delivery at your doorstep':
+      'Pay cash or UPI upon fresh delivery at your doorstep',
+  'Instant 100% secure payment via GPay, PhonePe, Paytm or Card':
+      'Instant 100% secure payment via GPay, PhonePe, Paytm or Card',
+
+  // ─── Cart extras ──────────────────────────────────────────────────────────
+  'Qty': 'Qty',
+
+  // ─── Desktop sidebar ──────────────────────────────────────────────────────
+  'Pure Milk. Pure Trust.': 'Pure Milk. Pure Trust.',
+
+  // ─── Settings screen extras ───────────────────────────────────────────────
+  'Manage notification preferences': 'Manage notification preferences',
+  'Push Notifications': 'Push Notifications',
+  'Order & delivery alerts on this device':
+      'Order & delivery alerts on this device',
+  'Email Notifications': 'Email Notifications',
+  'Summary & promotional emails': 'Summary & promotional emails',
+  'Preferences': 'Preferences',
+  'Theme': 'Theme',
+  'Default Navigation App': 'Default Navigation App',
+  'Light': 'Light',
+  'Dark': 'Dark',
+
+  // ─── Profile screen extras ────────────────────────────────────────────────
+  'Delivery Partner': 'Delivery Partner',
+  'Payment Methods': 'Payment Methods',
+  'Processing': 'Processing',
+
+  // ─── Delivery panel profile tab extras ────────────────────────────────────
+  'Rating': 'Rating',
+  "Today's Deliveries": "Today's Deliveries",
+  "Today's Earnings": "Today's Earnings",
+  'Details': 'Details',
+  'Phone': 'Phone',
+  'Vehicle': 'Vehicle',
+  'Assigned Zone': 'Assigned Zone',
+  'Partner ID': 'Partner ID',
+  'Duty Status': 'Duty Status',
+  'Currently Online': 'Currently Online',
+  'Currently Offline': 'Currently Offline',
+  "You're receiving delivery requests": "You're receiving delivery requests",
+  'Go online to start receiving requests':
+      'Go online to start receiving requests',
+  'Are you sure you want to logout?': 'Are you sure you want to logout?',
+  "You'll receive delivery requests for your assigned zone. Tap \"Accept\" to start a delivery.":
+      "You'll receive delivery requests for your assigned zone. Tap \"Accept\" to start a delivery.",
+
+  // ─── Checkout extras ──────────────────────────────────────────────────────
+  'Checkout & Order Review': 'Checkout & Order Review',
+  'Change Address': 'Change Address',
+  'No delivery address selected.': 'No delivery address selected.',
+  'Order Items': 'Order Items',
+  'Products': 'Products',
+  'Back to Home Feed': 'Back to Home Feed',
+
+  // ─── Onboarding ───────────────────────────────────────────────────────────
+  'Fresh Dairy, Every Day': 'Fresh Dairy, Every Day',
+  'Enjoy fresh and quality dairy products delivered with care from Sawariya Dairy.':
+      'Enjoy fresh and quality dairy products delivered with care from Sawariya Dairy.',
+  'Pure Products, Trusted Quality': 'Pure Products, Trusted Quality',
+  'Every product is sourced fresh, hygienically packed and quality-checked to bring you the best of Sawariya Dairy.':
+      'Every product is sourced fresh, hygienically packed and quality-checked to bring you the best of Sawariya Dairy.',
+  'Simple Shopping, Fresh Delivery': 'Simple Shopping, Fresh Delivery',
+  'Discover your favorite dairy products, order easily and enjoy freshness at your doorstep.':
+      'Discover your favorite dairy products, order easily and enjoy freshness at your doorstep.',
 };

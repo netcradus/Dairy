@@ -19,10 +19,13 @@ class OrderDetailsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch for live state changes (e.g., after cancel)
-    final liveOrders = ref.watch(ordersProvider);
-    final liveOrder =
-        liveOrders.firstWhere((o) => o.id == order.id, orElse: () => order);
+    // Watch for live Firestore state changes (e.g., after cancel)
+    final asyncOrders = ref.watch(customerOrdersProvider);
+    final liveOrder = asyncOrders.when(
+      data: (orders) => orders.firstWhere((o) => o.id == order.id, orElse: () => order),
+      loading: () => order,
+      error: (_, __) => order,
+    );
     final isCancelled = liveOrder.isCancelled;
     final canCancel = liveOrder.canCancel;
     final isDesktop = context.isDesktop;
@@ -538,7 +541,6 @@ class OrderDetailsScreen extends ConsumerWidget {
             onPressed: () async {
               Navigator.pop(ctx);
               await ref.read(orderServiceProvider).cancelOrder(orderId);
-              ref.read(ordersProvider.notifier).cancelOrder(orderId);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                     content: Text('Order cancelled successfully.')),

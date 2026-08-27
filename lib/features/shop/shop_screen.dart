@@ -97,7 +97,6 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     // Defined Categories to match the user's requested options and logo palette
     final categoryOptions = [
       {
-<<<<<<< HEAD
         'id': 'cat_all',
         'title': 'All',
         'image': '',
@@ -109,11 +108,12 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         'title': 'Milk',
         'image': 'assets/images/milk.png',
         'description': '100% pure A2 milk sourced daily from healthy cows.'
-=======
+      },
+      {
         'id': 'cat_makhan',
         'title': 'Curd',
-        'image': 'assets/images/makhana.png'
->>>>>>> 3fa06e8
+        'image': 'assets/images/makhana.png',
+        'description': 'Creamy, probiotic-rich curd set fresh daily.'
       },
       {
         'id': 'cat_paneer',
@@ -145,7 +145,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     // Find the currently selected category title for dynamic headers
     final selectedCat = categoryOptions.firstWhere(
       (cat) => cat['id'] == selectedCategoryId,
-      orElse: () => {'id': 'cat_all', 'title': 'All'},
+      orElse: () => {'id': 'cat_all', 'title': 'All', 'image': '', 'description': 'Browse our entire range of premium, farm-fresh dairy products.'},
     );
 
     final isMobile = context.isMobile;
@@ -313,7 +313,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                     return GestureDetector(
                       onTap: () {
                         ref.read(selectedCategoryProvider.notifier).state =
-                            cat['id'] as String;
+                            (cat['id'] as String?) ?? 'cat_all';
                         _showCategoryPopup(context, cat);
                       },
                       child: AnimatedScale(
@@ -359,7 +359,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                                       : Padding(
                                           padding: const EdgeInsets.all(2),
                                           child: Image.asset(
-                                            cat['image'] as String,
+                                            (cat['image'] as String?) ?? '',
                                             fit: BoxFit.contain,
                                           ),
                                         ),
@@ -369,7 +369,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                               Text(
                                 cat['id'] == 'cat_all'
                                     ? 'ALL'
-                                    : cat['title'] as String,
+                                    : (cat['title'] as String?) ?? '',
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: isSelected
@@ -677,7 +677,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 ),
                 const SizedBox(height: 8),
                 // Category image with beautiful container background
-                if (cat['image']!.isNotEmpty)
+                if ((cat['image'] ?? '').isNotEmpty)
                   Container(
                     width: 110,
                     height: 110,
@@ -694,7 +694,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                       ],
                     ),
                     child: Image.asset(
-                      cat['image']!,
+                      cat['image'] ?? '',
                       fit: BoxFit.contain,
                     ),
                   )

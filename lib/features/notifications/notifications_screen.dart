@@ -6,7 +6,6 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
 import '../../models/notification_item.dart';
-import '../../models/order.dart';
 import '../../providers/navigation_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../../providers/order_provider.dart';
@@ -31,19 +30,19 @@ class NotificationsScreen extends ConsumerWidget {
     ref.read(notificationsProvider.notifier).markRead(item.id);
 
     if (item.orderId != null) {
-      final orders = ref.read(ordersProvider);
-      Order? order;
-      for (final o in orders) {
-        if (o.id == item.orderId) {
-          order = o;
-          break;
-        }
-      }
-      if (order != null) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => OrderDetailsScreen(order: order!)),
-        );
+      final userId = ref.read(currentUserIdProvider);
+      if (userId != null) {
+        final asyncOrders = ref.read(userOrdersStreamProvider(userId));
+        asyncOrders.whenData((orders) {
+          final matches = orders.where((o) => o.id == item.orderId);
+          if (matches.isNotEmpty && context.mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => OrderDetailsScreen(order: matches.first)),
+            );
+            return;
+          }
+        });
         return;
       }
     }

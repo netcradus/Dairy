@@ -24,97 +24,139 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final allOrders = ref.watch(allOrdersProvider);
-
-    // Filter orders locally based on selection
-    final filteredOrders = allOrders.where((order) {
-      if (_selectedFilter == 'All') return true;
-      if (_selectedFilter == 'Processing') {
-        return order.status == OrderStatus.placed ||
-            order.status == OrderStatus.confirmed ||
-            order.status == OrderStatus.preparing;
-      }
-      if (_selectedFilter == 'Shipped') {
-        return order.status == OrderStatus.outForDelivery;
-      }
-      if (_selectedFilter == 'Delivered') {
-        return order.status == OrderStatus.delivered;
-      }
-      if (_selectedFilter == 'Cancelled') {
-        return order.status == OrderStatus.cancelled;
-      }
-      return true;
-    }).toList();
-
-    final isMobile = context.isMobile;
+    final asyncOrders = ref.watch(customerOrdersProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Title
-              const Padding(
-                padding: EdgeInsets.fromLTRB(16, 12, 16, 10),
-                child: Text(
-                  'My Orders',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF172033),
-                  ),
-                ),
-              ),
-
-              // Deliver Banner
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: AspectRatio(
-                    aspectRatio: 2172 / 724,
-                    child: Image.asset(
-                      'assets/images/deliver.png',
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const SizedBox.shrink();
-                      },
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 6),
-
-              // Horizontal Filter bar
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: _buildFilterBar(),
-              ),
-              const SizedBox(height: 14),
-
-              // Orders list
-              filteredOrders.isEmpty
-                  ? _buildEmptyState(context)
-                  : ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: context.responsiveHorizontalPadding,
-                        vertical: 10,
-                      ),
-                      itemCount: filteredOrders.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 14),
-                          child: _OrderCard(order: filteredOrders[index]),
-                        );
-                      },
-                    ),
-            ],
+        child: asyncOrders.when(
+          loading: () => const Center(
+            child: Padding(
+              padding: EdgeInsets.only(top: 120),
+              child: CircularProgressIndicator(color: Color(0xFF005F38)),
+            ),
           ),
+          error: (e, _) => Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.cloud_off_rounded,
+                      size: 48, color: Color(0xFFDC2626)),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Failed to load orders',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF172033),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Please check your connection and try again.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  OutlinedButton(
+                    onPressed: () => ref.invalidate(customerOrdersProvider),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          data: (allOrders) {
+            final filteredOrders = allOrders.where((order) {
+              if (_selectedFilter == 'All') return true;
+              if (_selectedFilter == 'Processing') {
+                return order.status == OrderStatus.placed ||
+                    order.status == OrderStatus.confirmed ||
+                    order.status == OrderStatus.preparing;
+              }
+              if (_selectedFilter == 'Shipped') {
+                return order.status == OrderStatus.outForDelivery;
+              }
+              if (_selectedFilter == 'Delivered') {
+                return order.status == OrderStatus.delivered;
+              }
+              if (_selectedFilter == 'Cancelled') {
+                return order.status == OrderStatus.cancelled;
+              }
+              return true;
+            }).toList();
+
+            return SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(16, 12, 16, 10),
+                    child: Text(
+                      'My Orders',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF172033),
+                      ),
+                    ),
+                  ),
+
+                  // Deliver Banner
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: AspectRatio(
+                        aspectRatio: 2172 / 724,
+                        child: Image.asset(
+                          'assets/images/deliver.png',
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+
+                  // Horizontal Filter bar
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: _buildFilterBar(),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Orders list
+                  filteredOrders.isEmpty
+                      ? _buildEmptyState(context)
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: context.responsiveHorizontalPadding,
+                            vertical: 10,
+                          ),
+                          itemCount: filteredOrders.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 14),
+                              child: _OrderCard(order: filteredOrders[index]),
+                            );
+                          },
+                        ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );

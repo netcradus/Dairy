@@ -251,4 +251,115 @@ const Map<String, String> appStringsHi = {
   'No pending requests': 'कोई लंबित अनुरोध नहीं',
   'New delivery requests will appear here':
       'नए डिलीवरी अनुरोध यहाँ दिखाई देंगे',
+
+  // ─── App bar ──────────────────────────────────────────────────────────────
+  'Good morning, 👋': 'सुप्रभात, 👋',
+  'Good afternoon, 👋': 'शुभ अपराह्न, 👋',
+  'Good evening, 👋': 'शुभ संध्या, 👋',
+  'Fresh dairy, delivered daily!': 'ताज़ा डेयरी, रोज़ डिलीवरी!',
+  'Search milk, curd, paneer, ghee...': 'दूध, दही, पनीर, घी खोजें...',
+  'Deliver to': 'डिलीवरी कहाँ',
+  'Sawariya Customer': 'सावरिया ग्राहक',
+
+  // ─── Home extras ──────────────────────────────────────────────────────────
+  'Customer favorites delivered fresh daily':
+      'ग्राहकों की पसंदीदा ताज़ी डेली डिलीवरी',
+  'Real-time updates on your fresh delivery':
+      'ताज़ी डिलीवरी पर रीयल-टाइम अपडेट',
+  'Farm fresh milk & dairy products,\nhygienically packed for your family.':
+      'फार्म फ्रेश दूध और डेयरी उत्पाद,\nआपके परिवार के लिए स्वच्छतापूर्वक पैक किए गए',
+  '100%\nPure': '100%\nशुद्ध',
+  'No Added\nPreservatives': 'कोई प्रिज़र्वेटिव\nनहीं मिला',
+  'Hygienically\nPacked': 'स्वच्छतापूर्वक\nपैक किया',
+  'Trusted by\nThousands': 'हज़ारों द्वारा\nविश्वसनीय',
+  'Freshness You Can Trust': 'ताज़गी जिस पर भरोसा करें',
+  'Sawariya Dairy Specials': 'सावरिया डेयरी विशेष',
+  'Enter your Order ID': 'अपनी ऑर्डर आईडी दर्ज करें',
+  'FSSAI Certified': 'FSSAI प्रमाणित',
+  'Safe & Certified': 'सुरक्षित और प्रमाणित',
+  'Free Delivery': 'मुफ़्त डिलीवरी',
+  'On all orders': 'सभी ऑर्डर पर',
+  'Same-Day Fresh': 'उसी दिन ताज़ा',
+  'Timely & Fresh': 'समय पर और ताज़ा',
+  'Easy Returns': 'आसान रिटर्न',
+  'Hassle-free returns': 'बिना परेशानी रिटर्न',
+
+  // ─── Price summary ────────────────────────────────────────────────────────
+  'Order Bill Summary': 'ऑर्डर बिल सारांश',
+  'Item Subtotal': 'आइटम उप-योग',
+  'FREE': 'मुफ़्त',
+  'Special Offer Discount (10%)': 'विशेष ऑफ़र छूट (10%)',
+  'more for FREE delivery!': 'और मुफ़्त डिलीवरी के लिए!',
+  'Place Order Now': 'अभी ऑर्डर करें',
+
+  // ─── Payment options ──────────────────────────────────────────────────────
+  'Cash on Delivery (COD)': 'कैश ऑन डिलीवरी (COD)',
+  'Online Payment (UPI / Cards / NetBanking)':
+      'ऑनलाइन भुगतान (UPI / कार्ड / नेटबैंकिंग)',
+  'Pay cash or UPI upon fresh delivery at your doorstep':
+      'दरवाज़े पर ताज़ी डिलीवरी पर कैश या UPI से भुगतान करें',
+  'Instant 100% secure payment via GPay, PhonePe, Paytm or Card':
+      'GPay, PhonePe, Paytm या कार्ड से तुरंत 100% सुरक्षित भुगतान',
+
+  // ─── Cart extras ──────────────────────────────────────────────────────────
+  'Qty': 'मात्रा',
+
+  // ─── Desktop sidebar ──────────────────────────────────────────────────────
+  'Pure Milk. Pure Trust.': 'शुद्ध दूध। शुद्ध भरोसा।',
+
+  // ─── Settings screen extras ───────────────────────────────────────────────
+  'Manage notification preferences': 'सूचना प्राथमिकताएँ प्रबंधित करें',
+  'Push Notifications': 'पुश सूचनाएँ',
+  'Order & delivery alerts on this device':
+      'इस डिवाइस पर ऑर्डर और डिलीवरी अलर्ट',
+  'Email Notifications': 'ईमेल सूचनाएँ',
+  'Summary & promotional emails': 'सारांश और प्रचार ईमेल',
+  'Preferences': 'प्राथमिकताएँ',
+  'Theme': 'थीम',
+  'Default Navigation App': 'डिफ़ॉल्ट नेविगेशन ऐप',
+  'Light': 'लाइट',
+  'Dark': 'डार्क',
+
+  // ─── Profile screen extras ────────────────────────────────────────────────
+  'Delivery Partner': 'डिलीवरी पार्टनर',
+  'Payment Methods': 'भुगतान के तरीके',
+  'Processing': 'प्रोसेसिंग',
+
+  // ─── Delivery panel profile tab extras ────────────────────────────────────
+  'Rating': 'रेटिंग',
+  "Today's Deliveries": 'आज की डिलीवरी',
+  "Today's Earnings": 'आज की कमाई',
+  'Details': 'विवरण',
+  'Phone': 'फ़ोन',
+  'Vehicle': 'वाहन',
+  'Assigned Zone': 'नियुक्त क्षेत्र',
+  'Partner ID': 'पार्टनर आईडी',
+  'Duty Status': 'ड्यूटी स्थिति',
+  'Currently Online': 'वर्तमान में ऑनलाइन',
+  'Currently Offline': 'वर्तमान में ऑफ़लाइन',
+  "You're receiving delivery requests": 'आपको डिलीवरी अनुरोध मिल रहे हैं',
+  'Go online to start receiving requests':
+      'अनुरोध प्राप्त करने के लिए ऑनलाइन हों',
+  'Are you sure you want to logout?': 'क्या आप वाकई लॉग आउट करना चाहते हैं?',
+  "You'll receive delivery requests for your assigned zone. Tap \"Accept\" to start a delivery.":
+      'आपको अपने नियुक्त क्षेत्र के लिए डिलीवरी अनुरोध मिलेंगे। डिलीवरी शुरू करने के लिए "स्वीकार करें" टैप करें।',
+
+  // ─── Checkout extras ──────────────────────────────────────────────────────
+  'Checkout & Order Review': 'चेकआउट और ऑर्डर समीक्षा',
+  'Change Address': 'पता बदलें',
+  'No delivery address selected.': 'कोई डिलीवरी पता चयनित नहीं।',
+  'Order Items': 'ऑर्डर आइटम',
+  'Products': 'उत्पाद',
+  'Back to Home Feed': 'होम फ़ीड पर वापस',
+
+  // ─── Onboarding ───────────────────────────────────────────────────────────
+  'Fresh Dairy, Every Day': 'ताज़ा डेयरी, हर दिन',
+  'Enjoy fresh and quality dairy products delivered with care from Sawariya Dairy.':
+      'सावरिया डेयरी से ताज़े और गुणवत्तापूर्ण डेयरी उत्पादों का आनंद लें, देखभाल के साथ डिलीवर किए गए।',
+  'Pure Products, Trusted Quality': 'शुद्ध उत्पाद, विश्वसनीय गुणवत्ता',
+  'Every product is sourced fresh, hygienically packed and quality-checked to bring you the best of Sawariya Dairy.':
+      'हर उत्पाद ताज़ा स्रोतों से लिया गया है, स्वच्छतापूर्वक पैक किया गया है और गुणवत्ता जांचा गया है।',
+  'Simple Shopping, Fresh Delivery': 'सरल खरीदारी, ताज़ी डिलीवरी',
+  'Discover your favorite dairy products, order easily and enjoy freshness at your doorstep.':
+      'अपने पसंदीदा डेयरी उत्पाद खोजें, आसानी से ऑर्डर करें और दरवाज़े पर ताज़गी का आनंद लें।',
 };

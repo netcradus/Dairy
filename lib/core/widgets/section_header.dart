@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
+import '../localization/app_language.dart';
 
 /// Section Header Component (Title + View All button)
 class SectionHeader extends StatelessWidget {
@@ -60,7 +61,7 @@ class SectionHeader extends StatelessWidget {
               child: Row(
                 children: [
                   Text(
-                    viewAllText,
+                    tr(viewAllText),
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,

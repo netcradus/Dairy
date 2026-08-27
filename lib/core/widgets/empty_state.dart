@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
+import '../localization/app_language.dart';
 import 'app_button.dart';
 
 /// Reusable Empty State Component
@@ -61,7 +62,7 @@ class EmptyStateWidget extends StatelessWidget {
             ),
             const SizedBox(height: AppSizes.p24),
             Text(
-              title,
+              tr(title),
               style: const TextStyle(
                 fontSize: 19,
                 fontWeight: FontWeight.w700,
@@ -72,7 +73,7 @@ class EmptyStateWidget extends StatelessWidget {
             ),
             const SizedBox(height: AppSizes.p8),
             Text(
-              message,
+              tr(message),
               style: const TextStyle(
                 fontSize: 14,
                 height: 1.5,
@@ -85,7 +86,7 @@ class EmptyStateWidget extends StatelessWidget {
               SizedBox(
                 width: 200,
                 child: AppButton(
-                  text: buttonText!,
+                  text: tr(buttonText!),
                   onPressed: onButtonPressed,
                   variant: AppButtonVariant.primary,
                 ),

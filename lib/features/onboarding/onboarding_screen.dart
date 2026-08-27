@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/localization/app_language.dart';
 import '../../core/responsive/responsive.dart';
 import '../../providers/onboarding_provider.dart';
 
@@ -66,26 +67,26 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final size = MediaQuery.of(context).size;
 
     final List<OnboardingData> pages = [
-      const OnboardingData(
-        title: 'Fresh Dairy, Every Day',
+      OnboardingData(
+        title: tr('Fresh Dairy, Every Day'),
         description:
-            'Enjoy fresh and quality dairy products delivered with care from Sawariya Dairy.',
+            tr('Enjoy fresh and quality dairy products delivered with care from Sawariya Dairy.'),
         imageAsset: AppAssets.landingHeroMilk,
         showProductGrid: false,
         visualWidget: _DairyFreshVisual(),
       ),
-      const OnboardingData(
-        title: 'Pure Products, Trusted Quality',
+      OnboardingData(
+        title: tr('Pure Products, Trusted Quality'),
         description:
-            'Every product is sourced fresh, hygienically packed and quality-checked to bring you the best of Sawariya Dairy.',
+            tr('Every product is sourced fresh, hygienically packed and quality-checked to bring you the best of Sawariya Dairy.'),
         imageAsset: AppAssets.landingHeroProducts,
         showProductGrid: true,
         visualWidget: _DairyCollectionVisual(),
       ),
-      const OnboardingData(
-        title: 'Simple Shopping, Fresh Delivery',
+      OnboardingData(
+        title: tr('Simple Shopping, Fresh Delivery'),
         description:
-            'Discover your favorite dairy products, order easily and enjoy freshness at your doorstep.',
+            tr('Discover your favorite dairy products, order easily and enjoy freshness at your doorstep.'),
         imageAsset: AppAssets.landingHeroScooter,
         showProductGrid: false,
         visualWidget: _DairyDeliveryVisual(),
@@ -434,24 +435,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           width: 1.2,
         ),
       ),
-      child: const Row(
+      child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _ProductSubItem(
             icon: Icons.soup_kitchen_rounded,
-            label: 'Paneer',
+            label: tr('Paneer'),
           ),
           _ProductSubItem(
             icon: Icons.rice_bowl_rounded,
-            label: 'Curd',
+            label: tr('Curd'),
           ),
           _ProductSubItem(
             icon: Icons.local_cafe_rounded,
-            label: 'Ghee',
+            label: tr('Ghee'),
           ),
           _ProductSubItem(
             icon: Icons.bakery_dining_rounded,
-            label: 'Butter',
+            label: tr('Butter'),
           ),
         ],
       ),
@@ -479,7 +480,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
             const SizedBox(width: 8),
             Text(
-              'Sawariya Dairy',
+              tr('Sawariya Dairy'),
               style: GoogleFonts.playfairDisplay(
                 fontSize: 19,
                 fontWeight: FontWeight.w700,
@@ -498,7 +499,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             child: Row(
               children: [
                 Text(
-                  'Skip',
+                  tr('Skip'),
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,

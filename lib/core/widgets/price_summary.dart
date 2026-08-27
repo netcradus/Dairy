@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
+import '../localization/app_language.dart';
 
 /// Price Summary Card Widget for Cart & Checkout Screens
 class PriceSummaryCard extends StatelessWidget {
@@ -42,9 +43,9 @@ class PriceSummaryCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Order Bill Summary',
-            style: TextStyle(
+          Text(
+            tr('Order Bill Summary'),
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: AppColors.textPrimary,
@@ -56,16 +57,16 @@ class PriceSummaryCard extends StatelessWidget {
 
           // Subtotal
           _SummaryRow(
-            label: 'Item Subtotal',
+            label: tr('Item Subtotal'),
             value: '₹${subtotal.toStringAsFixed(2)}',
           ),
           const SizedBox(height: AppSizes.p8),
 
           // Delivery Charge
           _SummaryRow(
-            label: 'Delivery Charge',
+            label: tr('Delivery Charge'),
             value: deliveryCharge == 0.0
-                ? 'FREE'
+                ? tr('FREE')
                 : '₹${deliveryCharge.toStringAsFixed(2)}',
             valueColor: deliveryCharge == 0.0
                 ? AppColors.freshGreen
@@ -76,7 +77,7 @@ class PriceSummaryCard extends StatelessWidget {
           // Discount if applicable
           if (discount > 0) ...[
             _SummaryRow(
-              label: 'Special Offer Discount (10%)',
+              label: tr('Special Offer Discount (10%)'),
               value: '-₹${discount.toStringAsFixed(2)}',
               valueColor: AppColors.freshGreen,
             ),
@@ -99,7 +100,7 @@ class PriceSummaryCard extends StatelessWidget {
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      'Add ₹${(500 - subtotal).toStringAsFixed(0)} more for FREE delivery!',
+                      '₹${(500 - subtotal).toStringAsFixed(0)} ${tr('more for FREE delivery!')}',
                       style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -120,9 +121,9 @@ class PriceSummaryCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Grand Total',
-                style: TextStyle(
+              Text(
+                tr('Grand Total'),
+                style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
@@ -155,7 +156,7 @@ class PriceSummaryCard extends StatelessWidget {
                   elevation: 2,
                 ),
                 child: Text(
-                  actionButtonText,
+                  tr(actionButtonText),
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,

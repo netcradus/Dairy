@@ -5,7 +5,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
-import '../../core/constants/app_strings.dart';
+import '../../core/localization/app_language.dart';
 import '../../core/responsive/responsive.dart';
 import '../../core/responsive/responsive_layout.dart';
 import '../../core/widgets/category_card.dart';
@@ -35,7 +35,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final categories = ref.watch(categoriesProvider);
+    final categoriesAsync = ref.watch(categoriesProvider);
     final bestSellers = ref.watch(bestSellersProvider);
     final cartQuantities = ref.watch(cartQuantitiesProvider);
     final isDesktop = context.isDesktop;
@@ -59,38 +59,48 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(height: AppSizes.p24),
 
               // ─── 3. Categories Section ──────────────────────────────────────────
-              SectionHeader(
-                title: AppStrings.categories,
-                subtitle: 'Farm fresh dairy essentials delivered daily',
-                onViewAllTap: () {
-                  ref.read(navigationProvider.notifier).setIndex(1);
-                },
-              ),
-              const SizedBox(height: AppSizes.p14),
-
-              // 5 Category Cards (Horizontal scroll or responsive row)
-              SizedBox(
-                height: 205,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  clipBehavior: Clip.none,
-                  padding: EdgeInsets.zero,
-                  itemCount: categories.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(width: AppSizes.p14),
-                  itemBuilder: (context, index) {
-                    final cat = categories[index];
-                    return CategoryCard(
-                      category: cat,
-                      width: isDesktop ? 195 : 170,
-                      height: 205,
-                      onTap: () {
-                        ref.read(selectedCategoryProvider.notifier).state =
-                            cat.id;
+              categoriesAsync.when(
+                loading: () => const SizedBox(
+                  height: 205,
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                error: (_, __) => const SizedBox.shrink(),
+                data: (categories) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SectionHeader(
+                      title: tr('Categories'),
+                      subtitle: tr('Farm fresh dairy essentials delivered daily'),
+                      onViewAllTap: () {
                         ref.read(navigationProvider.notifier).setIndex(1);
                       },
-                    );
-                  },
+                    ),
+                    const SizedBox(height: AppSizes.p14),
+                    SizedBox(
+                      height: 205,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        clipBehavior: Clip.none,
+                        padding: EdgeInsets.zero,
+                        itemCount: categories.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(width: AppSizes.p14),
+                        itemBuilder: (context, index) {
+                          final cat = categories[index];
+                          return CategoryCard(
+                            category: cat,
+                            width: isDesktop ? 195 : 170,
+                            height: 205,
+                            onTap: () {
+                              ref.read(selectedCategoryProvider.notifier).state =
+                                  cat.id;
+                              ref.read(navigationProvider.notifier).setIndex(1);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
@@ -98,8 +108,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
               // ─── Best Sellers Section ──────────────────────────────────────────
               SectionHeader(
-                title: 'Best Sellers',
-                subtitle: 'Customer favorites delivered fresh daily',
+                title: tr('Best Sellers'),
+                subtitle: tr('Customer favorites delivered fresh daily'),
                 onViewAllTap: () {
                   ref.read(selectedCategoryProvider.notifier).state = 'cat_all';
                   ref.read(navigationProvider.notifier).setIndex(1);
@@ -107,43 +117,48 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               const SizedBox(height: AppSizes.p14),
 
-              SizedBox(
-                height: 245,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  clipBehavior: Clip.none,
-                  padding: EdgeInsets.zero,
-                  itemCount: bestSellers.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(width: AppSizes.p14),
-                  itemBuilder: (context, index) {
-                    final product = bestSellers[index];
-                    final qty = cartQuantities[product.id] ?? 0;
-                    return SizedBox(
-                      width: 175,
-                      child: ProductCard(
-                        product: product,
-                        quantity: qty,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  ProductDetailsScreen(product: product),
+              bestSellers.isEmpty
+                  ? const SizedBox(
+                      height: 245,
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  : SizedBox(
+                      height: 245,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        clipBehavior: Clip.none,
+                        padding: EdgeInsets.zero,
+                        itemCount: bestSellers.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(width: AppSizes.p14),
+                        itemBuilder: (context, index) {
+                          final product = bestSellers[index];
+                          final qty = cartQuantities[product.id] ?? 0;
+                          return SizedBox(
+                            width: 175,
+                            child: ProductCard(
+                              product: product,
+                              quantity: qty,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        ProductDetailsScreen(product: product),
+                                  ),
+                                );
+                              },
+                              onIncrement: () {
+                                ref.read(cartProvider.notifier).increment(product);
+                              },
+                              onDecrement: () {
+                                ref.read(cartProvider.notifier).decrement(product.id);
+                              },
                             ),
                           );
                         },
-                        onIncrement: () {
-                          ref.read(cartProvider.notifier).increment(product);
-                        },
-                        onDecrement: () {
-                          ref.read(cartProvider.notifier).decrement(product.id);
-                        },
                       ),
-                    );
-                  },
-                ),
-              ),
+                    ),
 
               const SizedBox(height: AppSizes.p24),
 
@@ -252,39 +267,39 @@ class _TrustBadgesStrip extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             child: ConstrainedBox(
               constraints: BoxConstraints(minWidth: constraints.maxWidth),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   _BadgeItem(
                     icon: Icons.shield_outlined,
-                    iconColor: Color(0xFF1E6BFF),
-                    bgColor: Color(0xFFEFF6FF),
-                    title: 'FSSAI Certified',
-                    subtitle: 'Safe & Certified',
+                    iconColor: const Color(0xFF1E6BFF),
+                    bgColor: const Color(0xFFEFF6FF),
+                    title: tr('FSSAI Certified'),
+                    subtitle: tr('Safe & Certified'),
                   ),
-                  SizedBox(width: 16),
+                  const SizedBox(width: 16),
                   _BadgeItem(
                     icon: Icons.local_shipping_outlined,
-                    iconColor: Color(0xFF10B981),
-                    bgColor: Color(0xFFEDFBF5),
-                    title: 'Free Delivery',
-                    subtitle: 'On all orders',
+                    iconColor: const Color(0xFF10B981),
+                    bgColor: const Color(0xFFEDFBF5),
+                    title: tr('Free Delivery'),
+                    subtitle: tr('On all orders'),
                   ),
-                  SizedBox(width: 16),
+                  const SizedBox(width: 16),
                   _BadgeItem(
                     icon: Icons.access_time_rounded,
-                    iconColor: Color(0xFFF59E0B),
-                    bgColor: Color(0xFFFFFBEB),
-                    title: 'Same-Day Fresh',
-                    subtitle: 'Timely & Fresh',
+                    iconColor: const Color(0xFFF59E0B),
+                    bgColor: const Color(0xFFFFFBEB),
+                    title: tr('Same-Day Fresh'),
+                    subtitle: tr('Timely & Fresh'),
                   ),
-                  SizedBox(width: 16),
+                  const SizedBox(width: 16),
                   _BadgeItem(
                     icon: Icons.replay_rounded,
-                    iconColor: Color(0xFFEF4444),
-                    bgColor: Color(0xFFFEF2F2),
-                    title: 'Easy Returns',
-                    subtitle: 'Hassle-free returns',
+                    iconColor: const Color(0xFFEF4444),
+                    bgColor: const Color(0xFFFEF2F2),
+                    title: tr('Easy Returns'),
+                    subtitle: tr('Hassle-free returns'),
                   ),
                 ],
               ),
@@ -547,9 +562,9 @@ class _HeroPromotionalBannerState extends State<_HeroPromotionalBanner> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text(
-                            'Pure Goodness,\nDelivered to Your Doorstep',
-                            style: TextStyle(
+                          Text(
+                            tr('Pure Goodness,\nDelivered to Your Doorstep'),
+                            style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w900,
                               color: Color(0xFF0F2F64),
@@ -558,9 +573,9 @@ class _HeroPromotionalBannerState extends State<_HeroPromotionalBanner> {
                             ),
                           ),
                           const SizedBox(height: 6),
-                          const Text(
-                            'Farm fresh milk & dairy products,\nhygienically packed for your family.',
-                            style: TextStyle(
+                          Text(
+                            tr('Farm fresh milk & dairy products,\nhygienically packed for your family.'),
+                            style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
                               color: Color(0xFF4A5568),
@@ -572,25 +587,25 @@ class _HeroPromotionalBannerState extends State<_HeroPromotionalBanner> {
                           // Horizontal Feature Icon Row matching mockup
                           Row(
                             mainAxisAlignment: MainAxisAlignment.start,
-                            children: const [
+                            children: [
                               _HeroFeatureIcon(
                                 icon: Icons.eco_outlined,
-                                label: '100%\nPure',
+                                label: tr('100%\nPure'),
                               ),
-                              SizedBox(width: 14),
+                              const SizedBox(width: 14),
                               _HeroFeatureIcon(
                                 icon: Icons.water_drop_outlined,
-                                label: 'No Added\nPreservatives',
+                                label: tr('No Added\nPreservatives'),
                               ),
-                              SizedBox(width: 14),
+                              const SizedBox(width: 14),
                               _HeroFeatureIcon(
                                 icon: Icons.sanitizer_outlined,
-                                label: 'Hygienically\nPacked',
+                                label: tr('Hygienically\nPacked'),
                               ),
-                              SizedBox(width: 14),
+                              const SizedBox(width: 14),
                               _HeroFeatureIcon(
                                 icon: Icons.favorite_border_rounded,
-                                label: 'Trusted by\nThousands',
+                                label: tr('Trusted by\nThousands'),
                               ),
                             ],
                           ),
@@ -741,22 +756,22 @@ class _TrackOrderCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 14),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Track your order',
-                      style: TextStyle(
+                      tr('Track Your Order'),
+                      style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
                         color: AppColors.textPrimary,
                       ),
                     ),
-                    SizedBox(height: 2),
+                    const SizedBox(height: 2),
                     Text(
-                      'Real-time updates on your fresh delivery',
-                      style: TextStyle(
+                      tr('Real-time updates on your fresh delivery'),
+                      style: const TextStyle(
                         fontSize: 12,
                         color: AppColors.textSecondary,
                       ),
@@ -784,13 +799,13 @@ class _TrackOrderCard extends StatelessWidget {
                   ),
                   child: TextField(
                     controller: controller,
-                    decoration: const InputDecoration(
-                      hintText: 'Enter your Order ID',
-                      hintStyle: TextStyle(
+                    decoration: InputDecoration(
+                      hintText: tr('Enter your Order ID'),
+                      hintStyle: const TextStyle(
                         fontSize: 12.5,
                         color: AppColors.textMuted,
                       ),
-                      contentPadding: EdgeInsets.symmetric(
+                      contentPadding: const EdgeInsets.symmetric(
                         horizontal: 14,
                         vertical: 0,
                       ),
@@ -812,9 +827,9 @@ class _TrackOrderCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: const Text(
-                  'Track Order',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                child: Text(
+                  tr('Track Order'),
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
                 ),
               ),
             ],
@@ -859,9 +874,9 @@ class _FreshnessBanner extends StatelessWidget {
                 height: 120,
                 color: const Color(0xFF005F38),
                 alignment: Alignment.center,
-                child: const Text(
-                  'Freshness You Can Trust',
-                  style: TextStyle(
+                child: Text(
+                  tr('Freshness You Can Trust'),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
@@ -962,9 +977,9 @@ class _CategoryPromotionalBannerState
                     return Container(
                       color: const Color(0xFF005F38),
                       alignment: Alignment.center,
-                      child: const Text(
-                        'Sawariya Dairy Specials',
-                        style: TextStyle(
+                      child: Text(
+                        tr('Sawariya Dairy Specials'),
+                        style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
                             fontWeight: FontWeight.bold),

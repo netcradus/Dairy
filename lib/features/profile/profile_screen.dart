@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/responsive/responsive.dart';
+import '../../providers/cart_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/navigation_provider.dart';
 import '../address/address_screen.dart';
@@ -11,6 +12,7 @@ import '../notifications/notifications_screen.dart';
 import '../subscription/subscriptions_screen.dart';
 import 'about_screen.dart';
 import 'customer_support_screen.dart';
+import '../../core/localization/app_language.dart';
 
 /// Demo delivery-partner account.
 const String _deliveryAccountPhone = '7777777777';
@@ -50,9 +52,9 @@ class ProfileScreen extends ConsumerWidget {
 
                         // ─── 3. Delivery Partner Panel (For Delivery boys only) ───
                         if (user.phone == _deliveryAccountPhone) ...[
-                          const Text(
-                            'Delivery Partner',
-                            style: TextStyle(
+                          Text(
+                            tr('Delivery Partner'),
+                            style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w800,
                               color: Color(0xFF667085),
@@ -62,17 +64,17 @@ class ProfileScreen extends ConsumerWidget {
                           _buildMenuTile(
                             context,
                             Icons.local_shipping_outlined,
-                            'Open Delivery Panel',
-                            'Switch to delivery experience',
+                            tr('Open Delivery Panel'),
+                            tr('Switch to delivery experience'),
                             () => _openDeliveryPanel(context, ref),
                           ),
                           const SizedBox(height: 16),
                         ],
 
                         // ─── 4. Account Settings Menu ───
-                        const Text(
-                          'Account Settings',
-                          style: TextStyle(
+                        Text(
+                          tr('Account Settings'),
+                          style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w800,
                             color: Color(0xFF667085),
@@ -97,8 +99,8 @@ class ProfileScreen extends ConsumerWidget {
                                 _buildMenuTile(
                                   context,
                                   Icons.person_outline_rounded,
-                                  'My Profile',
-                                  'Manage your personal details',
+                                  tr('My Profile'),
+                                  tr('Manage your personal details'),
                                   () {
                                     Navigator.push(
                                         context,
@@ -112,8 +114,8 @@ class ProfileScreen extends ConsumerWidget {
                                 _buildMenuTile(
                                   context,
                                   Icons.location_on_outlined,
-                                  'Delivery Addresses',
-                                  'Add or edit delivery addresses',
+                                  tr('Delivery Addresses'),
+                                  tr('Add or edit delivery addresses'),
                                   () {
                                     Navigator.push(
                                         context,
@@ -526,6 +528,7 @@ class ProfileScreen extends ConsumerWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
+              ref.read(cartProvider.notifier).clearCart();
               ref.read(userProvider.notifier).clearSession();
             },
             child: const Text('Log Out',

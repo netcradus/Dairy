@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
 import '../../models/cart_item.dart';
+import '../localization/app_language.dart';
 import 'category_image.dart';
 import 'price_text.dart';
 import 'quantity_selector.dart';
@@ -111,7 +112,7 @@ class CartItemTile extends StatelessWidget {
                     size: 20,
                   ),
                   onPressed: onRemove,
-                  tooltip: 'Remove',
+                  tooltip: tr('Remove'),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),
@@ -133,7 +134,7 @@ class CartItemTile extends StatelessWidget {
                 borderRadius: AppSizes.borderSmall,
               ),
               child: Text(
-                'Qty: ${cartItem.quantity}',
+                '${tr('Qty')}: ${cartItem.quantity}',
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,

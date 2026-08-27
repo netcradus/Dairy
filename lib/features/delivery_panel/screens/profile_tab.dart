@@ -6,8 +6,10 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/responsive/responsive_layout.dart';
 import '../../../models/delivery_boy_model.dart';
 import '../../../providers/delivery_provider.dart';
+import '../../../providers/cart_provider.dart';
 import '../../../providers/settings_provider.dart';
 import '../../../providers/user_provider.dart';
+import '../../../core/localization/app_language.dart';
 
 /// Profile Tab - Delivery agent info, online/offline toggle
 class ProfileTab extends ConsumerWidget {
@@ -70,7 +72,7 @@ class ProfileTab extends ConsumerWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                'Delivery Partner',
+                tr('Delivery Partner'),
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 14,
                   color: Colors.white.withValues(alpha: 0.8),
@@ -106,7 +108,7 @@ class ProfileTab extends ConsumerWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      isOnline ? 'Online' : 'Offline',
+                      isOnline ? tr('Online') : tr('Offline'),
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
@@ -125,13 +127,13 @@ class ProfileTab extends ConsumerWidget {
         Row(
           children: [
             Expanded(
-                child: _buildStatCard(context, 'Rating', '${agent.rating}',
+                child: _buildStatCard(context, tr('Rating'), '${agent.rating}',
                     Icons.star_rounded, Colors.amber, isDesktop)),
             const SizedBox(width: 12),
             Expanded(
                 child: _buildStatCard(
                     context,
-                    'Today\'s Deliveries',
+                    tr("Today's Deliveries"),
                     '${agent.completedDeliveriesToday}/${agent.totalDeliveriesToday}',
                     Icons.local_shipping_rounded,
                     AppColors.success,
@@ -140,7 +142,7 @@ class ProfileTab extends ConsumerWidget {
             Expanded(
                 child: _buildStatCard(
                     context,
-                    'Today\'s Earnings',
+                    tr("Today's Earnings"),
                     '₹${agent.earningsToday.toStringAsFixed(0)}',
                     Icons.account_balance_wallet,
                     AppColors.primary,
@@ -196,13 +198,6 @@ class ProfileTab extends ConsumerWidget {
               _navLabel(settings.navigationApp),
               Icons.navigation_outlined,
               () => _showNavigationDialog(context, ref),
-            ),
-            _buildSettingsRow(
-              context,
-              'Language',
-              _languageLabel(settings.languageCode),
-              Icons.language_outlined,
-              () => _showLanguageDialog(context, ref),
             ),
           ],
           isDesktop,
@@ -544,15 +539,6 @@ class ProfileTab extends ConsumerWidget {
     }
   }
 
-  String _languageLabel(String code) {
-    switch (code) {
-      case 'hi':
-        return 'हिंदी (Hindi)';
-      default:
-        return 'English';
-    }
-  }
-
   void _showNavigationDialog(BuildContext context, WidgetRef ref) {
     final current = ref.read(settingsProvider).navigationApp;
     showDialog<NavigationApp>(
@@ -596,51 +582,6 @@ class ProfileTab extends ConsumerWidget {
     );
   }
 
-  void _showLanguageDialog(BuildContext context, WidgetRef ref) {
-    final current = ref.read(settingsProvider).languageCode;
-    const options = [
-      ('en', 'English'),
-      ('hi', 'हिंदी (Hindi)'),
-    ];
-    showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(
-          'Language',
-          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: options.map((option) {
-            return RadioListTile<String>(
-              title: Text(option.$2, style: GoogleFonts.plusJakartaSans()),
-              value: option.$1,
-              groupValue: current,
-              activeColor: AppColors.primary,
-              onChanged: (value) {
-                if (value != null) {
-                  ref.read(settingsProvider.notifier).updateLanguage(value);
-                  Navigator.pop(ctx);
-                }
-              },
-            );
-          }).toList(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.plusJakartaSans(
-                color: AppColors.textSecondaryOf(context),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
@@ -659,6 +600,7 @@ class ProfileTab extends ConsumerWidget {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
+              ref.read(cartProvider.notifier).clearCart();
               await ref.read(userProvider.notifier).clearSession();
               // Navigation will be handled by router redirect
             },

@@ -12,6 +12,8 @@ class DairyProduct {
   final String packaging;
   final bool inStock;
   final String emoji;
+  final bool isBestSeller;
+  final String imageUrl;
 
   const DairyProduct({
     required this.id,
@@ -20,13 +22,15 @@ class DairyProduct {
     required this.category,
     required this.unit,
     required this.price,
-    required this.ordersCount,
-    required this.totalRevenue,
-    required this.stockQuantity,
-    required this.fatContent,
-    required this.packaging,
+    this.ordersCount = 0,
+    this.totalRevenue = 0.0,
+    this.stockQuantity = 0,
+    this.fatContent = '',
+    this.packaging = '',
     this.inStock = true,
-    required this.emoji,
+    this.emoji = '🥛',
+    this.isBestSeller = false,
+    this.imageUrl = '',
   });
 
   DairyProduct copyWith({
@@ -43,6 +47,8 @@ class DairyProduct {
     String? packaging,
     bool? inStock,
     String? emoji,
+    bool? isBestSeller,
+    String? imageUrl,
   }) {
     return DairyProduct(
       id: id ?? this.id,
@@ -58,6 +64,8 @@ class DairyProduct {
       packaging: packaging ?? this.packaging,
       inStock: inStock ?? this.inStock,
       emoji: emoji ?? this.emoji,
+      isBestSeller: isBestSeller ?? this.isBestSeller,
+      imageUrl: imageUrl ?? this.imageUrl,
     );
   }
 }

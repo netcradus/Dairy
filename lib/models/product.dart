@@ -99,6 +99,48 @@ class Product {
     );
   }
 
+  /// Serializes this [Product] for SharedPreferences / general-purpose use.
+  /// Includes [id] (unlike [toFirestore] which omits it).
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'title': title,
+        'categoryId': categoryId,
+        'categoryName': categoryName,
+        'price': price,
+        'originalPrice': originalPrice,
+        'unit': unit,
+        'imageUrl': imageUrl,
+        'description': description,
+        'rating': rating,
+        'reviewCount': reviewCount,
+        'isFreshDeal': isFreshDeal,
+        'isBestSeller': isBestSeller,
+        'isA2CowMilk': isA2CowMilk,
+        'inStock': inStock,
+      };
+
+  /// Restores a [Product] from a map produced by [toMap].
+  factory Product.fromMap(Map<String, dynamic> map) {
+    final original = map['originalPrice'];
+    return Product(
+      id: (map['id'] as String?) ?? '',
+      title: (map['title'] as String?) ?? '',
+      categoryId: (map['categoryId'] as String?) ?? '',
+      categoryName: (map['categoryName'] as String?) ?? '',
+      price: (map['price'] as num?)?.toDouble() ?? 0.0,
+      originalPrice: original == null ? null : (original as num).toDouble(),
+      unit: (map['unit'] as String?) ?? '',
+      imageUrl: (map['imageUrl'] as String?) ?? '',
+      description: (map['description'] as String?) ?? '',
+      rating: (map['rating'] as num?)?.toDouble() ?? 4.8,
+      reviewCount: (map['reviewCount'] as num?)?.toInt() ?? 0,
+      isFreshDeal: (map['isFreshDeal'] as bool?) ?? false,
+      isBestSeller: (map['isBestSeller'] as bool?) ?? false,
+      isA2CowMilk: (map['isA2CowMilk'] as bool?) ?? false,
+      inStock: (map['inStock'] as bool?) ?? true,
+    );
+  }
+
   /// Serializes this [Product] for writing to Firestore.
   Map<String, dynamic> toFirestore() => {
         'title': title,

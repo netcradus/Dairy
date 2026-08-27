@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../core/constants/app_colors.dart';
 import '../models/category_model.dart';
@@ -7,19 +9,257 @@ import '../models/delivery_staff_model.dart';
 import '../models/kpi_data.dart';
 import '../models/order_model.dart';
 import '../models/product_model.dart';
+import '../repositories/firestore_product_repository.dart';
 
 class AdminProvider extends ChangeNotifier {
+  final FirestoreProductRepository _repo;
+
   int _selectedNavIndex = 0;
   String _searchQuery = '';
   String _orderStatusTimeFilter = 'Today';
   int _unreadNotifications = 5;
   bool _isDarkMode = false;
 
+  List<DairyProduct> _products = [];
+  List<DairyCategory> _categories = [];
+  bool _isLoading = true;
+  String? _error;
+
+  StreamSubscription<List<Map<String, dynamic>>>? _productsSub;
+  StreamSubscription<List<Map<String, dynamic>>>? _categoriesSub;
+
   int get selectedNavIndex => _selectedNavIndex;
   String get searchQuery => _searchQuery;
   String get orderStatusTimeFilter => _orderStatusTimeFilter;
   int get unreadNotifications => _unreadNotifications;
   bool get isDarkMode => _isDarkMode;
+  List<DairyProduct> get products => _products;
+  List<DairyCategory> get categories => _categories;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
+
+  List<DairyProduct> get topSellingProducts =>
+      _products.where((p) => p.isBestSeller).toList().take(5).toList();
+
+  AdminProvider({FirestoreProductRepository? repo})
+      : _repo = repo ?? FirestoreProductRepository() {
+    _listenToProducts();
+    _listenToCategories();
+  }
+
+  // ─── Firestore listeners ───────────────────────────────────────────────
+
+  void _listenToProducts() {
+    _productsSub = _repo.streamRawProducts().listen(
+      (docs) {
+        _products = docs.map(_rawToDairyProduct).toList();
+        _isLoading = false;
+        _error = null;
+        notifyListeners();
+      },
+      onError: (e) {
+        _error = 'Failed to load products: $e';
+        _isLoading = false;
+        notifyListeners();
+      },
+    );
+  }
+
+  void _listenToCategories() {
+    _categoriesSub = _repo.streamRawCategories().listen(
+      (docs) {
+        _categories = docs.map(_rawToDairyCategory).toList();
+        notifyListeners();
+      },
+      onError: (e) {
+        debugPrint('AdminProvider: category stream error: $e');
+      },
+    );
+  }
+
+  // ─── Mapping helpers ──────────────────────────────────────────────────
+
+  static const Map<String, String> _categoryNameToId = {
+    'Milk & Creams': 'cat_milk',
+    'Paneer & Curd': 'cat_paneer',
+    'Ghee & Butter': 'cat_ghee',
+    'Beverages': 'cat_lassi',
+    'Lassi': 'cat_lassi',
+    'Makhan': 'cat_makhan',
+  };
+
+  static String _categoryIdForName(String name) {
+    return _categoryNameToId[name] ??
+        name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '_');
+  }
+
+  DairyProduct _rawToDairyProduct(Map<String, dynamic> raw) {
+    return DairyProduct(
+      id: raw['id'] as String? ?? '',
+      name: (raw['title'] as String?) ?? '',
+      subtitle: (raw['description'] as String?) ?? '',
+      category: (raw['categoryName'] as String?) ?? '',
+      unit: (raw['unit'] as String?) ?? '',
+      price: (raw['price'] as num?)?.toDouble() ?? 0.0,
+      ordersCount: (raw['ordersCount'] as num?)?.toInt() ?? 0,
+      totalRevenue: (raw['totalRevenue'] as num?)?.toDouble() ?? 0.0,
+      stockQuantity: (raw['stockQuantity'] as num?)?.toInt() ?? 0,
+      fatContent: (raw['fatContent'] as String?) ?? '',
+      packaging: (raw['packaging'] as String?) ?? '',
+      inStock: (raw['inStock'] as bool?) ?? true,
+      emoji: (raw['emoji'] as String?) ?? '🥛',
+      isBestSeller: (raw['isBestSeller'] as bool?) ?? false,
+      imageUrl: (raw['imageUrl'] as String?) ?? '',
+    );
+  }
+
+  Map<String, dynamic> _dairyProductToFirestore(DairyProduct p) {
+    return {
+      'title': p.name,
+      'description': p.subtitle,
+      'categoryName': p.category,
+      'categoryId': _categoryIdForName(p.category),
+      'price': p.price,
+      'originalPrice': null,
+      'unit': p.unit,
+      'imageUrl': p.imageUrl,
+      'rating': 4.8,
+      'reviewCount': 0,
+      'isFreshDeal': false,
+      'isBestSeller': p.isBestSeller,
+      'isA2CowMilk': false,
+      'inStock': p.inStock,
+      'fatContent': p.fatContent,
+      'packaging': p.packaging,
+      'emoji': p.emoji,
+      'stockQuantity': p.stockQuantity,
+      'ordersCount': p.ordersCount,
+      'totalRevenue': p.totalRevenue,
+    };
+  }
+
+  DairyCategory _rawToDairyCategory(Map<String, dynamic> raw) {
+    final colorValue = raw['colorValue'] as int?;
+    return DairyCategory(
+      id: raw['id'] as String? ?? '',
+      name: (raw['name'] as String?) ?? (raw['title'] as String?) ?? '',
+      description:
+          (raw['description'] as String?) ?? (raw['subtitle'] as String?) ?? '',
+      productCount: (raw['productCount'] as num?)?.toInt() ??
+          (raw['itemCount'] as num?)?.toInt() ??
+          0,
+      icon: Icons.category_rounded,
+      color: colorValue != null ? Color(colorValue) : AppColors.primary,
+      emoji: (raw['emoji'] as String?) ?? '🥛',
+    );
+  }
+
+  Map<String, dynamic> _dairyCategoryToFirestore(DairyCategory c) {
+    return {
+      'title': c.name,
+      'subtitle': c.description,
+      'imageUrl': '',
+      'iconName': null,
+      'colorValue': c.color.value,
+      'itemCount': c.productCount,
+      'name': c.name,
+      'description': c.description,
+      'productCount': c.productCount,
+      'emoji': c.emoji,
+    };
+  }
+
+  // ─── Product CRUD (Firestore) ─────────────────────────────────────────
+
+  Future<void> addProduct(DairyProduct product) async {
+    try {
+      final data = _dairyProductToFirestore(product);
+      await _repo.setProductRaw(product.id, data);
+    } catch (e) {
+      _error = 'Failed to add product: $e';
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  Future<void> updateProduct(DairyProduct product) async {
+    try {
+      final data = _dairyProductToFirestore(product);
+      await _repo.setProductRaw(product.id, data);
+    } catch (e) {
+      _error = 'Failed to update product: $e';
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  Future<void> deleteProduct(String id) async {
+    try {
+      await _repo.deleteProduct(id);
+    } catch (e) {
+      _error = 'Failed to delete product: $e';
+      notifyListeners();
+    }
+  }
+
+  Future<void> toggleProductStock(String id) async {
+    final index = _products.indexWhere((p) => p.id == id);
+    if (index == -1) return;
+    try {
+      final product = _products[index];
+      final toggled = product.copyWith(inStock: !product.inStock);
+      await updateProduct(toggled);
+    } catch (e) {
+      _error = 'Failed to toggle stock: $e';
+      notifyListeners();
+    }
+  }
+
+  Future<void> toggleBestSeller(String id) async {
+    final index = _products.indexWhere((p) => p.id == id);
+    if (index == -1) return;
+    try {
+      final product = _products[index];
+      final toggled = product.copyWith(isBestSeller: !product.isBestSeller);
+      await updateProduct(toggled);
+    } catch (e) {
+      _error = 'Failed to toggle best seller: $e';
+      notifyListeners();
+    }
+  }
+
+  // ─── Category CRUD (Firestore) ────────────────────────────────────────
+
+  Future<void> addCategory(DairyCategory category) async {
+    try {
+      final data = _dairyCategoryToFirestore(category);
+      await _repo.setCategoryRaw(category.id, data);
+    } catch (e) {
+      _error = 'Failed to add category: $e';
+      notifyListeners();
+    }
+  }
+
+  Future<void> updateCategory(DairyCategory category) async {
+    try {
+      final data = _dairyCategoryToFirestore(category);
+      await _repo.setCategoryRaw(category.id, data);
+    } catch (e) {
+      _error = 'Failed to update category: $e';
+      notifyListeners();
+    }
+  }
+
+  Future<void> deleteCategory(String id) async {
+    try {
+      await _repo.deleteCategory(id);
+    } catch (e) {
+      _error = 'Failed to delete category: $e';
+      notifyListeners();
+    }
+  }
+
+  // ─── Navigation & search ──────────────────────────────────────────────
 
   void toggleTheme() {
     _isDarkMode = !_isDarkMode;
@@ -51,169 +291,40 @@ class AdminProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // --- KPI Metrics ---
+  // ─── KPI Metrics (hardcoded) ──────────────────────────────────────────
+
   List<KpiMetric> get kpiMetrics => [
-    const KpiMetric(
-      title: "Today's Revenue",
-      value: '₹4,85,240',
-      growthText: '↑ 12.5% vs Yesterday',
-      isPositive: true,
-      icon: Icons.currency_rupee_rounded,
-      themeColor: AppColors.revenueGreen,
-      themeBgColor: AppColors.revenueGreenBg,
-    ),
-    const KpiMetric(
-      title: "Today's Orders",
-      value: '524',
-      growthText: '↑ 8.7% vs Yesterday',
-      isPositive: true,
-      icon: Icons.shopping_bag_outlined,
-      themeColor: AppColors.ordersBlue,
-      themeBgColor: AppColors.ordersBlueBg,
-    ),
-    const KpiMetric(
-      title: 'Total Customers',
-      value: '4,821',
-      growthText: '↑ 15.3% vs Last Month',
-      isPositive: true,
-      icon: Icons.people_outline_rounded,
-      themeColor: AppColors.customersOrange,
-      themeBgColor: AppColors.customersOrangeBg,
-    ),
-  ];
+        const KpiMetric(
+          title: "Today's Revenue",
+          value: '₹4,85,240',
+          growthText: '↑ 12.5% vs Yesterday',
+          isPositive: true,
+          icon: Icons.currency_rupee_rounded,
+          themeColor: AppColors.revenueGreen,
+          themeBgColor: AppColors.revenueGreenBg,
+        ),
+        const KpiMetric(
+          title: "Today's Orders",
+          value: '524',
+          growthText: '↑ 8.7% vs Yesterday',
+          isPositive: true,
+          icon: Icons.shopping_bag_outlined,
+          themeColor: AppColors.ordersBlue,
+          themeBgColor: AppColors.ordersBlueBg,
+        ),
+        const KpiMetric(
+          title: 'Total Customers',
+          value: '4,821',
+          growthText: '↑ 15.3% vs Last Month',
+          isPositive: true,
+          icon: Icons.people_outline_rounded,
+          themeColor: AppColors.customersOrange,
+          themeBgColor: AppColors.customersOrangeBg,
+        ),
+      ];
 
-  // --- Products Data ---
-  final List<DairyProduct> _products = [
-    const DairyProduct(
-      id: 'PRD-001',
-      name: 'Cow Milk (1L)',
-      subtitle: '3.5% Fat (Pure & Fresh)',
-      category: 'Milk & Creams',
-      unit: '1 Litre',
-      price: 64.0,
-      ordersCount: 245,
-      totalRevenue: 15680.0,
-      stockQuantity: 420,
-      fatContent: '3.5% Fat',
-      packaging: 'Pouches / Glass Bottle',
-      emoji: '🥛',
-    ),
-    const DairyProduct(
-      id: 'PRD-002',
-      name: 'Paneer (200g)',
-      subtitle: 'Soft Malai Paneer',
-      category: 'Paneer & Curd',
-      unit: '200 grams',
-      price: 85.0,
-      ordersCount: 182,
-      totalRevenue: 13450.0,
-      stockQuantity: 190,
-      fatContent: '50% Dry Fat',
-      packaging: 'Vacuum Sealed Pack',
-      emoji: '🧀',
-    ),
-    const DairyProduct(
-      id: 'PRD-003',
-      name: 'Curd (500g)',
-      subtitle: 'Thick Probiotic Dahi',
-      category: 'Paneer & Curd',
-      unit: '500 grams',
-      price: 50.0,
-      ordersCount: 168,
-      totalRevenue: 8400.0,
-      stockQuantity: 280,
-      fatContent: '3.0% Fat',
-      packaging: 'Hygienic Tub',
-      emoji: '🥣',
-    ),
-    const DairyProduct(
-      id: 'PRD-004',
-      name: 'Ghee (500ml)',
-      subtitle: 'Traditional Bilona Cow Ghee',
-      category: 'Ghee & Butter',
-      unit: '500 ml',
-      price: 550.0,
-      ordersCount: 96,
-      totalRevenue: 12720.0,
-      stockQuantity: 75,
-      fatContent: '99.7% Milk Fat',
-      packaging: 'Glass Jar',
-      emoji: '🍯',
-    ),
-    const DairyProduct(
-      id: 'PRD-005',
-      name: 'Butter (100g)',
-      subtitle: 'Salted Table Butter',
-      category: 'Ghee & Butter',
-      unit: '100 grams',
-      price: 58.0,
-      ordersCount: 74,
-      totalRevenue: 5550.0,
-      stockQuantity: 110,
-      fatContent: '80% Butter Fat',
-      packaging: 'Foil Wrap',
-      emoji: '🧈',
-    ),
-    const DairyProduct(
-      id: 'PRD-006',
-      name: 'Buffalo Milk (1L)',
-      subtitle: '6.5% Rich Cream Milk',
-      category: 'Milk & Creams',
-      unit: '1 Litre',
-      price: 76.0,
-      ordersCount: 130,
-      totalRevenue: 9880.0,
-      stockQuantity: 310,
-      fatContent: '6.5% Fat',
-      packaging: 'Pouch',
-      emoji: '🥛',
-    ),
-    const DairyProduct(
-      id: 'PRD-007',
-      name: 'Fresh Chaas (500ml)',
-      subtitle: 'Masala Spiced Buttermilk',
-      category: 'Beverages',
-      unit: '500 ml',
-      price: 25.0,
-      ordersCount: 112,
-      totalRevenue: 2800.0,
-      stockQuantity: 220,
-      fatContent: '1.5% Fat',
-      packaging: 'Bottle',
-      emoji: '🥤',
-    ),
-  ];
+  // ─── Orders Data (hardcoded) ──────────────────────────────────────────
 
-  List<DairyProduct> get products => _products;
-  List<DairyProduct> get topSellingProducts => _products.take(5).toList();
-
-  void addProduct(DairyProduct product) {
-    _products.insert(0, product);
-    notifyListeners();
-  }
-
-  void updateProduct(DairyProduct product) {
-    final index = _products.indexWhere((p) => p.id == product.id);
-    if (index != -1) {
-      _products[index] = product;
-      notifyListeners();
-    }
-  }
-
-  void deleteProduct(String id) {
-    _products.removeWhere((p) => p.id == id);
-    notifyListeners();
-  }
-
-  void toggleProductStock(String id) {
-    final index = _products.indexWhere((p) => p.id == id);
-    if (index != -1) {
-      _products[index] = _products[index].copyWith(inStock: !_products[index].inStock);
-      notifyListeners();
-    }
-  }
-
-  // --- Orders Data ---
   final List<DairyOrder> _orders = [
     const DairyOrder(
       id: '#ORD10284',
@@ -300,7 +411,8 @@ class AdminProvider extends ChangeNotifier {
     }
   }
 
-  // --- Today's Deliveries Data ---
+  // ─── Today's Deliveries Data (hardcoded) ──────────────────────────────
+
   final List<DeliveryBatch> _deliveryBatches = [
     const DeliveryBatch(
       deliveryId: '#DLV1021',
@@ -346,7 +458,8 @@ class AdminProvider extends ChangeNotifier {
 
   List<DeliveryBatch> get deliveryBatches => _deliveryBatches;
 
-  // --- Delivery Corridors Data ---
+  // ─── Delivery Corridors Data (hardcoded) ──────────────────────────────
+
   final List<DeliveryCorridor> _corridors = [
     const DeliveryCorridor(
       routeName: 'Route 1 — Noida Express Zone',
@@ -384,7 +497,8 @@ class AdminProvider extends ChangeNotifier {
 
   List<DeliveryCorridor> get corridors => _corridors;
 
-  // --- Customers Data ---
+  // ─── Customers Data (hardcoded) ───────────────────────────────────────
+
   final List<DairyCustomer> _customers = [
     const DairyCustomer(
       id: 'CUST-1001',
@@ -473,58 +587,8 @@ class AdminProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // --- Categories Data ---
-  final List<DairyCategory> _categories = [
-    const DairyCategory(
-      id: 'CAT-01',
-      name: 'Milk & Creams',
-      description: 'Farm-fresh pure cow milk, buffalo milk & pasteurized full cream',
-      productCount: 6,
-      icon: Icons.local_drink_rounded,
-      color: Color(0xFF1E6BFF),
-      emoji: '🥛',
-    ),
-    const DairyCategory(
-      id: 'CAT-02',
-      name: 'Paneer & Curd',
-      description: 'Artisanal malai paneer, probiotic curd and Greek dahi',
-      productCount: 4,
-      icon: Icons.grain_rounded,
-      color: Color(0xFF10B981),
-      emoji: '🧀',
-    ),
-    const DairyCategory(
-      id: 'CAT-03',
-      name: 'Ghee & Butter',
-      description: 'Traditional Vedic Bilona Cow Ghee & table churned butter',
-      productCount: 5,
-      icon: Icons.local_fire_department_outlined,
-      color: Color(0xFFF97316),
-      emoji: '🍯',
-    ),
-  ];
+  // ─── Delivery Staff Riders (hardcoded) ────────────────────────────────
 
-  List<DairyCategory> get categories => _categories;
-
-  void addCategory(DairyCategory category) {
-    _categories.insert(0, category);
-    notifyListeners();
-  }
-
-  void updateCategory(DairyCategory category) {
-    final index = _categories.indexWhere((c) => c.id == category.id);
-    if (index != -1) {
-      _categories[index] = category;
-      notifyListeners();
-    }
-  }
-
-  void deleteCategory(String id) {
-    _categories.removeWhere((c) => c.id == id);
-    notifyListeners();
-  }
-
-  // --- Delivery Staff Riders ---
   final List<DeliveryRider> _riders = [
     const DeliveryRider(
       id: 'RDR-101',
@@ -574,7 +638,8 @@ class AdminProvider extends ChangeNotifier {
 
   List<DeliveryRider> get riders => _riders;
 
-  // --- Payments Data ---
+  // ─── Payments Data (hardcoded) ────────────────────────────────────────
+
   final List<DairyPayment> _payments = [
     const DairyPayment(
       id: 'TXN-99812',
@@ -616,14 +681,16 @@ class AdminProvider extends ChangeNotifier {
 
   List<DairyPayment> get payments => _payments;
 
-  // --- Support Complaints Data ---
+  // ─── Support Complaints Data (hardcoded) ──────────────────────────────
+
   final List<CustomerComplaint> _complaints = [
     const CustomerComplaint(
       id: 'CMP-301',
       customerName: 'Sneha Patel',
       phone: '+91 99887 76655',
       issueType: 'Late Delivery',
-      description: 'Morning milk reached at 7:45 AM instead of committed 6:30 AM slot.',
+      description:
+          'Morning milk reached at 7:45 AM instead of committed 6:30 AM slot.',
       priority: 'Medium',
       status: 'In Progress',
       createdAt: 'Today, 08:00 AM',
@@ -633,7 +700,8 @@ class AdminProvider extends ChangeNotifier {
       customerName: 'Ramesh Chawla',
       phone: '+91 98112 00998',
       issueType: 'Damaged Seal',
-      description: 'Pouch corner was slightly punctured upon arrival. Requesting replacement.',
+      description:
+          'Pouch corner was slightly punctured upon arrival. Requesting replacement.',
       priority: 'High',
       status: 'Resolved',
       createdAt: 'Yesterday, 07:15 AM',
@@ -641,4 +709,13 @@ class AdminProvider extends ChangeNotifier {
   ];
 
   List<CustomerComplaint> get complaints => _complaints;
+
+  // ─── Cleanup ──────────────────────────────────────────────────────────
+
+  @override
+  void dispose() {
+    _productsSub?.cancel();
+    _categoriesSub?.cancel();
+    super.dispose();
+  }
 }

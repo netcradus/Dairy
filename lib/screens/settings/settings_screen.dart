@@ -5,6 +5,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
 import '../../providers/settings_provider.dart';
+import '../../core/localization/app_language.dart';
 import '../../widgets/settings_tile.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -19,7 +20,7 @@ class SettingsScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('App Settings'),
+        title: Text(tr('App Settings')),
         backgroundColor: AppColors.surface,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
@@ -37,12 +38,12 @@ class SettingsScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _sectionTitle('Notifications'),
+                _sectionTitle(tr('Notifications')),
                 _card([
                   SettingsTile(
                     icon: Icons.notifications_none_rounded,
-                    title: 'Notifications',
-                    subtitle: 'Manage notification preferences',
+                    title: tr('Notifications'),
+                    subtitle: tr('Manage notification preferences'),
                     onTap: null,
                     trailing: Switch(
                       value: settings.notificationsEnabled,
@@ -54,8 +55,8 @@ class SettingsScreen extends ConsumerWidget {
                     const _Divider(),
                     SettingsTile(
                       icon: Icons.notifications_active_outlined,
-                      title: 'Push Notifications',
-                      subtitle: 'Order & delivery alerts on this device',
+                      title: tr('Push Notifications'),
+                      subtitle: tr('Order & delivery alerts on this device'),
                       enabled: settings.notificationsEnabled,
                       trailing: Switch(
                          value: settings.pushNotifications,
@@ -68,8 +69,8 @@ class SettingsScreen extends ConsumerWidget {
                     const _Divider(),
                     SettingsTile(
                       icon: Icons.email_outlined,
-                      title: 'Email Notifications',
-                      subtitle: 'Summary & promotional emails',
+                      title: tr('Email Notifications'),
+                      subtitle: tr('Summary & promotional emails'),
                       enabled: settings.notificationsEnabled,
                       trailing: Switch(
                          value: settings.emailNotifications,
@@ -82,11 +83,11 @@ class SettingsScreen extends ConsumerWidget {
                   ],
                 ]),
                 const SizedBox(height: 16),
-                _sectionTitle('Preferences'),
+                _sectionTitle(tr('Preferences')),
                 _card([
                   SettingsTile(
                     icon: Icons.map_outlined,
-                    title: 'Navigation',
+                    title: tr('Navigation'),
                     subtitle: _navigationLabel(settings.navigationApp),
                     trailing: const Icon(Icons.chevron_right_rounded,
                         color: AppColors.textMuted),

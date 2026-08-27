@@ -6,6 +6,7 @@ import '../core/constants/app_assets.dart';
 import '../core/constants/app_colors.dart';
 import '../core/widgets/category_image.dart';
 import '../providers/admin_provider.dart';
+import '../providers/cart_provider.dart';
 import '../providers/user_provider.dart';
 
 class NavItemData {
@@ -285,6 +286,7 @@ class SidebarNavigation extends StatelessWidget {
                       ),
                     );
                     if (confirm == true) {
+                      container.read(cartProvider.notifier).clearCart();
                       container.read(userProvider.notifier).clearSession();
                     }
                   },

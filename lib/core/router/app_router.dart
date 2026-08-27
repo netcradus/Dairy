@@ -47,10 +47,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       final path = state.matchedLocation;
       final isAuthPath = path == '/login' ||
-                         path == '/register' ||
-                         path == '/otp' ||
-                         path == '/splash' ||
-                         path == '/onboarding';
+          path == '/register' ||
+          path == '/otp' ||
+          path == '/splash' ||
+          path == '/onboarding';
 
       if (!isLoggedIn && !isAuthPath) {
         return '/login';
@@ -98,7 +98,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           if (extra is Map<String, dynamic>) {
             return OtpScreen(
               targetDestination: extra['targetDestination'] as String?,
-              isPasswordResetFlow: extra['isPasswordResetFlow'] as bool? ?? false,
+              isPasswordResetFlow:
+                  extra['isPasswordResetFlow'] as bool? ?? false,
             );
           } else if (extra is String) {
             return OtpScreen(targetDestination: extra);
@@ -162,7 +163,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           child: provider.Consumer<AdminProvider>(
             builder: (context, adminProvider, child) {
               return Theme(
-                data: adminProvider.isDarkMode ? AdminTheme.darkTheme : AdminTheme.lightTheme,
+                data: adminProvider.isDarkMode
+                    ? AdminTheme.darkTheme
+                    : AdminTheme.lightTheme,
                 child: const AdminMainShell(),
               );
             },

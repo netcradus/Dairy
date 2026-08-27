@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
+import '../localization/app_language.dart';
 import '../responsive/responsive.dart';
 
 /// Clean Production Header Bar for Mobile, Tablet & Desktop
@@ -25,9 +26,9 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   static String _greeting() {
     final h = DateTime.now().hour;
-    if (h < 12) return 'Good morning, 👋';
-    if (h < 17) return 'Good afternoon, 👋';
-    return 'Good evening, 👋';
+    if (h < 12) return tr('Good morning, 👋');
+    if (h < 17) return tr('Good afternoon, 👋');
+    return tr('Good evening, 👋');
   }
 
   @override
@@ -68,11 +69,11 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ),
                 ),
                 const SizedBox(height: 2),
-                const Text(
-                  'Fresh dairy, delivered daily!',
+                Text(
+                  tr('Fresh dairy, delivered daily!'),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
                     color: AppColors.textPrimary,
@@ -101,28 +102,28 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ),
                 ],
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.location_on_outlined,
                     size: 16,
                     color: AppColors.primaryBlue,
                   ),
-                  SizedBox(width: 6),
+                  const SizedBox(width: 6),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Deliver to',
-                        style: TextStyle(
+                        tr('Deliver to'),
+                        style: const TextStyle(
                           fontSize: 9.5,
                           fontWeight: FontWeight.w500,
                           color: AppColors.textSecondary,
                         ),
                       ),
-                      Text(
+                      const Text(
                         'Gurugram, 122001',
                         style: TextStyle(
                           fontSize: 11.5,
@@ -132,8 +133,8 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
                       ),
                     ],
                   ),
-                  SizedBox(width: 6),
-                  Icon(
+                  const SizedBox(width: 6),
+                  const Icon(
                     Icons.keyboard_arrow_down_rounded,
                     size: 16,
                     color: AppColors.textSecondary,
@@ -154,7 +155,7 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
                   readOnly: true,
                   onTap: onSearchTap,
                   decoration: InputDecoration(
-                    hintText: 'Search milk, curd, paneer, ghee...',
+                    hintText: tr('Search milk, curd, paneer, ghee...'),
                     hintStyle: const TextStyle(
                       fontSize: 12,
                       color: AppColors.textMuted,

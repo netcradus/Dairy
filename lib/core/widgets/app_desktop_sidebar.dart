@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/app_sizes.dart';
-import '../constants/app_strings.dart';
+import '../localization/app_language.dart';
 import '../../providers/user_provider.dart';
+import '../../providers/cart_provider.dart';
 
 /// Desktop Left Sidebar Navigation Component
 class AppDesktopSidebar extends ConsumerWidget {
@@ -46,12 +47,12 @@ class AppDesktopSidebar extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
+                      const Text(
                         'SAWARIYA',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -63,7 +64,7 @@ class AppDesktopSidebar extends ConsumerWidget {
                           height: 1.1,
                         ),
                       ),
-                      Text(
+                      const Text(
                         'DAIRY',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -75,12 +76,12 @@ class AppDesktopSidebar extends ConsumerWidget {
                           height: 1.1,
                         ),
                       ),
-                      SizedBox(height: 2),
+                      const SizedBox(height: 2),
                       Text(
-                        'Pure Milk. Pure Trust.',
+                        tr('Pure Milk. Pure Trust.'),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF005F38),
@@ -107,7 +108,7 @@ class AppDesktopSidebar extends ConsumerWidget {
                   _SidebarNavItem(
                     icon: Icons.home_outlined,
                     activeIcon: Icons.home_rounded,
-                    label: AppStrings.navHome,
+                    label: tr('Home'),
                     isSelected: currentIndex == 0,
                     onTap: () => onTap(0),
                   ),
@@ -115,7 +116,7 @@ class AppDesktopSidebar extends ConsumerWidget {
                   _SidebarNavItem(
                     icon: Icons.grid_view_outlined,
                     activeIcon: Icons.grid_view_rounded,
-                    label: AppStrings.navShop,
+                    label: tr('Shop'),
                     isSelected: currentIndex == 1,
                     onTap: () => onTap(1),
                   ),
@@ -123,7 +124,7 @@ class AppDesktopSidebar extends ConsumerWidget {
                   _SidebarNavItem(
                     icon: Icons.local_shipping_outlined,
                     activeIcon: Icons.local_shipping_rounded,
-                    label: AppStrings.navOrders,
+                    label: tr('Orders'),
                     isSelected: currentIndex == 2,
                     onTap: () => onTap(2),
                   ),
@@ -131,7 +132,7 @@ class AppDesktopSidebar extends ConsumerWidget {
                   _SidebarNavItem(
                     icon: Icons.person_outline_rounded,
                     activeIcon: Icons.person_rounded,
-                    label: AppStrings.navProfile,
+                    label: tr('Profile'),
                     isSelected: currentIndex == 3,
                     onTap: () => onTap(3),
                   ),
@@ -165,21 +166,21 @@ class AppDesktopSidebar extends ConsumerWidget {
                             Icon(Icons.person, color: Colors.white, size: 20),
                       ),
                       const SizedBox(width: 10),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Sawariya Customer',
-                              style: TextStyle(
+                              tr('Sawariya Customer'),
+                              style: const TextStyle(
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.w700,
                                 color: Color(0xFF005F38),
                               ),
                             ),
                             Text(
-                              'Fresh Member',
-                              style: TextStyle(
+                              tr('Fresh Member'),
+                              style: const TextStyle(
                                 fontSize: 11,
                                 color: Color(0xFF005F38),
                                 fontWeight: FontWeight.w600,
@@ -194,24 +195,25 @@ class AppDesktopSidebar extends ConsumerWidget {
                           showDialog(
                             context: context,
                             builder: (ctx) => AlertDialog(
-                              title: const Text('Log Out'),
-                              content: const Text(
-                                  'Are you sure you want to log out of Sawariya Dairy?'),
+                              title: Text(tr('Log Out')),
+                              content: Text(tr(
+                                  'Are you sure you want to log out of Sawariya Dairy?')),
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.pop(ctx),
-                                  child: const Text('Cancel'),
+                                  child: Text(tr('Cancel')),
                                 ),
                                 TextButton(
                                   onPressed: () {
                                     Navigator.pop(ctx);
+                                    ref.read(cartProvider.notifier).clearCart();
                                     ref
                                         .read(userProvider.notifier)
                                         .clearSession();
                                   },
-                                  child: const Text('Log Out',
-                                      style:
-                                          TextStyle(color: Colors.redAccent)),
+                                  child: Text(tr('Log Out'),
+                                      style: const TextStyle(
+                                          color: Colors.redAccent)),
                                 ),
                               ],
                             ),

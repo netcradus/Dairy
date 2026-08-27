@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:developer' as developer;
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/product.dart';
@@ -11,14 +14,23 @@ import '../models/category.dart';
 class FirestoreProductRepository {
   final FirebaseFirestore _firestore;
 
+  static bool _hasSeededDefaults = false;
+
   FirestoreProductRepository([FirebaseFirestore? firestore])
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+      : _firestore = firestore ?? FirebaseFirestore.instance {
+    if (!_hasSeededDefaults) {
+      _hasSeededDefaults = true;
+      unawaited(seedDefaultsIfNeeded());
+    }
+  }
 
   CollectionReference<Map<String, dynamic>> get _products =>
       _firestore.collection('products');
 
   CollectionReference<Map<String, dynamic>> get _categories =>
       _firestore.collection('categories');
+
+  // ─── Streams ─────────────────────────────────────────────────────────────
 
   /// Real-time stream of all products.
   Stream<List<Product>> streamProducts() {
@@ -32,6 +44,25 @@ class FirestoreProductRepository {
         snap.docs.map((d) => Category.fromFirestore(d.data(), d.id)).toList());
   }
 
+  /// Real-time stream of raw product documents.
+  ///
+  /// Each map contains the full Firestore fields **plus** an `'id'` key.
+  /// Used by the Admin Panel to read admin-only fields (fatContent,
+  /// packaging, emoji, stockQuantity, etc.) that are not part of the
+  /// customer-facing [Product] model.
+  Stream<List<Map<String, dynamic>>> streamRawProducts() {
+    return _products.snapshots().map(
+        (snap) => snap.docs.map((d) => {'id': d.id, ...d.data()}).toList());
+  }
+
+  /// Real-time stream of raw category documents (with `'id'` key).
+  Stream<List<Map<String, dynamic>>> streamRawCategories() {
+    return _categories.snapshots().map(
+        (snap) => snap.docs.map((d) => {'id': d.id, ...d.data()}).toList());
+  }
+
+  // ─── One-time fetches ────────────────────────────────────────────────────
+
   /// One-time fetch of all products (useful with a [FutureBuilder]).
   Future<List<Product>> fetchProducts() async {
     final snap = await _products.get();
@@ -41,14 +72,280 @@ class FirestoreProductRepository {
   /// One-time fetch of all categories (useful with a [FutureBuilder]).
   Future<List<Category>> fetchCategories() async {
     final snap = await _categories.get();
-    return snap.docs.map((d) => Category.fromFirestore(d.data(), d.id)).toList();
+    return snap.docs
+        .map((d) => Category.fromFirestore(d.data(), d.id))
+        .toList();
   }
+
+  // ─── Writes ──────────────────────────────────────────────────────────────
 
   /// Writes (or overwrites) a product document.
   Future<void> setProduct(Product product) =>
       _products.doc(product.id).set(product.toFirestore());
 
+  /// Writes (or overwrites) a product document from a raw map.
+  ///
+  /// Allows the Admin Panel to store extra fields beyond the [Product] model
+  /// (e.g. fatContent, packaging, emoji, stockQuantity).
+  Future<void> setProductRaw(String id, Map<String, dynamic> data) =>
+      _products.doc(id).set(data, SetOptions(merge: true));
+
   /// Writes (or overwrites) a category document.
   Future<void> setCategory(Category category) =>
       _categories.doc(category.id).set(category.toFirestore());
+
+  /// Writes (or overwrites) a category document from a raw map.
+  Future<void> setCategoryRaw(String id, Map<String, dynamic> data) =>
+      _categories.doc(id).set(data, SetOptions(merge: true));
+
+  // ─── Deletes ─────────────────────────────────────────────────────────────
+
+  /// Deletes a product document by [id].
+  Future<void> deleteProduct(String id) => _products.doc(id).delete();
+
+  /// Deletes a category document by [id].
+  Future<void> deleteCategory(String id) => _categories.doc(id).delete();
+
+  // ─── Default seeding ─────────────────────────────────────────────────────
+
+  static const String _seedConfigPath = '_config/seed_status';
+  static const String _seedField = 'defaultsSeeded';
+
+  /// Writes the 5 default categories and 5 default products to Firestore on
+  /// first launch.  Subsequent calls are no-ops because a config document
+  /// (`_config/seed_status`) is set to `true` after the first successful seed.
+  ///
+  /// This is intentionally idempotent:
+  ///   - A static flag prevents per-process re-runs.
+  ///   - The Firestore config doc persists across restarts.
+  ///   - Using `SetOptions(merge: true)` + deterministic IDs means re-running
+  ///     (e.g. if the flag check races) will not duplicate or overwrite
+  ///     Admin-modified data.
+  Future<void> seedDefaultsIfNeeded() async {
+    try {
+      final configDoc = _firestore.doc(_seedConfigPath);
+      final configSnap = await configDoc.get();
+
+      if (configSnap.exists &&
+          (configSnap.data()?[_seedField] as bool?) == true) {
+        return;
+      }
+
+      final batch = _firestore.batch();
+
+      for (final entry in _defaultCategories.entries) {
+        batch.set(
+          _categories.doc(entry.key),
+          entry.value,
+          SetOptions(merge: true),
+        );
+      }
+
+      for (final entry in _defaultProducts.entries) {
+        batch.set(
+          _products.doc(entry.key),
+          entry.value,
+          SetOptions(merge: true),
+        );
+      }
+
+      batch.set(configDoc, {_seedField: true}, SetOptions(merge: true));
+
+      await batch.commit();
+      developer.log(
+        'Default categories & products seeded successfully.',
+        name: 'FirestoreProductRepository',
+      );
+    } catch (e) {
+      developer.log(
+        'seedDefaultsIfNeeded failed (non-fatal): $e',
+        name: 'FirestoreProductRepository',
+      );
+    }
+  }
 }
+
+// ─── Default seed data ───────────────────────────────────────────────────────
+//
+// Maps are kept outside the class to keep the repository file focused on
+// Firestore access.  Every document uses deterministic IDs so the seed is
+// naturally idempotent even without the config-gate check.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const Map<String, Map<String, dynamic>> _defaultCategories = {
+  'cat_milk': {
+    'title': 'Milk',
+    'subtitle': '100% Pure & Fresh',
+    'imageUrl': 'assets/images/milk.png',
+    'iconName': 'milk',
+    'colorValue': 0xFFEAF5FF,
+    'itemCount': 1,
+    'name': 'Milk',
+    'description': '100% Pure & Fresh',
+    'productCount': 1,
+    'emoji': '🥛',
+  },
+  'cat_paneer': {
+    'title': 'Paneer',
+    'subtitle': 'Soft & Delicious',
+    'imageUrl': 'assets/images/paneernew.png',
+    'iconName': 'paneer',
+    'colorValue': 0xFFFFF5EA,
+    'itemCount': 1,
+    'name': 'Paneer',
+    'description': 'Soft & Delicious',
+    'productCount': 1,
+    'emoji': '🧀',
+  },
+  'cat_ghee': {
+    'title': 'Pure Ghee',
+    'subtitle': 'Premium Quality',
+    'imageUrl': 'assets/images/gheen.png',
+    'iconName': 'ghee',
+    'colorValue': 0xFFFFF9EE,
+    'itemCount': 1,
+    'name': 'Pure Ghee',
+    'description': 'Premium Quality',
+    'productCount': 1,
+    'emoji': '🍯',
+  },
+  'cat_lassi': {
+    'title': 'Lassi',
+    'subtitle': 'Refreshing & Tasty',
+    'imageUrl': 'assets/images/lassi.png',
+    'iconName': 'lassi',
+    'colorValue': 0xFFEBF3FE,
+    'itemCount': 1,
+    'name': 'Lassi',
+    'description': 'Refreshing & Tasty',
+    'productCount': 1,
+    'emoji': '🥛',
+  },
+  'cat_makhan': {
+    'title': 'Makhan',
+    'subtitle': 'Thick & Healthy',
+    'imageUrl': 'assets/images/makhanew.png',
+    'iconName': 'makhan',
+    'colorValue': 0xFFF0F9F4,
+    'itemCount': 1,
+    'name': 'Makhan',
+    'description': 'Thick & Healthy',
+    'productCount': 1,
+    'emoji': '🧈',
+  },
+};
+
+const Map<String, Map<String, dynamic>> _defaultProducts = {
+  'prod_fresh_milk': {
+    'title': 'Fresh Milk',
+    'categoryId': 'cat_milk',
+    'categoryName': 'Milk',
+    'price': 45.0,
+    'originalPrice': null,
+    'unit': '500 ml',
+    'imageUrl': 'assets/images/milk.png',
+    'description': 'Pure fresh milk sourced daily from healthy cows.',
+    'rating': 4.8,
+    'reviewCount': 120,
+    'isFreshDeal': true,
+    'isBestSeller': true,
+    'isA2CowMilk': false,
+    'inStock': true,
+    'fatContent': '3.5% Fat',
+    'packaging': 'Fresh Pouch',
+    'emoji': '🥛',
+    'stockQuantity': 100,
+    'ordersCount': 0,
+    'totalRevenue': 0.0,
+  },
+  'prod_fresh_paneer': {
+    'title': 'Fresh Paneer',
+    'categoryId': 'cat_paneer',
+    'categoryName': 'Paneer',
+    'price': 95.0,
+    'originalPrice': null,
+    'unit': '200 g',
+    'imageUrl': 'assets/images/paneernew.png',
+    'description':
+        'Ultra-soft, protein-rich fresh cottage cheese prepared daily.',
+    'rating': 4.8,
+    'reviewCount': 210,
+    'isFreshDeal': false,
+    'isBestSeller': true,
+    'isA2CowMilk': false,
+    'inStock': true,
+    'fatContent': '',
+    'packaging': 'Fresh Pack',
+    'emoji': '🧀',
+    'stockQuantity': 80,
+    'ordersCount': 0,
+    'totalRevenue': 0.0,
+  },
+  'prod_pure_ghee': {
+    'title': 'Pure Ghee',
+    'categoryId': 'cat_ghee',
+    'categoryName': 'Pure Ghee',
+    'price': 650.0,
+    'originalPrice': 720.0,
+    'unit': '1 L',
+    'imageUrl': 'assets/images/gheen.png',
+    'description':
+        'Traditional bilona method pure cow ghee with rich granular texture and aroma.',
+    'rating': 5.0,
+    'reviewCount': 512,
+    'isFreshDeal': true,
+    'isBestSeller': true,
+    'isA2CowMilk': false,
+    'inStock': true,
+    'fatContent': '',
+    'packaging': 'Glass Jar',
+    'emoji': '🍯',
+    'stockQuantity': 50,
+    'ordersCount': 0,
+    'totalRevenue': 0.0,
+  },
+  'prod_fresh_lassi': {
+    'title': 'Fresh Lassi',
+    'categoryId': 'cat_lassi',
+    'categoryName': 'Lassi',
+    'price': 30.0,
+    'originalPrice': 35.0,
+    'unit': '300 ml',
+    'imageUrl': 'assets/images/lassi.png',
+    'description': 'Thick, creamy, and refreshing probiotic sweet lassi.',
+    'rating': 4.8,
+    'reviewCount': 195,
+    'isFreshDeal': false,
+    'isBestSeller': true,
+    'isA2CowMilk': false,
+    'inStock': true,
+    'fatContent': '',
+    'packaging': 'Fresh Bottle',
+    'emoji': '🥛',
+    'stockQuantity': 60,
+    'ordersCount': 0,
+    'totalRevenue': 0.0,
+  },
+  'prod_fresh_makhan': {
+    'title': 'Fresh Makhan',
+    'categoryId': 'cat_makhan',
+    'categoryName': 'Makhan',
+    'price': 60.0,
+    'originalPrice': 65.0,
+    'unit': '100 g',
+    'imageUrl': 'assets/images/makhanew.png',
+    'description': 'Freshly churned creamy unsalted table butter.',
+    'rating': 4.7,
+    'reviewCount': 140,
+    'isFreshDeal': false,
+    'isBestSeller': true,
+    'isA2CowMilk': false,
+    'inStock': true,
+    'fatContent': '',
+    'packaging': 'Fresh Pack',
+    'emoji': '🧈',
+    'stockQuantity': 70,
+    'ordersCount': 0,
+    'totalRevenue': 0.0,
+  },
+};
