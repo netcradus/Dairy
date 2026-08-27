@@ -69,22 +69,29 @@ class NotificationsScreen extends StatelessWidget {
                   maxLines: 3,
                   decoration: InputDecoration(
                     labelText: 'Message Body',
-                    hintText: 'e.g. Today\'s morning batch has left the cold-chain facility. Expected delivery by 6:30 AM.',
+                    hintText:
+                        'e.g. Today\'s morning batch has left the cold-chain facility. Expected delivery by 6:30 AM.',
                   ),
                 ),
                 const SizedBox(height: 14),
                 ElevatedButton.icon(
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Push notification broadcast sent to 4,821 active subscribers! 🚀')),
+                      const SnackBar(
+                          content: Text(
+                              'Push notification broadcast sent to 4,821 active subscribers! 🚀')),
                     );
                   },
-                  icon: const Icon(Icons.send_rounded, size: 18, color: Colors.white),
-                  label: const Text('Broadcast Notification', style: TextStyle(color: Colors.white)),
+                  icon: const Icon(Icons.send_rounded,
+                      size: 18, color: Colors.white),
+                  label: const Text('Broadcast Notification',
+                      style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
               ],

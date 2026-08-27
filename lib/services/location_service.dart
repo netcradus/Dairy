@@ -11,7 +11,8 @@ import 'package:geolocator/geolocator.dart';
 /// and keeps the UI/providers free of raw platform calls.
 class LocationService {
   /// Whether location services are enabled on the device.
-  Future<bool> isLocationServiceEnabled() => Geolocator.isLocationServiceEnabled();
+  Future<bool> isLocationServiceEnabled() =>
+      Geolocator.isLocationServiceEnabled();
 
   /// Requests location permission (if not already granted) and returns `true`
   /// only when the app is allowed to access location ("while in use" or

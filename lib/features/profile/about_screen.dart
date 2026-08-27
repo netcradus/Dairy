@@ -7,7 +7,7 @@ import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
 import '../../providers/navigation_provider.dart';
 
-const String _logoAsset = 'assets/images/logo(1).png';
+const String _logoAsset = 'assets/images/newlogo.png';
 
 /// Returns true when the widget is at least partially within the viewport.
 bool _widgetVisible(BuildContext context) {
@@ -57,8 +57,10 @@ const List<_Stage> _stages = [
 
 const List<_Product> _products = [
   _Product('Milk', 'Farm-fresh pure cow milk.', AppAssets.milkPlaceholder),
-  _Product('Lassi', 'Creamy traditional sweet lassi.', AppAssets.curdPlaceholder),
-  _Product('Makhan', 'Soft white homemade butter.', AppAssets.a2BannerPlaceholder),
+  _Product(
+      'Lassi', 'Creamy traditional sweet lassi.', AppAssets.curdPlaceholder),
+  _Product(
+      'Makhan', 'Soft white homemade butter.', AppAssets.a2BannerPlaceholder),
   _Product('Paneer', 'Fresh soft cottage cheese.', AppAssets.paneerPlaceholder),
   _Product('Ghee', 'Pure traditional bilona ghee.', AppAssets.gheePlaceholder),
 ];
@@ -66,7 +68,8 @@ const List<_Product> _products = [
 const List<_Value> _values = [
   _Value('PURITY', 'Care in every drop.', AppAssets.milkPlaceholder),
   _Value('QUALITY', 'Quality at every stage.', AppAssets.a2BannerPlaceholder),
-  _Value('FRESHNESS', 'Freshness for everyday life.', AppAssets.curdPlaceholder),
+  _Value(
+      'FRESHNESS', 'Freshness for everyday life.', AppAssets.curdPlaceholder),
   _Value('TRUST', 'Building lasting customer relationships.',
       AppAssets.heroBannerPlaceholder),
 ];
@@ -100,7 +103,8 @@ class _RevealState extends State<_Reveal> with SingleTickerProviderStateMixin {
     _opacity = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _ctrl, curve: Curves.easeOut),
     );
-    _slide = Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero).animate(
+    _slide =
+        Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero).animate(
       CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic),
     );
     widget.controller.addListener(_check);
@@ -170,7 +174,8 @@ class _FarmToHomeTimelineState extends State<_FarmToHomeTimeline>
     );
     _slides = List.generate(
       _n,
-      (i) => Tween<Offset>(begin: const Offset(0, 0.25), end: Offset.zero).animate(
+      (i) =>
+          Tween<Offset>(begin: const Offset(0, 0.25), end: Offset.zero).animate(
         CurvedAnimation(
           parent: _ctrl,
           curve: Interval(i / _n, (i + 0.7) / _n, curve: Curves.easeOutCubic),
@@ -295,7 +300,8 @@ class _FarmToHomeTimelineState extends State<_FarmToHomeTimeline>
                       height: 3,
                       decoration: BoxDecoration(
                         gradient: AppColors.brandGradient,
-                        borderRadius: BorderRadius.circular(AppSizes.radiusFull),
+                        borderRadius:
+                            BorderRadius.circular(AppSizes.radiusFull),
                       ),
                     ),
                   ),
@@ -904,7 +910,8 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
                             borderRadius: AppSizes.borderXLarge,
                             boxShadow: AppColors.cardShadowMd,
                             image: const DecorationImage(
-                              image: NetworkImage(AppAssets.a2BannerPlaceholder),
+                              image:
+                                  NetworkImage(AppAssets.a2BannerPlaceholder),
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -993,7 +1000,8 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
                       gradient: AppColors.brandGradientVertical,
                       boxShadow: AppColors.primaryShadow,
                     ),
-                    padding: EdgeInsets.all(isDesktop ? AppSizes.p40 : AppSizes.p24),
+                    padding:
+                        EdgeInsets.all(isDesktop ? AppSizes.p40 : AppSizes.p24),
                     child: Column(
                       children: [
                         const Text(
@@ -1020,9 +1028,7 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
                         ElevatedButton(
                           onPressed: () {
                             Navigator.pop(context);
-                            ref
-                                .read(navigationProvider.notifier)
-                                .setIndex(1);
+                            ref.read(navigationProvider.notifier).setIndex(1);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
@@ -1032,7 +1038,8 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
                               vertical: AppSizes.p14,
                             ),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(AppSizes.radiusFull),
+                              borderRadius:
+                                  BorderRadius.circular(AppSizes.radiusFull),
                             ),
                             elevation: 0,
                           ),

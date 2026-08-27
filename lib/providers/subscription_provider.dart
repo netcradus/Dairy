@@ -52,17 +52,15 @@ class SubscriptionsNotifier extends StateNotifier<List<Subscription>> {
 
   void pause(String id) {
     state = state
-        .map((s) => s.id == id
-            ? s.copyWith(status: SubscriptionStatus.paused)
-            : s)
+        .map((s) =>
+            s.id == id ? s.copyWith(status: SubscriptionStatus.paused) : s)
         .toList();
   }
 
   void resume(String id) {
     state = state
-        .map((s) => s.id == id
-            ? s.copyWith(status: SubscriptionStatus.active)
-            : s)
+        .map((s) =>
+            s.id == id ? s.copyWith(status: SubscriptionStatus.active) : s)
         .toList();
   }
 
@@ -79,9 +77,7 @@ class SubscriptionsNotifier extends StateNotifier<List<Subscription>> {
 
   void updateFrequency(String id, SubscriptionFrequency frequency) {
     state = state
-        .map((s) => s.id == id
-            ? s.copyWith(frequency: frequency)
-            : s)
+        .map((s) => s.id == id ? s.copyWith(frequency: frequency) : s)
         .toList();
   }
 

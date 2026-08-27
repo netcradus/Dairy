@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/constants/app_colors.dart';
@@ -222,6 +223,70 @@ class ProfileTab extends ConsumerWidget {
         ),
         const SizedBox(height: 32),
       ],
+    );
+  }
+
+  Widget _buildDeliveryTools(BuildContext context, WidgetRef ref) {
+    final textPrimary = AppColors.textPrimaryOf(context);
+    final cardBg = AppColors.cardBgOf(context);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.warning.withValues(alpha: 0.5)),
+        boxShadow: AppColors.cardShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              'Switch Role',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: textPrimary,
+              ),
+            ),
+          ),
+          Material(
+            color: Colors.transparent,
+            child: ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.warning.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.swap_horiz_rounded,
+                    color: AppColors.warning),
+              ),
+              title: Text(
+                'Simulate Customer Role',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: textPrimary,
+                ),
+              ),
+              subtitle: Text(
+                'Exit the delivery panel and return to the customer app',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12,
+                  color: AppColors.textSecondaryOf(context),
+                ),
+              ),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () {
+                ref.read(userProvider.notifier).setRole('customer');
+                context.push('/home');
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 

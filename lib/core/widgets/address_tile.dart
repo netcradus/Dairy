@@ -42,7 +42,9 @@ class AddressTile extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isSelected ? AppColors.primaryBlue : AppColors.textSecondary,
+                  color: isSelected
+                      ? AppColors.primaryBlue
+                      : AppColors.textSecondary,
                   width: isSelected ? 5.5 : 2,
                 ),
               ),

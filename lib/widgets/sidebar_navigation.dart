@@ -27,11 +27,13 @@ class SidebarNavigation extends StatelessWidget {
     NavItemData(title: 'Products', icon: Icons.inventory_2_outlined),
     NavItemData(title: 'Categories', icon: Icons.grid_view_rounded),
     NavItemData(title: 'Orders', icon: Icons.receipt_long_rounded),
-    NavItemData(title: 'Delivery Management', icon: Icons.local_shipping_outlined),
+    NavItemData(
+        title: 'Delivery Management', icon: Icons.local_shipping_outlined),
     NavItemData(title: 'Delivery Staff', icon: Icons.directions_bike_rounded),
     NavItemData(title: 'Payments', icon: Icons.credit_card_rounded),
     NavItemData(title: 'Notifications', icon: Icons.notifications_none_rounded),
-    NavItemData(title: 'Support / Complaints', icon: Icons.chat_bubble_outline_rounded),
+    NavItemData(
+        title: 'Support / Complaints', icon: Icons.chat_bubble_outline_rounded),
     NavItemData(title: 'Staff & Roles', icon: Icons.manage_accounts_outlined),
   ];
 
@@ -56,7 +58,8 @@ class SidebarNavigation extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.sidebarBorder, width: 1),
+                    border:
+                        Border.all(color: AppColors.sidebarBorder, width: 1),
                     boxShadow: [
                       BoxShadow(
                         color: AppColors.sidebarActive.withValues(alpha: 0.3),
@@ -67,7 +70,7 @@ class SidebarNavigation extends StatelessWidget {
                   ),
                   clipBehavior: Clip.antiAlias,
                   child: Image.asset(
-                    'assets/images/logo(1).png',
+                    'assets/images/newlogo.png',
                     fit: BoxFit.contain,
                     errorBuilder: (ctx, err, stack) => const Center(
                       child: CategoryImage(
@@ -133,7 +136,8 @@ class SidebarNavigation extends StatelessWidget {
                     },
                     borderRadius: BorderRadius.circular(10),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? AppColors.sidebarActive
@@ -182,9 +186,12 @@ class SidebarNavigation extends StatelessWidget {
             child: Row(
               children: [
                 Icon(
-                  provider.isDarkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                  provider.isDarkMode
+                      ? Icons.dark_mode_rounded
+                      : Icons.light_mode_rounded,
                   size: 18,
-                  color: provider.isDarkMode ? Colors.amber : Colors.orangeAccent,
+                  color:
+                      provider.isDarkMode ? Colors.amber : Colors.orangeAccent,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -260,7 +267,8 @@ class SidebarNavigation extends StatelessWidget {
                   ),
                   tooltip: 'Sign Out',
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                  constraints:
+                      const BoxConstraints(minWidth: 28, minHeight: 28),
                   onPressed: () async {
                     final container = ProviderScope.containerOf(context);
                     final confirm = await showDialog<bool>(

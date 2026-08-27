@@ -199,8 +199,7 @@ class _SubscriptionCard extends ConsumerWidget {
         ),
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16),
-        child: const Icon(Icons.delete_rounded,
-            color: Colors.white, size: 22),
+        child: const Icon(Icons.delete_rounded, color: Colors.white, size: 22),
       ),
       onDismissed: (_) {
         ref.read(subscriptionsProvider.notifier).cancel(subscription.id);
@@ -303,8 +302,8 @@ class _SubscriptionCard extends ConsumerWidget {
                 Container(height: 1, color: AppColors.border),
                 // Middle: details
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -315,7 +314,7 @@ class _SubscriptionCard extends ConsumerWidget {
                       ),
                       const SizedBox(height: 6),
                       _buildDetailRow(
-                          Icons.numbers_rounded,
+                        Icons.numbers_rounded,
                         'Qty per delivery',
                         '${subscription.quantity} ${p.unit}',
                       ),
@@ -367,7 +366,8 @@ class _SubscriptionCard extends ConsumerWidget {
                       if (subscription.status == SubscriptionStatus.active)
                         OutlinedButton.icon(
                           onPressed: () {
-                            ref.read(subscriptionsProvider.notifier)
+                            ref
+                                .read(subscriptionsProvider.notifier)
                                 .pause(subscription.id);
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
@@ -385,8 +385,8 @@ class _SubscriptionCard extends ConsumerWidget {
                             ),
                           ),
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(
-                                color: AppColors.primaryBlue),
+                            side:
+                                const BorderSide(color: AppColors.primaryBlue),
                             shape: const RoundedRectangleBorder(
                                 borderRadius: AppSizes.borderMedium),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -395,7 +395,8 @@ class _SubscriptionCard extends ConsumerWidget {
                       if (subscription.status == SubscriptionStatus.paused)
                         OutlinedButton.icon(
                           onPressed: () {
-                            ref.read(subscriptionsProvider.notifier)
+                            ref
+                                .read(subscriptionsProvider.notifier)
                                 .resume(subscription.id);
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
@@ -413,8 +414,7 @@ class _SubscriptionCard extends ConsumerWidget {
                             ),
                           ),
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(
-                                color: AppColors.freshGreen),
+                            side: const BorderSide(color: AppColors.freshGreen),
                             shape: const RoundedRectangleBorder(
                                 borderRadius: AppSizes.borderMedium),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,

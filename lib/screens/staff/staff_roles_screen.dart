@@ -17,10 +17,30 @@ class StaffRolesScreen extends StatelessWidget {
     final dividerColor = AppColors.dividerOf(context);
 
     final staffList = [
-      {'name': 'Admin User', 'email': 'admin@sawariyadairy.com', 'role': 'Super Admin', 'status': 'Active'},
-      {'name': 'Karan Grover', 'email': 'karan.g@sawariyadairy.com', 'role': 'Dispatch Manager', 'status': 'Active'},
-      {'name': 'Neha Soni', 'email': 'neha.soni@sawariyadairy.com', 'role': 'Accounts Lead', 'status': 'Active'},
-      {'name': 'Deepak Joshi', 'email': 'deepak.j@sawariyadairy.com', 'role': 'Inventory Head', 'status': 'Active'},
+      {
+        'name': 'Admin User',
+        'email': 'admin@sawariyadairy.com',
+        'role': 'Super Admin',
+        'status': 'Active'
+      },
+      {
+        'name': 'Karan Grover',
+        'email': 'karan.g@sawariyadairy.com',
+        'role': 'Dispatch Manager',
+        'status': 'Active'
+      },
+      {
+        'name': 'Neha Soni',
+        'email': 'neha.soni@sawariyadairy.com',
+        'role': 'Accounts Lead',
+        'status': 'Active'
+      },
+      {
+        'name': 'Deepak Joshi',
+        'email': 'deepak.j@sawariyadairy.com',
+        'role': 'Inventory Head',
+        'status': 'Active'
+      },
     ];
 
     return SingleChildScrollView(
@@ -67,8 +87,10 @@ class StaffRolesScreen extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 20,
-                        backgroundColor: AppColors.primaryLight.withValues(alpha: 0.2),
-                        child: const Icon(Icons.security_rounded, color: AppColors.primary, size: 20),
+                        backgroundColor:
+                            AppColors.primaryLight.withValues(alpha: 0.2),
+                        child: const Icon(Icons.security_rounded,
+                            color: AppColors.primary, size: 20),
                       ),
                       const SizedBox(width: 14),
                       Expanded(

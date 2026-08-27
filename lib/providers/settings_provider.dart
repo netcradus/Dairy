@@ -62,8 +62,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
         notificationsEnabled: prefs.getBool(_kNotifications) ?? true,
         pushNotifications: prefs.getBool(_kPush) ?? true,
         emailNotifications: prefs.getBool(_kEmail) ?? true,
-        navigationApp:
-            NavigationApp.values[prefs.getInt(_kNavApp) ?? 0],
+        navigationApp: NavigationApp.values[prefs.getInt(_kNavApp) ?? 0],
         languageCode: prefs.getString(_kLang) ?? 'en',
         themeMode: ThemeMode.values.firstWhere(
           (e) => e.name == (prefs.getString(_kTheme) ?? 'system'),
@@ -121,7 +120,6 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
 }
 
 /// Global, persistent settings provider for the user app.
-final settingsProvider =
-    StateNotifierProvider<SettingsNotifier, AppSettings>(
+final settingsProvider = StateNotifierProvider<SettingsNotifier, AppSettings>(
   (ref) => SettingsNotifier(),
 );

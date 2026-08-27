@@ -90,9 +90,11 @@ class DeliveryManagementScreen extends StatelessWidget {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryLight.withValues(alpha: 0.2),
+                            color:
+                                AppColors.primaryLight.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -108,7 +110,8 @@ class DeliveryManagementScreen extends StatelessWidget {
                     ),
                     Row(
                       children: [
-                        Icon(Icons.location_on_outlined, size: 16, color: textMuted),
+                        Icon(Icons.location_on_outlined,
+                            size: 16, color: textMuted),
                         const SizedBox(width: 4),
                         Text(
                           corridor.zone,
@@ -118,7 +121,8 @@ class DeliveryManagementScreen extends StatelessWidget {
                           ),
                         ),
                         const Spacer(),
-                        Icon(Icons.electric_moped_outlined, size: 16, color: textMuted),
+                        Icon(Icons.electric_moped_outlined,
+                            size: 16, color: textMuted),
                         const SizedBox(width: 4),
                         Text(
                           corridor.vehicleType,

@@ -5,7 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dairy_app/features/home/home_screen.dart';
 
 void main() {
-  testWidgets('HomeScreen renders without crashing', (WidgetTester tester) async {
+  testWidgets('HomeScreen renders without crashing',
+      (WidgetTester tester) async {
     await tester.pumpWidget(
       const ProviderScope(
         child: MaterialApp(

@@ -47,8 +47,10 @@ List<Order> _getMockOrders() {
     Order(
       id: 'SD-9842',
       items: [
-        CartItem(product: _safeProduct(a2Products, 0, allProducts), quantity: 2),
-        CartItem(product: _safeProduct(allProducts, 1, allProducts), quantity: 1),
+        CartItem(
+            product: _safeProduct(a2Products, 0, allProducts), quantity: 2),
+        CartItem(
+            product: _safeProduct(allProducts, 1, allProducts), quantity: 1),
       ],
       subtotal: 740.0,
       deliveryCharge: 0.0,
@@ -63,8 +65,10 @@ List<Order> _getMockOrders() {
     Order(
       id: 'SD-9810',
       items: [
-        CartItem(product: _safeProduct(allProducts, 0, allProducts), quantity: 2),
-        CartItem(product: _safeProduct(allProducts, 2, allProducts), quantity: 1),
+        CartItem(
+            product: _safeProduct(allProducts, 0, allProducts), quantity: 2),
+        CartItem(
+            product: _safeProduct(allProducts, 2, allProducts), quantity: 1),
       ],
       subtotal: 163.0,
       deliveryCharge: 30.0,
@@ -79,8 +83,10 @@ List<Order> _getMockOrders() {
     Order(
       id: 'SD-9745',
       items: [
-        CartItem(product: _safeProduct(allProducts, 3, allProducts), quantity: 2),
-        CartItem(product: _safeProduct(bestSellers, 4, allProducts), quantity: 1),
+        CartItem(
+            product: _safeProduct(allProducts, 3, allProducts), quantity: 2),
+        CartItem(
+            product: _safeProduct(bestSellers, 4, allProducts), quantity: 1),
       ],
       subtotal: 150.0,
       deliveryCharge: 30.0,
@@ -95,7 +101,8 @@ List<Order> _getMockOrders() {
     Order(
       id: 'SD-9602',
       items: [
-        CartItem(product: _safeProduct(bestSellers, 5, allProducts), quantity: 3),
+        CartItem(
+            product: _safeProduct(bestSellers, 5, allProducts), quantity: 3),
       ],
       subtotal: 120.0,
       deliveryCharge: 30.0,

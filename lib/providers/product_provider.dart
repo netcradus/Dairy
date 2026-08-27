@@ -6,7 +6,8 @@ import '../repositories/firestore_product_repository.dart';
 export 'cart_provider.dart';
 
 /// Provides the Cloud Firestore-backed product/category repository.
-final firestoreProductRepoProvider = Provider<FirestoreProductRepository>((ref) {
+final firestoreProductRepoProvider =
+    Provider<FirestoreProductRepository>((ref) {
   return FirestoreProductRepository();
 });
 

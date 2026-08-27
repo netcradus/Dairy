@@ -20,7 +20,8 @@ class PaymentsScreen extends StatelessWidget {
     final textSecondary = AppColors.textSecondaryOf(context);
     final textMuted = AppColors.textMutedOf(context);
     final dividerColor = AppColors.dividerOf(context);
-    final currencyFormatter = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final currencyFormatter =
+        NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
 
     return SingleChildScrollView(
       padding: EdgeInsets.symmetric(
@@ -68,10 +69,12 @@ class PaymentsScreen extends StatelessWidget {
                         width: 42,
                         height: 42,
                         decoration: BoxDecoration(
-                          color: AppColors.revenueGreenBg.withValues(alpha: 0.2),
+                          color:
+                              AppColors.revenueGreenBg.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.account_balance_wallet_outlined, color: AppColors.revenueGreen),
+                        child: const Icon(Icons.account_balance_wallet_outlined,
+                            color: AppColors.revenueGreen),
                       ),
                       const SizedBox(width: 14),
                       Expanded(

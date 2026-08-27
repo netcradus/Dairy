@@ -45,7 +45,9 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
         actions: [
           IconButton(
             icon: Icon(
-              _isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+              _isFavorite
+                  ? Icons.favorite_rounded
+                  : Icons.favorite_border_rounded,
               color: _isFavorite ? AppColors.error : AppColors.textPrimary,
             ),
             onPressed: () {
@@ -228,7 +230,6 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                     )
                   else
                     const SizedBox.shrink(),
-
                   if (product.isA2CowMilk)
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -400,7 +401,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
               decoration: BoxDecoration(
                 color: AppColors.freshGreen.withValues(alpha: 0.1),
                 borderRadius: AppSizes.borderSmall,
-                border: Border.all(color: AppColors.freshGreen.withValues(alpha: 0.3)),
+                border: Border.all(
+                    color: AppColors.freshGreen.withValues(alpha: 0.3)),
               ),
               child: Text(
                 'Save ₹${(product.originalPrice! - product.price).toStringAsFixed(0)} today!',
@@ -416,8 +418,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     );
   }
 
-  Widget _buildQuantityAndCart(
-      WidgetRef ref, Product product, int currentQty) {
+  Widget _buildQuantityAndCart(WidgetRef ref, Product product, int currentQty) {
     return Column(
       children: [
         Row(
@@ -481,7 +482,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                   ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.primaryBlue,
-                    side: const BorderSide(color: AppColors.primaryBlue, width: 1.5),
+                    side: const BorderSide(
+                        color: AppColors.primaryBlue, width: 1.5),
                     shape: const RoundedRectangleBorder(
                       borderRadius: AppSizes.borderMedium,
                     ),
@@ -569,7 +571,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
           _bulletPoint('FSSAI certified food grade packaging'),
           _bulletPoint('Zero preservatives & zero artificial colors'),
           _bulletPoint('Chilled cold-chain delivery within 2 hours of packing'),
-          _bulletPoint('Directly sourced from Gir Cow & Organic Sawariya Dairy farms'),
+          _bulletPoint(
+              'Directly sourced from Gir Cow & Organic Sawariya Dairy farms'),
         ],
       ),
     );

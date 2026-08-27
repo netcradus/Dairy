@@ -70,9 +70,8 @@ class NotificationsNotifier extends StateNotifier<List<NotificationItem>> {
   }
 
   void markRead(String id) {
-    state = state
-        .map((n) => n.id == id ? n.copyWith(isRead: true) : n)
-        .toList();
+    state =
+        state.map((n) => n.id == id ? n.copyWith(isRead: true) : n).toList();
   }
 
   void dismiss(String id) {
@@ -86,8 +85,8 @@ class NotificationsNotifier extends StateNotifier<List<NotificationItem>> {
 
 final notificationsProvider =
     StateNotifierProvider<NotificationsNotifier, List<NotificationItem>>(
-      (ref) => NotificationsNotifier(),
-    );
+  (ref) => NotificationsNotifier(),
+);
 
 /// Convenience providers for UI
 final unreadNotificationsProvider = Provider<List<NotificationItem>>((ref) {

@@ -72,24 +72,8 @@ class _ProductCardState extends State<ProductCard> {
                           borderRadius: const BorderRadius.vertical(
                             top: Radius.circular(AppSizes.radiusLarge - 1),
                           ),
-                           child: Padding(
-                             padding: () {
-                               final titleLower = p.title.toLowerCase();
-                               final imgLower = p.imageUrl.toLowerCase();
-                               if (titleLower.contains('paneer') || imgLower.contains('paneer')) {
-                                 return const EdgeInsets.all(20.0);
-                               }
-                               if (titleLower.contains('makhan') || imgLower.contains('makhan') || titleLower.contains('butter') || imgLower.contains('butter')) {
-                                 return const EdgeInsets.all(20.0);
-                               }
-                               if (titleLower.contains('ghee') || imgLower.contains('ghee')) {
-                                 return const EdgeInsets.all(4.0);
-                               }
-                               if (titleLower.contains('lassi') || imgLower.contains('lassi')) {
-                                 return const EdgeInsets.all(12.0);
-                               }
-                               return const EdgeInsets.all(12.0);
-                             }(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
                             child: p.imageUrl.isNotEmpty
                                 ? (p.imageUrl.startsWith('http')
                                     ? CachedNetworkImage(
@@ -140,8 +124,6 @@ class _ProductCardState extends State<ProductCard> {
                         ),
                       ),
                     ),
-
-
                   ],
                 ),
               ),

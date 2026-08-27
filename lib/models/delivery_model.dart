@@ -15,8 +15,9 @@ class DeliveryBatch {
     required this.zone,
   });
 
-  double get completionPercentage =>
-      assignedCount == 0 ? 0.0 : (completedCount / assignedCount).clamp(0.0, 1.0);
+  double get completionPercentage => assignedCount == 0
+      ? 0.0
+      : (completedCount / assignedCount).clamp(0.0, 1.0);
 }
 
 class DeliveryCorridor {

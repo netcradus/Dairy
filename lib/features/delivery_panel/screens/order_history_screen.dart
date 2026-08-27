@@ -59,7 +59,8 @@ class OrderHistoryScreen extends ConsumerWidget {
     );
   }
 
-  List<Widget> _buildFilterChips(BuildContext context, WidgetRef ref, OrderHistoryFilter selected) {
+  List<Widget> _buildFilterChips(
+      BuildContext context, WidgetRef ref, OrderHistoryFilter selected) {
     final items = <(OrderHistoryFilter, String, IconData)>[
       (OrderHistoryFilter.all, 'All', Icons.list_alt_rounded),
       (OrderHistoryFilter.completed, 'Completed', Icons.check_circle_rounded),
@@ -76,7 +77,8 @@ class OrderHistoryScreen extends ConsumerWidget {
           avatar: Icon(
             iconData,
             size: 16,
-            color: isSelected ? Colors.white : AppColors.textSecondaryOf(context),
+            color:
+                isSelected ? Colors.white : AppColors.textSecondaryOf(context),
           ),
           selected: isSelected,
           selectedColor: AppColors.primary,
@@ -168,8 +170,7 @@ class OrderHistoryScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 4),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),

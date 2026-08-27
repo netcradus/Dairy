@@ -24,14 +24,20 @@ abstract class AppSizes {
   static const double radiusFull = 999.0;
 
   // Border Radius Objects
-  static const BorderRadius borderSmall = BorderRadius.all(Radius.circular(radiusSmall));
-  static const BorderRadius borderMedium = BorderRadius.all(Radius.circular(radiusMedium));
-  static const BorderRadius borderLarge = BorderRadius.all(Radius.circular(radiusLarge));
-  static const BorderRadius borderXLarge = BorderRadius.all(Radius.circular(radiusXLarge));
+  static const BorderRadius borderSmall =
+      BorderRadius.all(Radius.circular(radiusSmall));
+  static const BorderRadius borderMedium =
+      BorderRadius.all(Radius.circular(radiusMedium));
+  static const BorderRadius borderLarge =
+      BorderRadius.all(Radius.circular(radiusLarge));
+  static const BorderRadius borderXLarge =
+      BorderRadius.all(Radius.circular(radiusXLarge));
 
   // Padding Objects
-  static const EdgeInsets paddingMobileHorizontal = EdgeInsets.symmetric(horizontal: p16);
-  static const EdgeInsets paddingDesktopHorizontal = EdgeInsets.symmetric(horizontal: p32);
+  static const EdgeInsets paddingMobileHorizontal =
+      EdgeInsets.symmetric(horizontal: p16);
+  static const EdgeInsets paddingDesktopHorizontal =
+      EdgeInsets.symmetric(horizontal: p32);
   static const EdgeInsets paddingCard = EdgeInsets.all(p16);
   static const EdgeInsets paddingCardCompact = EdgeInsets.all(p12);
 

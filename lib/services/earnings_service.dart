@@ -29,8 +29,7 @@ class EarningsService {
           .doc(earning.id)
           .set(earning.toFirestore());
     } catch (e) {
-      throw Exception(
-          'Failed to log earning for order ${earning.orderId}: $e');
+      throw Exception('Failed to log earning for order ${earning.orderId}: $e');
     }
   }
 

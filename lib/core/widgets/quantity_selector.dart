@@ -32,7 +32,8 @@ class QuantitySelector extends StatelessWidget {
             foregroundColor: AppColors.primaryBlue,
             elevation: 0,
             padding: const EdgeInsets.symmetric(horizontal: AppSizes.p8),
-            shape: const RoundedRectangleBorder(borderRadius: AppSizes.borderMedium),
+            shape: const RoundedRectangleBorder(
+                borderRadius: AppSizes.borderMedium),
           ),
           child: const Row(
             mainAxisSize: MainAxisSize.min,
@@ -66,7 +67,8 @@ class QuantitySelector extends StatelessWidget {
           IconButton(
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-            icon: const Icon(Icons.remove, size: 16, color: AppColors.textOnPrimary),
+            icon: const Icon(Icons.remove,
+                size: 16, color: AppColors.textOnPrimary),
             onPressed: onDecrement,
           ),
           Text(
@@ -80,7 +82,8 @@ class QuantitySelector extends StatelessWidget {
           IconButton(
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-            icon: const Icon(Icons.add, size: 16, color: AppColors.textOnPrimary),
+            icon:
+                const Icon(Icons.add, size: 16, color: AppColors.textOnPrimary),
             onPressed: onIncrement,
           ),
         ],

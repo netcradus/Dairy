@@ -9,6 +9,7 @@ class AuthCard extends StatelessWidget {
   final Widget child;
   final String? featureTitle;
   final String? featureSubtitle;
+  final String videoPath;
 
   const AuthCard({
     super.key,
@@ -16,14 +17,34 @@ class AuthCard extends StatelessWidget {
     this.featureTitle = 'Pure Dairy at Your Doorstep',
     this.featureSubtitle =
         'Order farm-fresh A2 milk, ghee, paneer, and butter with daily morning delivery.',
+    this.videoPath = 'assets/images/loginv2.mp4',
   });
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = context.isDesktop;
     final size = MediaQuery.of(context).size;
+    final width = size.width;
+    final height = size.height;
+    final orientation = MediaQuery.of(context).orientation;
+
+    final isMobile = width < 600;
+    final isTablet = width >= 600 && width < 900;
+    final isDesktop = width >= 900;
+    final isTabletLandscape = isTablet && orientation == Orientation.landscape;
+    final isHorizontal = isDesktop || isTabletLandscape;
+
+    final double cardWidth = isMobile
+        ? width * 0.94
+        : isTablet
+            ? (orientation == Orientation.portrait
+                ? width * 0.90
+                : width * 0.85)
+            : 960;
+
+    final double? cardHeight = isHorizontal ? 520 : (height * 0.85).clamp(500.0, 680.0);
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFFFAF7F0), // Soft Parchment / Off-White
       body: Stack(
         children: [
@@ -73,128 +94,107 @@ class AuthCard extends StatelessWidget {
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
                 padding: EdgeInsets.symmetric(
-                  horizontal: isDesktop ? 36.0 : 16.0,
-                  vertical: isDesktop ? 28.0 : 16.0,
+                  horizontal: isHorizontal ? 36.0 : 16.0,
+                  vertical: isHorizontal ? 28.0 : 16.0,
                 ),
-                child: Container(
-                  constraints: BoxConstraints(
-                    maxWidth: isDesktop ? 960 : 460,
-                  ),
-                  // Outer Gold Frame
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [
-                        Color(0xFFF5E4B5),
-                        Color(0xFFC5A059),
-                        Color(0xFF8C6D2B),
-                        Color(0xFFF5E4B5),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.18),
-                        blurRadius: 32,
-                        spreadRadius: 2,
-                        offset: const Offset(0, 12),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Container(
+                      width: cardWidth,
+                      height: cardHeight,
+                      // Outer Gold Frame
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFFF5E4B5),
+                            Color(0xFFC5A059),
+                            Color(0xFF8C6D2B),
+                            Color(0xFFF5E4B5),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.18),
+                            blurRadius: 32,
+                            spreadRadius: 2,
+                            offset: const Offset(0, 12),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  padding: const EdgeInsets.all(2.5), // Gold Border Thickness
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFAF7EE), // Inner Cream Parchment Surface
-                      borderRadius: BorderRadius.circular(21.5),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(21.5),
-                      child: isDesktop
-                          ? Row(
-                              children: [
-                                // Left Column: Dairy Mascot Visual Panel
-                                Expanded(
-                                  flex: 5,
-                                  child: Container(
-                                    height: 520,
-                                    decoration: const BoxDecoration(
-                                      color: Colors.white,
-                                    ),
-                                    child: Center(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(20),
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Image.asset(
-                                              'assets/images/logo(1).png',
-                                              height: 90,
-                                              fit: BoxFit.contain,
-                                            ),
-                                            const SizedBox(height: 16),
-                                            Expanded(
-                                              child: Image.asset(
-                                                'assets/images/log(1).png',
-                                                fit: BoxFit.contain,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
+                      padding:
+                          const EdgeInsets.all(2.5), // Gold Border Thickness
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: const Color(
+                              0xFFFAF7EE), // Inner Cream Parchment Surface
+                          borderRadius: BorderRadius.circular(21.5),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(21.5),
+                          child: LayoutBuilder(
+                            builder: (context, boxConstraints) {
+                              final mediaSection = Container(
+                                color: Colors.white,
+                                child: Center(
+                                  child: _AuthVideoPlayer(
+                                    videoPath: videoPath,
+                                    fit: BoxFit.cover,
                                   ),
                                 ),
+                              );
 
-                                // Right Column: Form Content Child
-                                Expanded(
-                                  flex: 6,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(36),
+                              final formSection = Container(
+                                width: double.infinity,
+                                height: double.infinity,
+                                color: const Color(0xFFFAF7EE),
+                                child: Center(
+                                  child: SingleChildScrollView(
+                                    physics: const BouncingScrollPhysics(),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: isMobile ? 16.0 : 32.0,
+                                      vertical: 24.0,
+                                    ),
                                     child: child,
                                   ),
                                 ),
-                              ],
-                            )
-                          : Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  height: 240,
-                                  decoration: const BoxDecoration(
-                                    color: Colors.white,
-                                  ),
-                                  child: Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Image.asset(
-                                            'assets/images/logo(1).png',
-                                            height: 80,
-                                            fit: BoxFit.contain,
-                                          ),
-                                          const SizedBox(width: 20),
-                                          Expanded(
-                                            child: Image.asset(
-                                              'assets/images/log(1).png',
-                                              fit: BoxFit.contain,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                              );
+
+                              if (isHorizontal) {
+                                return Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 5,
+                                      child: mediaSection,
                                     ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(24),
-                                  child: child,
-                                ),
-                              ],
-                            ),
-                    ),
-                  ),
+                                    Expanded(
+                                      flex: 5,
+                                      child: formSection,
+                                    ),
+                                  ],
+                                );
+                              } else {
+                                return Column(
+                                  children: [
+                                    Expanded(
+                                      flex: 5,
+                                      child: mediaSection,
+                                    ),
+                                    Expanded(
+                                      flex: 5,
+                                      child: formSection,
+                                    ),
+                                  ],
+                                );
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -269,7 +269,11 @@ class _MilkCanWatermarkPainter extends CustomPainter {
 
 class _AuthVideoPlayer extends StatefulWidget {
   final BoxFit fit;
-  const _AuthVideoPlayer({this.fit = BoxFit.contain});
+  final String videoPath;
+  const _AuthVideoPlayer({
+    required this.videoPath,
+    this.fit = BoxFit.contain,
+  });
 
   @override
   State<_AuthVideoPlayer> createState() => _AuthVideoPlayerState();
@@ -282,15 +286,24 @@ class _AuthVideoPlayerState extends State<_AuthVideoPlayer> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.asset('assets/images/login.mp4')
-      ..initialize().then((_) {
+    _controller = VideoPlayerController.asset(widget.videoPath);
+    _controller.addListener(() {
+      if (_controller.value.hasError && mounted) {
+        setState(() {});
+      }
+    });
+    _controller.initialize().then((_) {
+      if (mounted) {
         setState(() {
           _isInitialized = true;
         });
         _controller.setLooping(true);
         _controller.play();
         _controller.setVolume(0.0); // Mute
-      });
+      }
+    }).catchError((error) {
+      debugPrint('Error initializing auth video: $error');
+    });
   }
 
   @override
@@ -301,11 +314,41 @@ class _AuthVideoPlayerState extends State<_AuthVideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_isInitialized) {
-      return const Center(
-        child: CircularProgressIndicator(
-          color: Color(0xFF005F38),
+    if (_controller.value.hasError) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline,
+                  color: Colors.redAccent, size: 36),
+              const SizedBox(height: 8),
+              Text(
+                'Video Playback Error: ${_controller.value.errorDescription}',
+                style: const TextStyle(color: Colors.redAccent, fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
+      );
+    }
+
+    if (!_isInitialized) {
+      return const AspectRatio(
+        aspectRatio: 16 / 9,
+        child: Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFF005F38),
+          ),
+        ),
+      );
+    }
+    if (widget.fit == BoxFit.contain) {
+      return AspectRatio(
+        aspectRatio: _controller.value.aspectRatio,
+        child: VideoPlayer(_controller),
       );
     }
     return SizedBox.expand(

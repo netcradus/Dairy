@@ -208,7 +208,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       fit: BoxFit.contain,
                       width: double.infinity,
                       height: double.infinity,
-                      errorBuilder: (context, error, stackTrace) => const Center(
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Center(
                         child: Icon(Icons.image_outlined,
                             color: Color(0xFFD4AF37), size: 48),
                       ),
@@ -306,8 +307,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   /// Mobile Viewport Layout: Stacked Top Visual & Bottom Content Card
-  Widget _buildMobileLayout(
-      BuildContext context, List<OnboardingData> pages) {
+  Widget _buildMobileLayout(BuildContext context, List<OnboardingData> pages) {
     final page = pages[_currentPage];
 
     return Column(
@@ -329,7 +329,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       fit: BoxFit.contain,
                       width: double.infinity,
                       height: double.infinity,
-                      errorBuilder: (context, error, stackTrace) => const Center(
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Center(
                         child: Icon(Icons.image_outlined,
                             color: Color(0xFFD4AF37), size: 48),
                       ),
@@ -366,7 +367,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildTopHeader(),
-
                 Expanded(
                   child: PageView.builder(
                     controller: _pageController,
@@ -402,7 +402,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                                 height: 1.45,
                               ),
                             ),
-
                             if (item.showProductGrid) ...[
                               const SizedBox(height: 14),
                               _buildProductIconsSubCard(),
@@ -413,7 +412,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     },
                   ),
                 ),
-
                 _buildBottomControls(pages.length),
               ],
             ),
@@ -474,7 +472,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Image.asset(
-                'assets/images/icon2.png',
+                'assets/images/newlogo.png',
                 fit: BoxFit.contain,
               ),
             ),
@@ -490,7 +488,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
           ],
         ),
-
         InkWell(
           onTap: _completeOnboarding,
           borderRadius: BorderRadius.circular(16),
@@ -637,7 +634,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 end: Alignment.bottomRight,
               )
             : null,
-        color: isSelected ? null : const Color(0xFFC5A059).withValues(alpha: 0.4),
+        color:
+            isSelected ? null : const Color(0xFFC5A059).withValues(alpha: 0.4),
         boxShadow: isSelected
             ? [
                 BoxShadow(
@@ -693,7 +691,7 @@ class _DairyFreshVisual extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Image.asset(
-            'assets/images/logo(1).png',
+            'assets/images/newlogo.png',
             height: 120,
             fit: BoxFit.contain,
             errorBuilder: (context, error, stackTrace) => const Icon(
@@ -753,7 +751,8 @@ class _DairyDeliveryVisual extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.delivery_dining_rounded, size: 80, color: AppColors.primaryBlue),
+          Icon(Icons.delivery_dining_rounded,
+              size: 80, color: AppColors.primaryBlue),
           SizedBox(height: 12),
           Text(
             'MORNING DOORSTEP DELIVERY',

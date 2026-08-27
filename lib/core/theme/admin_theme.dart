@@ -17,7 +17,9 @@ class AdminTheme {
         surface: AppColors.cardBg,
         surfaceTint: Colors.transparent,
       ),
-      textTheme: GoogleFonts.plusJakartaSansTextTheme(ThemeData.light().textTheme).copyWith(
+      textTheme:
+          GoogleFonts.plusJakartaSansTextTheme(ThemeData.light().textTheme)
+              .copyWith(
         displayLarge: GoogleFonts.plusJakartaSans(
           fontSize: 28,
           fontWeight: FontWeight.w700,
@@ -66,7 +68,8 @@ class AdminTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.cardBg,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.cardBorder, width: 1),
@@ -107,7 +110,9 @@ class AdminTheme {
         surface: AppColors.darkCardBg,
         surfaceTint: Colors.transparent,
       ),
-      textTheme: GoogleFonts.plusJakartaSansTextTheme(ThemeData.dark().textTheme).copyWith(
+      textTheme:
+          GoogleFonts.plusJakartaSansTextTheme(ThemeData.dark().textTheme)
+              .copyWith(
         displayLarge: GoogleFonts.plusJakartaSans(
           fontSize: 28,
           fontWeight: FontWeight.w700,
@@ -156,14 +161,17 @@ class AdminTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.darkCardBg,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.darkCardBorder, width: 1),
+          borderSide:
+              const BorderSide(color: AppColors.darkCardBorder, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.darkCardBorder, width: 1),
+          borderSide:
+              const BorderSide(color: AppColors.darkCardBorder, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

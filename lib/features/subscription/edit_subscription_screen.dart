@@ -23,7 +23,8 @@ class EditSubscriptionScreen extends ConsumerStatefulWidget {
       _EditSubscriptionScreenState();
 }
 
-class _EditSubscriptionScreenState extends ConsumerState<EditSubscriptionScreen> {
+class _EditSubscriptionScreenState
+    extends ConsumerState<EditSubscriptionScreen> {
   final _formKey = GlobalKey<FormState>();
   final _quantityController = TextEditingController();
   late SubscriptionFrequency _selectedFrequency;
@@ -189,8 +190,8 @@ class _EditSubscriptionScreenState extends ConsumerState<EditSubscriptionScreen>
                     label: 'Delivery Time Slot',
                     hint: 'e.g. Morning (6:00 AM - 9:00 AM)',
                     controller: TextEditingController(text: _deliveryTimeSlot),
-                    prefixIcon:
-                        const Icon(Icons.schedule_rounded, color: AppColors.primaryBlue),
+                    prefixIcon: const Icon(Icons.schedule_rounded,
+                        color: AppColors.primaryBlue),
                     validator: AppValidators.validateRequired,
                     onChanged: (v) => _deliveryTimeSlot = v,
                   ),
@@ -240,8 +241,8 @@ class _EditSubscriptionScreenState extends ConsumerState<EditSubscriptionScreen>
         ),
         const SizedBox(height: AppSizes.p8),
         Container(
-          padding:
-              const EdgeInsets.symmetric(horizontal: AppSizes.p12, vertical: AppSizes.p8),
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSizes.p12, vertical: AppSizes.p8),
           decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: AppSizes.borderLarge,
@@ -313,9 +314,8 @@ class _EditSubscriptionScreenState extends ConsumerState<EditSubscriptionScreen>
               selectedColor: AppColors.primaryBlue,
               backgroundColor: AppColors.surface,
               labelStyle: TextStyle(
-                color: selected
-                    ? AppColors.textOnPrimary
-                    : AppColors.textPrimary,
+                color:
+                    selected ? AppColors.textOnPrimary : AppColors.textPrimary,
               ),
               onSelected: (_) => setState(() => _selectedFrequency = f),
             );

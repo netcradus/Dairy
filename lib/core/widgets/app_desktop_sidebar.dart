@@ -42,7 +42,7 @@ class AppDesktopSidebar extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Image.asset(
-                    'assets/images/logo(1).png',
+                    'assets/images/newlogo.png',
                     fit: BoxFit.contain,
                   ),
                 ),

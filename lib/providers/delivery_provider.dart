@@ -62,8 +62,7 @@ String get _currentAgentId => FirebaseAuth.instance.currentUser?.uid ?? '';
 /// order already assigned to the agent — mapped into [DeliveryOrder]s. The
 /// Requests, Active and History tabs all derive their lists from this one
 /// stream.
-final deliveryOrdersStreamProvider =
-    StreamProvider<List<DeliveryOrder>>((ref) {
+final deliveryOrdersStreamProvider = StreamProvider<List<DeliveryOrder>>((ref) {
   final agentId = _currentAgentId;
   return ref
       .watch(orderServiceProvider)
@@ -153,9 +152,13 @@ class DeliveryNotifier extends StateNotifier<DeliveryAgent> {
     final isOnline = newStatus == DeliveryStatus.onDuty;
     state = state.copyWith(
       status: newStatus,
-      totalDeliveriesToday: newStatus == DeliveryStatus.onDuty ? 0 : state.totalDeliveriesToday,
-      completedDeliveriesToday: newStatus == DeliveryStatus.onDuty ? 0 : state.completedDeliveriesToday,
-      earningsToday: newStatus == DeliveryStatus.onDuty ? 0.0 : state.earningsToday,
+      totalDeliveriesToday:
+          newStatus == DeliveryStatus.onDuty ? 0 : state.totalDeliveriesToday,
+      completedDeliveriesToday: newStatus == DeliveryStatus.onDuty
+          ? 0
+          : state.completedDeliveriesToday,
+      earningsToday:
+          newStatus == DeliveryStatus.onDuty ? 0.0 : state.earningsToday,
     );
     // Persist the evaluated duty state so Firestore never keeps a stale
     // `isOnline` value (e.g. staying `true` after the agent goes offline).
@@ -179,13 +182,15 @@ class DeliveryNotifier extends StateNotifier<DeliveryAgent> {
   }) {
     state = state.copyWith(
       totalDeliveriesToday: totalDeliveries ?? state.totalDeliveriesToday,
-      completedDeliveriesToday: completedDeliveries ?? state.completedDeliveriesToday,
+      completedDeliveriesToday:
+          completedDeliveries ?? state.completedDeliveriesToday,
       earningsToday: earnings ?? state.earningsToday,
     );
   }
 }
 
-final deliveryAgentProvider = StateNotifierProvider<DeliveryNotifier, DeliveryAgent>((ref) {
+final deliveryAgentProvider =
+    StateNotifierProvider<DeliveryNotifier, DeliveryAgent>((ref) {
   return DeliveryNotifier(ref);
 });
 
@@ -221,7 +226,9 @@ class DeliveryEarningsNotifier extends StateNotifier<List<DeliveryEarnings>> {
   int get weekDeliveries => state.fold(0, (sum, e) => sum + e.deliveriesCount);
 }
 
-final deliveryEarningsProvider = StateNotifierProvider<DeliveryEarningsNotifier, List<DeliveryEarnings>>((ref) {
+final deliveryEarningsProvider =
+    StateNotifierProvider<DeliveryEarningsNotifier, List<DeliveryEarnings>>(
+        (ref) {
   return DeliveryEarningsNotifier();
 });
 
@@ -279,7 +286,9 @@ class DeliveryHistoryNotifier extends StateNotifier<List<DeliveryHistoryItem>> {
   }
 }
 
-final deliveryHistoryProvider = StateNotifierProvider<DeliveryHistoryNotifier, List<DeliveryHistoryItem>>((ref) {
+final deliveryHistoryProvider =
+    StateNotifierProvider<DeliveryHistoryNotifier, List<DeliveryHistoryItem>>(
+        (ref) {
   return DeliveryHistoryNotifier();
 });
 
@@ -291,6 +300,7 @@ class DeliveryPanelTabNotifier extends StateNotifier<int> {
   }
 }
 
-final deliveryPanelTabProvider = StateNotifierProvider<DeliveryPanelTabNotifier, int>((ref) {
+final deliveryPanelTabProvider =
+    StateNotifierProvider<DeliveryPanelTabNotifier, int>((ref) {
   return DeliveryPanelTabNotifier();
 });

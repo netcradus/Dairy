@@ -113,7 +113,8 @@ class DeliveryAgent {
       assignedZone: assignedZone ?? this.assignedZone,
       status: status ?? this.status,
       totalDeliveriesToday: totalDeliveriesToday ?? this.totalDeliveriesToday,
-      completedDeliveriesToday: completedDeliveriesToday ?? this.completedDeliveriesToday,
+      completedDeliveriesToday:
+          completedDeliveriesToday ?? this.completedDeliveriesToday,
       earningsToday: earningsToday ?? this.earningsToday,
       rating: rating ?? this.rating,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,

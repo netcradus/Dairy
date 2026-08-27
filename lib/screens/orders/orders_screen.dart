@@ -28,11 +28,13 @@ class _OrdersScreenState extends State<OrdersScreen> {
     final textSecondary = AppColors.textSecondaryOf(context);
     final textMuted = AppColors.textMutedOf(context);
     final dividerColor = AppColors.dividerOf(context);
-    final currencyFormatter = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final currencyFormatter =
+        NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
 
     final filteredOrders = provider.orders.where((order) {
       if (selectedFilter != 'All' &&
-          order.status.displayName.toLowerCase() != selectedFilter.toLowerCase()) {
+          order.status.displayName.toLowerCase() !=
+              selectedFilter.toLowerCase()) {
         return false;
       }
       if (provider.searchQuery.isEmpty) return true;
@@ -254,7 +256,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
                               children: [
                                 StatusBadge.fromOrderStatus(order.status),
                                 const SizedBox(width: 4),
-                                Icon(Icons.arrow_drop_down, size: 18, color: textSecondary),
+                                Icon(Icons.arrow_drop_down,
+                                    size: 18, color: textSecondary),
                               ],
                             ),
                             itemBuilder: (ctx) => OrderStatus.values.map((s) {
@@ -262,7 +265,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                 value: s,
                                 child: Text(
                                   s.displayName,
-                                  style: GoogleFonts.plusJakartaSans(fontSize: 13, color: textPrimary),
+                                  style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 13, color: textPrimary),
                                 ),
                               );
                             }).toList(),

@@ -72,13 +72,13 @@ abstract class AppColors {
   // KPI Card Theme Colors
   static const Color revenueGreen = Color(0xFF437D2A);
   static const Color revenueGreenBg = Color(0xFFE8F2DD);
-  
+
   static const Color ordersBlue = Color(0xFF28541C);
   static const Color ordersBlueBg = Color(0xFFE8F2DD);
-  
+
   static const Color customersOrange = Color(0xFFF97316);
   static const Color customersOrangeBg = Color(0xFFFFF4EC);
-  
+
   static const Color deliveriesPurple = Color(0xFF8B5CF6);
   static const Color deliveriesPurpleBg = Color(0xFFF6F3FF);
 
@@ -95,25 +95,35 @@ abstract class AppColors {
 
   // Dynamic Theme-Aware Getters
   static Color bgOf(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark ? darkBackground : background;
+      Theme.of(context).brightness == Brightness.dark
+          ? darkBackground
+          : background;
 
   static Color cardBgOf(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark ? darkCardBg : cardBg;
 
   static Color cardBorderOf(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark ? darkCardBorder : cardBorder;
+      Theme.of(context).brightness == Brightness.dark
+          ? darkCardBorder
+          : cardBorder;
 
   static Color dividerOf(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark ? darkDivider : divider;
 
   static Color textPrimaryOf(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark ? darkTextPrimary : textPrimary;
+      Theme.of(context).brightness == Brightness.dark
+          ? darkTextPrimary
+          : textPrimary;
 
   static Color textSecondaryOf(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark ? darkTextSecondary : textSecondary;
+      Theme.of(context).brightness == Brightness.dark
+          ? darkTextSecondary
+          : textSecondary;
 
   static Color textMutedOf(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark ? darkTextMuted : textMuted;
+      Theme.of(context).brightness == Brightness.dark
+          ? darkTextMuted
+          : textMuted;
 
   // Surface Shadows
   static List<BoxShadow> cardShadow = [

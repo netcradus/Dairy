@@ -141,8 +141,9 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
                     controller: _fullNameController,
                     prefixIcon: const Icon(Icons.person_outline_rounded,
                         color: AppColors.primaryBlue),
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'Please enter full name' : null,
+                    validator: (v) => v == null || v.isEmpty
+                        ? 'Please enter full name'
+                        : null,
                   ),
                   const SizedBox(height: AppSizes.p14),
 
@@ -233,7 +234,8 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
                   // Checkbox: Set as Default Address
                   CheckboxListTile(
                     value: _isDefault,
-                    onChanged: (val) => setState(() => _isDefault = val ?? false),
+                    onChanged: (val) =>
+                        setState(() => _isDefault = val ?? false),
                     title: const Text(
                       'Make this my primary default delivery address',
                       style: TextStyle(fontSize: 13),

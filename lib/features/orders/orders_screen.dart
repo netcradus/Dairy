@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 
-import '../../core/constants/app_assets.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
 import '../../models/order.dart';
 import '../../providers/order_provider.dart';
@@ -21,6 +19,25 @@ class OrdersScreen extends ConsumerStatefulWidget {
 class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   String _selectedFilter =
       'All'; // 'All' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled'
+
+  final CarouselSliderController _carouselController =
+      CarouselSliderController();
+  int _bannerIndex = 0;
+
+  final List<String> _banners = [
+    'assets/images/deliver.png',
+    'assets/images/deliver4.png',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

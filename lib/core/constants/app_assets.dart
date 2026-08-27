@@ -21,11 +21,11 @@ abstract class AppAssets {
   static const String lassiBottle = '$productPath/sawariya_lassi_bottle.jpg';
 
   // PNG product images for hero / banner use
-  static const String milkPng = '$imagePath/milk.png';
-  static const String lassiPng = '$imagePath/lassi.png';
-  static const String gheePng = '$imagePath/gheen.png';
-  static const String paneerPng = '$imagePath/paneernew.png';
-  static const String makhanPng = '$imagePath/makhanew.png';
+  static const String milkPng = '$imagePath/nnd.png';
+  static const String lassiPng = '$imagePath/nnl.png';
+  static const String gheePng = '$imagePath/nng.png';
+  static const String paneerPng = '$imagePath/nnp.png';
+  static const String makhanPng = '$imagePath/nnm.png';
 
   // Placeholder URLs for remote network fallback images
   static const String milkPlaceholder =

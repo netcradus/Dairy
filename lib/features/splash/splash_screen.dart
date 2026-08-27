@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
-import '../../core/widgets/category_image.dart';
 import '../../providers/onboarding_provider.dart';
 import '../../providers/user_provider.dart';
 
@@ -163,7 +162,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(52),
                             child: Image.asset(
-                              'assets/images/icon2.png',
+                              'assets/images/nicon.png',
                               width: 104,
                               height: 104,
                               fit: BoxFit.cover,
