@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../core/constants/app_assets.dart';
-import '../../../core/responsive/responsive.dart';
 
 /// Responsive Luxury Authentication Shell Container Card for Sawariya Dairy
 class AuthCard extends StatelessWidget {
@@ -41,7 +40,7 @@ class AuthCard extends StatelessWidget {
                 : width * 0.85)
             : 960;
 
-    final double? cardHeight = isHorizontal ? 520 : (height * 0.85).clamp(500.0, 680.0);
+    final double cardHeight = isHorizontal ? 520 : (height * 0.85).clamp(500.0, 680.0);
 
     return Scaffold(
       resizeToAvoidBottomInset: true,

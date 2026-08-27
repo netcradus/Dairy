@@ -60,6 +60,28 @@ class CategoryRepository {
         titleColor: Color(0xFF0C1A30),
         itemCount: 5,
       ),
+      Category(
+        id: 'cat_water',
+        title: 'Water',
+        subtitle: '20L Bottle',
+        imageUrl: 'assets/images/w3.png',
+        iconData: Icons.water_drop_rounded,
+        backgroundColor: Color(0xFFEAF5FF),
+        borderColor: Color(0xFF5B9BD5),
+        titleColor: Color(0xFF0C1A30),
+        itemCount: 1,
+      ),
+      Category(
+        id: 'cat_uple',
+        title: 'Cow Dung Cake',
+        subtitle: 'Organic Uple',
+        imageUrl: 'assets/images/u3.png',
+        iconData: Icons.eco_rounded,
+        backgroundColor: Color(0xFFFFF5EA),
+        borderColor: Color(0xFF70AD47),
+        titleColor: Color(0xFF0C1A30),
+        itemCount: 1,
+      ),
     ];
   }
 }

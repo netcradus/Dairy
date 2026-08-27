@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:video_player/video_player.dart';
+import 'dart:ui';
 
 import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
@@ -65,26 +66,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               // 5 Category Cards (Horizontal scroll or responsive row)
               SizedBox(
                 height: 205,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  clipBehavior: Clip.none,
-                  padding: EdgeInsets.zero,
-                  itemCount: categories.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(width: AppSizes.p14),
-                  itemBuilder: (context, index) {
-                    final cat = categories[index];
-                    return CategoryCard(
-                      category: cat,
-                      width: isDesktop ? 195 : 170,
-                      height: 205,
-                      onTap: () {
-                        ref.read(selectedCategoryProvider.notifier).state =
-                            cat.id;
-                        ref.read(navigationProvider.notifier).setIndex(1);
-                      },
-                    );
-                  },
+                child: ScrollConfiguration(
+                  behavior: ScrollConfiguration.of(context).copyWith(
+                    dragDevices: {
+                      PointerDeviceKind.touch,
+                      PointerDeviceKind.mouse,
+                    },
+                  ),
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    clipBehavior: Clip.none,
+                    padding: EdgeInsets.zero,
+                    itemCount: categories.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(width: AppSizes.p14),
+                    itemBuilder: (context, index) {
+                      final cat = categories[index];
+                      return CategoryCard(
+                        category: cat,
+                        width: isDesktop ? 195 : 170,
+                        height: 205,
+                        onTap: () {
+                          ref.read(selectedCategoryProvider.notifier).state =
+                              cat.id;
+                          ref.read(navigationProvider.notifier).setIndex(1);
+                        },
+                      );
+                    },
+                  ),
                 ),
               ),
 

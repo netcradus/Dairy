@@ -9,7 +9,6 @@ import '../../core/widgets/product_card.dart';
 import '../../core/widgets/empty_state.dart';
 import '../../providers/product_provider.dart';
 import '../product/product_details_screen.dart';
-import '../cart/cart_screen.dart';
 
 /// Sawariya Dairy — Redesigned Shop Catalog Screen matching the mockup
 class ShopScreen extends ConsumerStatefulWidget {
@@ -147,6 +146,18 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         'image': 'assets/images/pan.png',
         'description':
             'Ultra-soft, protein-rich fresh cottage cheese prepared daily.'
+      },
+      {
+        'id': 'cat_water',
+        'title': 'Water',
+        'image': 'assets/images/w3.png',
+        'description': 'Pure 20L Water Bottle delivered to your doorstep.'
+      },
+      {
+        'id': 'cat_uple',
+        'title': 'Cow Dung Cake',
+        'image': 'assets/images/u3.png',
+        'description': 'Premium organic cow dung cakes for pooja and rituals.'
       },
     ];
 

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../core/constants/app_sizes.dart';
-
 /// Reusable Sawariya Dairy Brand Auth Header Component matching reference image
 class AuthHeader extends StatelessWidget {
   final String title;
