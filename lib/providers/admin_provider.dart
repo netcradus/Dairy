@@ -1,18 +1,23 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
 import '../core/constants/app_colors.dart';
 import '../models/category_model.dart';
 import '../models/customer_model.dart';
 import '../models/delivery_model.dart';
 import '../models/delivery_staff_model.dart';
 import '../models/kpi_data.dart';
+import '../models/order.dart' as order;
 import '../models/order_model.dart';
 import '../models/product_model.dart';
 import '../repositories/firestore_product_repository.dart';
+import '../services/order_service.dart';
 
 class AdminProvider extends ChangeNotifier {
   final FirestoreProductRepository _repo;
+  final OrderService _orderService;
 
   int _selectedNavIndex = 0;
   String _searchQuery = '';
@@ -25,8 +30,13 @@ class AdminProvider extends ChangeNotifier {
   bool _isLoading = true;
   String? _error;
 
+  List<DairyOrder> _orders = [];
+  bool _ordersLoading = true;
+  String? _ordersError;
+
   StreamSubscription<List<Map<String, dynamic>>>? _productsSub;
   StreamSubscription<List<Map<String, dynamic>>>? _categoriesSub;
+  StreamSubscription<List<order.Order>>? _ordersSub;
 
   int get selectedNavIndex => _selectedNavIndex;
   String get searchQuery => _searchQuery;
@@ -38,13 +48,18 @@ class AdminProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
+  bool get ordersLoading => _ordersLoading;
+  String? get ordersError => _ordersError;
+
   List<DairyProduct> get topSellingProducts =>
       _products.where((p) => p.isBestSeller).toList().take(5).toList();
 
-  AdminProvider({FirestoreProductRepository? repo})
-      : _repo = repo ?? FirestoreProductRepository() {
+  AdminProvider({FirestoreProductRepository? repo, OrderService? orderService})
+      : _repo = repo ?? FirestoreProductRepository(),
+        _orderService = orderService ?? OrderService() {
     _listenToProducts();
     _listenToCategories();
+    _listenToOrders();
   }
 
   // ─── Firestore listeners ───────────────────────────────────────────────
@@ -75,6 +90,89 @@ class AdminProvider extends ChangeNotifier {
         debugPrint('AdminProvider: category stream error: $e');
       },
     );
+  }
+
+  void _listenToOrders() {
+    _ordersSub = _orderService.streamAllDeliveryOrders().listen(
+      (orders) {
+        _orders = orders.map(_dairyOrderFromOrder).toList();
+        _ordersLoading = false;
+        _ordersError = null;
+        notifyListeners();
+      },
+      onError: (e) {
+        _ordersError = 'Failed to load orders: $e';
+        _ordersLoading = false;
+        notifyListeners();
+      },
+    );
+  }
+
+  /// Maps a Firestore-backed [order.Order] onto the admin-facing
+  /// [DairyOrder] used by the Orders screen, tolerating missing fields.
+  DairyOrder _dairyOrderFromOrder(order.Order o) {
+    final itemsSummary = o.items
+        .map((it) {
+          final title = it.product.title.trim();
+          if (title.isEmpty) return '';
+          final unit = it.product.unit.trim();
+          return it.quantity > 1
+              ? '$title (${it.quantity}${unit.isEmpty ? '' : ' $unit'})'
+              : title;
+        })
+        .where((s) => s.isNotEmpty)
+        .join(', ');
+
+    return DairyOrder(
+      id: o.id,
+      customerName: o.deliveryAddress.fullName.trim().isNotEmpty
+          ? o.deliveryAddress.fullName
+          : 'Customer',
+      customerPhone: o.deliveryAddress.mobileNumber,
+      itemsSummary: itemsSummary,
+      amount: o.totalAmount,
+      status: _mapFromServiceStatus(o.status),
+      deliverySlot: o.estimatedDeliveryTime,
+      address: o.deliveryAddress.fullAddressText,
+      time: DateFormat('hh:mm a').format(o.orderDate),
+      paymentMode: o.paymentMethod,
+    );
+  }
+
+  /// App-side [order.OrderStatus] -> admin [OrderStatus].
+  OrderStatus _mapFromServiceStatus(order.OrderStatus s) {
+    switch (s) {
+      case order.OrderStatus.placed:
+        return OrderStatus.pending;
+      case order.OrderStatus.confirmed:
+        return OrderStatus.confirmed;
+      case order.OrderStatus.preparing:
+        return OrderStatus.preparing;
+      case order.OrderStatus.outForDelivery:
+        return OrderStatus.outForDelivery;
+      case order.OrderStatus.delivered:
+        return OrderStatus.delivered;
+      case order.OrderStatus.cancelled:
+        return OrderStatus.cancelled;
+    }
+  }
+
+  /// Admin [OrderStatus] -> app-side [order.OrderStatus] for the service.
+  order.OrderStatus _mapToServiceStatus(OrderStatus s) {
+    switch (s) {
+      case OrderStatus.pending:
+        return order.OrderStatus.placed;
+      case OrderStatus.confirmed:
+        return order.OrderStatus.confirmed;
+      case OrderStatus.preparing:
+        return order.OrderStatus.preparing;
+      case OrderStatus.outForDelivery:
+        return order.OrderStatus.outForDelivery;
+      case OrderStatus.delivered:
+        return order.OrderStatus.delivered;
+      case OrderStatus.cancelled:
+        return order.OrderStatus.cancelled;
+    }
   }
 
   // ─── Mapping helpers ──────────────────────────────────────────────────
@@ -323,92 +421,20 @@ class AdminProvider extends ChangeNotifier {
         ),
       ];
 
-  // ─── Orders Data (hardcoded) ──────────────────────────────────────────
-
-  final List<DairyOrder> _orders = [
-    const DairyOrder(
-      id: '#ORD10284',
-      customerName: 'Rahul Sharma',
-      customerPhone: '+91 98765 43210',
-      itemsSummary: 'Cow Milk (2L), Malai Paneer (200g)',
-      amount: 163.0,
-      status: OrderStatus.outForDelivery,
-      deliverySlot: 'Morning (5:30 AM - 7:00 AM)',
-      address: 'Flat 402, Lotus Greens, Sector 78',
-      time: '05:42 AM',
-      paymentMode: 'Online Prepaid',
-    ),
-    const DairyOrder(
-      id: '#ORD10283',
-      customerName: 'Priya Verma',
-      customerPhone: '+91 98112 34567',
-      itemsSummary: 'Cow Milk (1L), Curd (500g)',
-      amount: 114.0,
-      status: OrderStatus.delivered,
-      deliverySlot: 'Morning (5:30 AM - 7:00 AM)',
-      address: 'B-14, ATS Greens, Sector 50',
-      time: '06:10 AM',
-      paymentMode: 'Wallet Auto-Debit',
-    ),
-    const DairyOrder(
-      id: '#ORD10282',
-      customerName: 'Anil Gupta',
-      customerPhone: '+91 97123 45678',
-      itemsSummary: 'Bilona Ghee (500ml), Butter (100g)',
-      amount: 608.0,
-      status: OrderStatus.delivered,
-      deliverySlot: 'Morning (6:00 AM - 7:30 AM)',
-      address: 'Villa 21, Jaypee Greens, Greater Noida',
-      time: '06:25 AM',
-      paymentMode: 'UPI',
-    ),
-    const DairyOrder(
-      id: '#ORD10281',
-      customerName: 'Sneha Patel',
-      customerPhone: '+91 99887 76655',
-      itemsSummary: 'Buffalo Milk (2L)',
-      amount: 152.0,
-      status: OrderStatus.preparing,
-      deliverySlot: 'Evening (5:00 PM - 7:00 PM)',
-      address: 'Tower 4, Apex Golf Avenue, Sector 1',
-      time: '07:15 AM',
-      paymentMode: 'Online Prepaid',
-    ),
-    const DairyOrder(
-      id: '#ORD10280',
-      customerName: 'Vikas Malhotra',
-      customerPhone: '+91 94567 89012',
-      itemsSummary: 'Cow Milk (3L), Paneer (400g)',
-      amount: 362.0,
-      status: OrderStatus.confirmed,
-      deliverySlot: 'Evening (5:00 PM - 7:00 PM)',
-      address: 'A-201, Supertech Capetown, Sector 74',
-      time: '07:45 AM',
-      paymentMode: 'Cash On Delivery',
-    ),
-    const DairyOrder(
-      id: '#ORD10279',
-      customerName: 'Meenakshi Iyer',
-      customerPhone: '+91 93456 78901',
-      itemsSummary: 'Curd (1kg), Cow Milk (1L)',
-      amount: 164.0,
-      status: OrderStatus.pending,
-      deliverySlot: 'Morning (6:00 AM - 7:30 AM)',
-      address: 'Flat 903, Mahagun Moderne, Sector 78',
-      time: '08:00 AM',
-      paymentMode: 'Wallet Auto-Debit',
-    ),
-  ];
+  // ─── Orders (Firestore-backed via OrderService) ───────────────────────
 
   List<DairyOrder> get orders => _orders;
   List<DairyOrder> get recentOrders => _orders.take(5).toList();
 
-  void updateOrderStatus(String orderId, OrderStatus newStatus) {
-    final index = _orders.indexWhere((o) => o.id == orderId);
-    if (index != -1) {
-      _orders[index] = _orders[index].copyWith(status: newStatus);
-      notifyListeners();
-    }
+  /// Updates an order's status in the shared Firestore `orders` document using
+  /// the existing [OrderService], so customers and delivery agents see the same
+  /// change. The UI is refreshed by the live orders stream (no optimistic
+  /// update), so a failed write leaves the status unchanged in the UI.
+  Future<void> updateOrderStatus(String orderId, OrderStatus newStatus) async {
+    await _orderService.updateOrderStatus(
+      orderId,
+      _mapToServiceStatus(newStatus),
+    );
   }
 
   // ─── Today's Deliveries Data (hardcoded) ──────────────────────────────
@@ -716,6 +742,7 @@ class AdminProvider extends ChangeNotifier {
   void dispose() {
     _productsSub?.cancel();
     _categoriesSub?.cancel();
+    _ordersSub?.cancel();
     super.dispose();
   }
 }

@@ -189,23 +189,29 @@ class ProductsScreen extends StatelessWidget {
                                 ),
                                 alignment: Alignment.center,
                                 clipBehavior: Clip.antiAlias,
-                                child: product.imageUrl.isNotEmpty
-                                    ? Image.asset(
-                                        product.imageUrl,
-                                        width: 44,
-                                        height: 44,
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) =>
-                                                Text(
-                                          product.emoji,
-                                          style: const TextStyle(fontSize: 22),
-                                        ),
-                                      )
-                                    : Text(
-                                        product.emoji,
-                                        style: const TextStyle(fontSize: 22),
-                                      ),
+                                child: Builder(builder: (context) {
+                                  final image = product.resolvedImageUrl;
+                                  if (image.isEmpty) {
+                                    return Text(
+                                      product.emoji,
+                                      style: const TextStyle(fontSize: 22),
+                                    );
+                                  }
+                                  Widget img = image.startsWith('http')
+                                      ? Image.network(
+                                          image,
+                                          width: 44,
+                                          height: 44,
+                                          fit: BoxFit.cover,
+                                        )
+                                      : Image.asset(
+                                          image,
+                                          width: 44,
+                                          height: 44,
+                                          fit: BoxFit.cover,
+                                        );
+                                  return img;
+                                }),
                               ),
                               const SizedBox(width: 10),
                               Expanded(
@@ -377,6 +383,8 @@ class ProductsScreen extends StatelessWidget {
     {'label': 'Ghee', 'path': AppAssets.gheePng},
     {'label': 'Lassi', 'path': AppAssets.lassiPng},
     {'label': 'Makhan', 'path': AppAssets.makhanPng},
+    {'label': 'Uple', 'path': AppAssets.uplePng},
+    {'label': 'Water', 'path': AppAssets.waterPng},
   ];
 
   void _showProductDialog(

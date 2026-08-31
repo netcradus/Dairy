@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -146,57 +145,53 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                 child: Center(
                   child: AspectRatio(
                     aspectRatio: 4 / 5,
-                    child: product.imageUrl.isNotEmpty
-                        ? (product.imageUrl.startsWith('http')
-                            ? CachedNetworkImage(
-                                imageUrl: product.imageUrl,
-                                fit: BoxFit.contain,
-                                placeholder: (context, url) => Container(
-                                  color: AppColors.lightBlue,
-                                  child: const Center(
-                                    child: Icon(
-                                      Icons.image_outlined,
-                                      size: 40,
-                                      color: AppColors.primaryBlue,
-                                    ),
-                                  ),
-                                ),
-                                errorWidget: (context, url, error) => Container(
-                                  color: AppColors.lightBlue,
-                                  child: const Center(
-                                    child: Icon(
-                                      Icons.image_not_supported_rounded,
-                                      size: 48,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                ),
-                              )
-                            : Image.asset(
-                                product.imageUrl,
-                                fit: BoxFit.contain,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    Container(
-                                  color: AppColors.lightBlue,
-                                  child: const Center(
-                                    child: Icon(
-                                      Icons.image_not_supported_rounded,
-                                      size: 48,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                ),
-                              ))
-                        : Container(
-                            color: AppColors.lightBlue,
-                            child: const Center(
-                              child: Icon(
-                                Icons.image_outlined,
-                                size: 48,
-                                color: AppColors.textSecondary,
-                              ),
+                    child: Builder(builder: (context) {
+                      final image = product.resolvedImageUrl;
+                      if (image.isEmpty) {
+                        return Container(
+                          color: AppColors.lightBlue,
+                          child: const Center(
+                            child: Icon(
+                              Icons.image_outlined,
+                              size: 48,
+                              color: AppColors.textSecondary,
                             ),
                           ),
+                        );
+                      }
+                      Widget img = image.startsWith('http')
+                          ? Image.network(
+                              image,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Container(
+                                color: AppColors.lightBlue,
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.image_not_supported_rounded,
+                                    size: 48,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ),
+                            )
+                          : Image.asset(
+                              image,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Container(
+                                color: AppColors.lightBlue,
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.image_not_supported_rounded,
+                                    size: 48,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ),
+                            );
+                      return img;
+                    }),
                   ),
                 ),
               ),

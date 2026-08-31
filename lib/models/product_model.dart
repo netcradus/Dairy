@@ -1,3 +1,5 @@
+import '../core/constants/app_assets.dart';
+
 class DairyProduct {
   final String id;
   final String name;
@@ -32,6 +34,11 @@ class DairyProduct {
     this.isBestSeller = false,
     this.imageUrl = '',
   });
+
+  /// The image source to render: a valid network/asset URL is returned
+  /// untouched, otherwise this falls back to the product's category default.
+  String get resolvedImageUrl =>
+      AppAssets.productImage(imageUrl: imageUrl, categoryKey: category) ?? '';
 
   DairyProduct copyWith({
     String? id,

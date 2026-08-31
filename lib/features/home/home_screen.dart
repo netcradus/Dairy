@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:video_player/video_player.dart';
-import 'dart:ui';
 
 import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
@@ -14,8 +13,6 @@ import '../../core/widgets/category_card.dart';
 import '../../core/widgets/section_header.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/navigation_provider.dart';
-import '../../core/widgets/product_card.dart';
-import '../product/product_details_screen.dart';
 
 /// Sawariya Dairy — Pixel-Perfect Home Screen matching attached design
 class HomeScreen extends ConsumerStatefulWidget {
@@ -37,8 +34,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final categoriesAsync = ref.watch(categoriesProvider);
-    final bestSellers = ref.watch(bestSellersProvider);
-    final cartQuantities = ref.watch(cartQuantitiesProvider);
     final isDesktop = context.isDesktop;
 
     return Scaffold(
@@ -104,74 +99,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ],
                 ),
               ),
-
-              const SizedBox(height: AppSizes.p24),
-
-              // ─── Best Sellers Section ──────────────────────────────────────────
-              SectionHeader(
-                title: tr('Best Sellers'),
-                subtitle: tr('Customer favorites delivered fresh daily'),
-                onViewAllTap: () {
-                  ref.read(selectedCategoryProvider.notifier).state = 'cat_all';
-                  ref.read(navigationProvider.notifier).setIndex(1);
-                },
-              ),
-              const SizedBox(height: AppSizes.p14),
-
-              bestSellers.isEmpty
-                  ? const SizedBox(
-                      height: 245,
-                      child: Center(child: CircularProgressIndicator()),
-                    )
-                  : SizedBox(
-                      height: 245,
-                      child: ScrollConfiguration(
-                        behavior: ScrollConfiguration.of(context).copyWith(
-                          dragDevices: {
-                            PointerDeviceKind.touch,
-                            PointerDeviceKind.mouse,
-                          },
-                        ),
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          clipBehavior: Clip.none,
-                          padding: EdgeInsets.zero,
-                          itemCount: bestSellers.length,
-                          separatorBuilder: (context, index) =>
-                              const SizedBox(width: AppSizes.p14),
-                          itemBuilder: (context, index) {
-                            final product = bestSellers[index];
-                            final qty = cartQuantities[product.id] ?? 0;
-                            return SizedBox(
-                              width: 175,
-                              child: ProductCard(
-                                product: product,
-                                quantity: qty,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => ProductDetailsScreen(
-                                          product: product),
-                                    ),
-                                  );
-                                },
-                                onIncrement: () {
-                                  ref
-                                      .read(cartProvider.notifier)
-                                      .increment(product);
-                                },
-                                onDecrement: () {
-                                  ref
-                                      .read(cartProvider.notifier)
-                                      .decrement(product.id);
-                                },
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
 
               const SizedBox(height: AppSizes.p24),
 

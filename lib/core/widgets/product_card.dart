@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
 import '../../models/product.dart';
@@ -74,52 +73,35 @@ class _ProductCardState extends State<ProductCard> {
                           ),
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: p.imageUrl.isNotEmpty
-                                ? (p.imageUrl.startsWith('http')
-                                    ? CachedNetworkImage(
-                                        imageUrl: p.imageUrl,
-                                        fit: BoxFit.contain,
-                                        placeholder: (context, url) =>
-                                            Container(
-                                          color: AppColors.lightBlue,
-                                          child: const Center(
-                                            child: Icon(Icons.image_outlined,
-                                                size: 32,
-                                                color: AppColors.primaryBlue),
-                                          ),
-                                        ),
-                                        errorWidget: (context, url, error) =>
-                                            Container(
-                                          color: AppColors.lightBlue,
-                                          child: const Center(
-                                            child: Icon(Icons.image_outlined,
-                                                size: 32,
-                                                color: AppColors.textSecondary),
-                                          ),
-                                        ),
-                                      )
-                                    : Image.asset(
-                                        p.imageUrl,
-                                        fit: BoxFit.contain,
-                                        errorBuilder:
-                                            (context, error, stackTrace) =>
-                                                Container(
-                                          color: AppColors.lightBlue,
-                                          child: const Center(
-                                            child: Icon(Icons.image_outlined,
-                                                size: 32,
-                                                color: AppColors.textSecondary),
-                                          ),
-                                        ),
-                                      ))
-                                : Container(
-                                    color: AppColors.lightBlue,
-                                    child: const Center(
-                                      child: Icon(Icons.image_outlined,
-                                          size: 32,
-                                          color: AppColors.textSecondary),
-                                    ),
+                            child: Builder(builder: (context) {
+                              final image = p.resolvedImageUrl;
+                              if (image.isEmpty) {
+                                return Container(
+                                  color: AppColors.lightBlue,
+                                  child: const Center(
+                                    child: Icon(Icons.image_outlined,
+                                        size: 32,
+                                        color: AppColors.textSecondary),
                                   ),
+                                );
+                              }
+                              Widget img;
+                              if (image.startsWith('http')) {
+                                img = Image.network(
+                                  image,
+                                  fit: BoxFit.contain,
+                                );
+                              } else {
+                                img = Image.asset(
+                                  image,
+                                  fit: BoxFit.contain,
+                                );
+                              }
+                              return Container(
+                                color: AppColors.lightBlue,
+                                child: Center(child: img),
+                              );
+                            }),
                           ),
                         ),
                       ),
