@@ -1,26 +1,46 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/address.dart';
 import 'user_provider.dart';
 
+final addressLoadingProvider = StateProvider<bool>((ref) => false);
+final addressErrorProvider = StateProvider<String?>((ref) => null);
+
 class AddressNotifier extends StateNotifier<List<Address>> {
   final String _userId;
+  final Ref _ref;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  AddressNotifier(this._userId) : super([]) {
+  AddressNotifier(this._userId, this._ref) : super([]) {
     _loadAddresses();
   }
 
+  String get _activeUid {
+    final firebaseUid = _auth.currentUser?.uid;
+    if (firebaseUid != null && firebaseUid.isNotEmpty) {
+      return firebaseUid;
+    }
+    return _userId;
+  }
+
   Future<void> _loadAddresses() async {
-    if (_userId.isEmpty) {
+    final activeId = _activeUid;
+    if (activeId.isEmpty) {
       state = [];
       return;
     }
 
     try {
+      Future.microtask(() {
+        _ref.read(addressLoadingProvider.notifier).state = true;
+        _ref.read(addressErrorProvider.notifier).state = null;
+      });
+
       final snapshot = await _firestore
           .collection('users')
-          .doc(_userId)
+          .doc(activeId)
           .collection('addresses')
           .get();
 
@@ -41,16 +61,24 @@ class AddressNotifier extends StateNotifier<List<Address>> {
       }).toList();
 
       state = list;
-    } catch (_) {
+    } catch (e) {
       state = [];
+      Future.microtask(() {
+        _ref.read(addressErrorProvider.notifier).state = e.toString();
+      });
+    } finally {
+      Future.microtask(() {
+        _ref.read(addressLoadingProvider.notifier).state = false;
+      });
     }
   }
 
   Future<void> addAddress(Address address) async {
-    if (_userId.isEmpty) return;
+    final activeId = _activeUid;
+    if (activeId.isEmpty) return;
     try {
       final colRef =
-          _firestore.collection('users').doc(_userId).collection('addresses');
+          _firestore.collection('users').doc(activeId).collection('addresses');
 
       if (address.isDefault) {
         final batch = _firestore.batch();
@@ -91,10 +119,11 @@ class AddressNotifier extends StateNotifier<List<Address>> {
   }
 
   Future<void> updateAddress(Address address) async {
-    if (_userId.isEmpty) return;
+    final activeId = _activeUid;
+    if (activeId.isEmpty) return;
     try {
       final colRef =
-          _firestore.collection('users').doc(_userId).collection('addresses');
+          _firestore.collection('users').doc(activeId).collection('addresses');
 
       if (address.isDefault) {
         final batch = _firestore.batch();
@@ -134,11 +163,12 @@ class AddressNotifier extends StateNotifier<List<Address>> {
   }
 
   Future<void> removeAddress(String id) async {
-    if (_userId.isEmpty) return;
+    final activeId = _activeUid;
+    if (activeId.isEmpty) return;
     try {
       await _firestore
           .collection('users')
-          .doc(_userId)
+          .doc(activeId)
           .collection('addresses')
           .doc(id)
           .delete();
@@ -147,10 +177,11 @@ class AddressNotifier extends StateNotifier<List<Address>> {
   }
 
   Future<void> setDefault(String id) async {
-    if (_userId.isEmpty) return;
+    final activeId = _activeUid;
+    if (activeId.isEmpty) return;
     try {
       final colRef =
-          _firestore.collection('users').doc(_userId).collection('addresses');
+          _firestore.collection('users').doc(activeId).collection('addresses');
       final batch = _firestore.batch();
       for (var a in state) {
         batch.update(colRef.doc(a.id), {'isDefault': a.id == id});
@@ -164,7 +195,7 @@ class AddressNotifier extends StateNotifier<List<Address>> {
 final addressesProvider =
     StateNotifierProvider<AddressNotifier, List<Address>>((ref) {
   final user = ref.watch(userProvider);
-  return AddressNotifier(user.id);
+  return AddressNotifier(user.id, ref);
 });
 
 /// Currently selected address ID for checkout
