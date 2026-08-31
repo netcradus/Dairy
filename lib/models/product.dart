@@ -1,3 +1,5 @@
+import '../core/constants/app_assets.dart';
+
 /// Product Model for Sawariya Dairy
 class Product {
   final String id;
@@ -35,6 +37,11 @@ class Product {
   });
 
   bool get hasDiscount => originalPrice != null && originalPrice! > price;
+
+  /// The image source to render: a valid network/asset URL is returned
+  /// untouched, otherwise this falls back to the product's category default.
+  String get resolvedImageUrl =>
+      AppAssets.productImage(imageUrl: imageUrl, categoryKey: categoryId) ?? '';
 
   int get discountPercentage {
     if (!hasDiscount) return 0;

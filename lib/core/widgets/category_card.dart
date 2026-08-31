@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../../models/category.dart';
@@ -71,34 +70,35 @@ class _CategoryCardState extends State<CategoryCard> {
                   child: Center(
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: cat.imageUrl.isNotEmpty
-                          ? (cat.imageUrl.startsWith('http')
-                              ? CachedNetworkImage(
-                                  imageUrl: cat.imageUrl,
-                                  fit: BoxFit.contain,
-                                  placeholder: (context, url) => const Center(
-                                    child: Icon(Icons.image_outlined,
-                                        color: AppColors.textMuted, size: 36),
-                                  ),
-                                  errorWidget: (context, url, error) =>
-                                      const Center(
-                                    child: Icon(Icons.image_outlined,
-                                        color: AppColors.textMuted, size: 36),
-                                  ),
-                                )
-                              : Image.asset(
-                                  cat.imageUrl,
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      const Center(
-                                    child: Icon(Icons.image_outlined,
-                                        color: AppColors.textMuted, size: 36),
-                                  ),
-                                ))
-                          : const Center(
+                      child: Builder(builder: (context) {
+                        final image = cat.resolvedImageUrl;
+                        if (image.isEmpty) {
+                          return const Center(
+                            child: Icon(Icons.image_outlined,
+                                color: AppColors.textMuted, size: 36),
+                          );
+                        }
+                        if (image.startsWith('http')) {
+                          return Image.network(
+                            image,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Center(
                               child: Icon(Icons.image_outlined,
                                   color: AppColors.textMuted, size: 36),
                             ),
+                          );
+                        }
+                        return Image.asset(
+                          image,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Center(
+                            child: Icon(Icons.image_outlined,
+                                color: AppColors.textMuted, size: 36),
+                          ),
+                        );
+                      }),
                     ),
                   ),
                 ),

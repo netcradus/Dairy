@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/constants/app_assets.dart';
 
 class Category {
   static const Map<String, IconData> _iconByName = {
@@ -31,6 +32,11 @@ class Category {
     required this.titleColor,
     required this.itemCount,
   });
+
+  /// The image source to render: a valid network/asset URL is returned
+  /// untouched, otherwise this falls back to the category's default local asset.
+  String get resolvedImageUrl =>
+      AppAssets.categoryImage(imageUrl: imageUrl, categoryKey: id) ?? '';
 
   /// Creates a [Category] from a Firestore document map.
   factory Category.fromFirestore(Map<String, dynamic> data, String id) {
