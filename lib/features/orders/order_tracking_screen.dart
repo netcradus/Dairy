@@ -124,6 +124,7 @@ class OrderTrackingScreen extends ConsumerWidget {
                   _LiveTrackingMapCard(
                     agentId: order.assignedAgentId!,
                     deliveryAddress: order.deliveryAddress,
+                    orderId: order.id,
                   ),
                   const SizedBox(height: 16),
                 ],
@@ -375,10 +376,12 @@ class _InfoCard extends StatelessWidget {
 class _LiveTrackingMapCard extends ConsumerStatefulWidget {
   final String agentId;
   final Address deliveryAddress;
+  final String orderId;
 
   const _LiveTrackingMapCard({
     required this.agentId,
     required this.deliveryAddress,
+    required this.orderId,
   });
 
   @override
@@ -392,7 +395,49 @@ class _LiveTrackingMapCardState extends ConsumerState<_LiveTrackingMapCard> {
   // Indore center coordinates
   static const LatLng indoreCenter = LatLng(22.7255, 75.8800);
   static const LatLng pickupHub = LatLng(22.7255, 75.8800);
-  static const LatLng fallbackDrop = LatLng(22.7180, 75.8720);
+
+  LatLng? _getCustomerLatLng() {
+    try {
+      // Hardcoded test points if any (matching delivery panel map)
+      const dropPoints = {
+        'DO-001': LatLng(22.7180, 75.8720),
+        'DO-002': LatLng(22.7410, 75.8920),
+      };
+      
+      return dropPoints[widget.orderId] ??
+          LatLng(
+            indoreCenter.latitude + (widget.orderId.hashCode % 20) * 0.0008,
+            indoreCenter.longitude + (widget.orderId.hashCode % 15) * 0.0009,
+          );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _fitMapBounds(LatLng? agentPos, LatLng? dropLoc) {
+    if (!mounted) return;
+    
+    final points = <LatLng>[];
+    points.add(pickupHub);
+    if (agentPos != null) points.add(agentPos);
+    if (dropLoc != null) points.add(dropLoc);
+
+    if (points.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        try {
+          _mapController.fitCamera(
+            CameraFit.bounds(
+              bounds: LatLngBounds.fromPoints(points),
+              padding: const EdgeInsets.all(50),
+            ),
+          );
+        } catch (_) {
+          // Ignore if map layout is not yet ready
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -400,41 +445,70 @@ class _LiveTrackingMapCardState extends ConsumerState<_LiveTrackingMapCard> {
     final locationStream = trackingService.agentLocationStream(widget.agentId);
 
     // Approximate drop coordinates for the customer
-    final dropLoc = fallbackDrop;
+    final dropLoc = _getCustomerLatLng();
 
     return StreamBuilder<LatLng?>(
       stream: locationStream,
       builder: (context, snapshot) {
         final agentPos = snapshot.data;
-        if (agentPos == null) {
-          return Container(
-            height: 220,
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
+
+        // Auto-center / fit map bounds
+        _fitMapBounds(agentPos, dropLoc);
+
+        // Build list of active markers
+        final markers = <Marker>[];
+
+        // 1. Hub/Pickup Marker
+        markers.add(
+          const Marker(
+            point: pickupHub,
+            width: 32,
+            height: 32,
+            child: Icon(
+              Icons.store_rounded,
+              color: AppColors.primaryBlue,
+              size: 24,
             ),
-            child: const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(color: AppColors.primaryBlue),
-                  SizedBox(height: 12),
-                  Text(
-                    'Waiting for driver location...',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+          ),
+        );
+
+        // 2. Customer Drop Location Marker (if available)
+        if (dropLoc != null) {
+          markers.add(
+            Marker(
+              point: dropLoc,
+              width: 32,
+              height: 32,
+              child: const Icon(
+                Icons.home_rounded,
+                color: AppColors.error,
+                size: 24,
               ),
             ),
           );
         }
 
-        final route = <LatLng>[pickupHub, agentPos, dropLoc];
+        // 3. Agent Live Position Marker (if available)
+        if (agentPos != null) {
+          markers.add(
+            Marker(
+              point: agentPos,
+              width: 38,
+              height: 38,
+              child: const Icon(
+                Icons.delivery_dining_rounded,
+                color: AppColors.freshGreen,
+                size: 28,
+              ),
+            ),
+          );
+        }
+
+        // 4. Polyline Route
+        final route = <LatLng>[];
+        if (agentPos != null && dropLoc != null) {
+          route.addAll([pickupHub, agentPos, dropLoc]);
+        }
 
         return Container(
           height: 260,
@@ -456,7 +530,7 @@ class _LiveTrackingMapCardState extends ConsumerState<_LiveTrackingMapCard> {
                 FlutterMap(
                   mapController: _mapController,
                   options: MapOptions(
-                    initialCenter: agentPos,
+                    initialCenter: agentPos ?? dropLoc ?? pickupHub,
                     initialZoom: 14,
                     minZoom: 4,
                     maxZoom: 18,
@@ -467,48 +541,18 @@ class _LiveTrackingMapCardState extends ConsumerState<_LiveTrackingMapCard> {
                           'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.example.dairy_app',
                     ),
-                    PolylineLayer(
-                      polylines: [
-                        Polyline(
-                          points: route,
-                          strokeWidth: 4,
-                          color: AppColors.primaryBlue.withValues(alpha: 0.7),
-                        ),
-                      ],
-                    ),
+                    if (route.isNotEmpty)
+                      PolylineLayer(
+                        polylines: [
+                          Polyline(
+                            points: route,
+                            strokeWidth: 4,
+                            color: AppColors.primaryBlue.withValues(alpha: 0.7),
+                          ),
+                        ],
+                      ),
                     MarkerLayer(
-                      markers: [
-                        const Marker(
-                          point: pickupHub,
-                          width: 32,
-                          height: 32,
-                          child: Icon(
-                            Icons.store_rounded,
-                            color: AppColors.primaryBlue,
-                            size: 24,
-                          ),
-                        ),
-                        const Marker(
-                          point: fallbackDrop,
-                          width: 32,
-                          height: 32,
-                          child: Icon(
-                            Icons.home_rounded,
-                            color: AppColors.error,
-                            size: 24,
-                          ),
-                        ),
-                        Marker(
-                          point: agentPos,
-                          width: 38,
-                          height: 38,
-                          child: const Icon(
-                            Icons.delivery_dining_rounded,
-                            color: AppColors.freshGreen,
-                            size: 28,
-                          ),
-                        ),
-                      ],
+                      markers: markers,
                     ),
                   ],
                 ),
@@ -528,17 +572,17 @@ class _LiveTrackingMapCardState extends ConsumerState<_LiveTrackingMapCard> {
                         ),
                       ],
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
                         Icon(
                           Icons.gps_fixed_rounded,
-                          color: AppColors.freshGreen,
+                          color: agentPos != null ? AppColors.freshGreen : AppColors.textMuted,
                           size: 12,
                         ),
-                        SizedBox(width: 6),
+                        const SizedBox(width: 6),
                         Text(
-                          'Agent Live Location',
-                          style: TextStyle(
+                          agentPos != null ? 'Agent Live Location' : 'Connecting Location...',
+                          style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                             color: AppColors.textPrimary,
@@ -548,6 +592,42 @@ class _LiveTrackingMapCardState extends ConsumerState<_LiveTrackingMapCard> {
                     ),
                   ),
                 ),
+                if (agentPos == null)
+                  Positioned(
+                    bottom: 10,
+                    left: 10,
+                    right: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 12,
+                            height: 12,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.primaryBlue,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            'Waiting for driver\'s live location...',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
