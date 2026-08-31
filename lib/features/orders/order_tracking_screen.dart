@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../../core/constants/app_colors.dart';
 import '../../models/order.dart';
+import '../../models/address.dart';
+import '../../services/delivery_tracking_service.dart';
 
 /// Single tracking step on the timeline
 class _TrackingStep {
@@ -11,7 +16,7 @@ class _TrackingStep {
 }
 
 /// Order Tracking Timeline Screen
-class OrderTrackingScreen extends StatelessWidget {
+class OrderTrackingScreen extends ConsumerWidget {
   final Order order;
 
   const OrderTrackingScreen({super.key, required this.order});
@@ -25,7 +30,7 @@ class OrderTrackingScreen extends StatelessWidget {
   ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final currentStep = order.status.stepIndex;
     final isCancelled = order.isCancelled;
 
@@ -112,7 +117,17 @@ class OrderTrackingScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 16),
+                if (order.status == OrderStatus.outForDelivery &&
+                    order.assignedAgentId != null &&
+                    order.assignedAgentId!.isNotEmpty) ...[
+                  _LiveTrackingMapCard(
+                    agentId: order.assignedAgentId!,
+                    deliveryAddress: order.deliveryAddress,
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                const SizedBox(height: 12),
 
                 // Timeline
                 if (!isCancelled) ...[
@@ -353,6 +368,191 @@ class _InfoCard extends StatelessWidget {
           child,
         ],
       ),
+    );
+  }
+}
+
+class _LiveTrackingMapCard extends ConsumerStatefulWidget {
+  final String agentId;
+  final Address deliveryAddress;
+
+  const _LiveTrackingMapCard({
+    required this.agentId,
+    required this.deliveryAddress,
+  });
+
+  @override
+  ConsumerState<_LiveTrackingMapCard> createState() =>
+      _LiveTrackingMapCardState();
+}
+
+class _LiveTrackingMapCardState extends ConsumerState<_LiveTrackingMapCard> {
+  final MapController _mapController = MapController();
+
+  // Indore center coordinates
+  static const LatLng indoreCenter = LatLng(22.7255, 75.8800);
+  static const LatLng pickupHub = LatLng(22.7255, 75.8800);
+  static const LatLng fallbackDrop = LatLng(22.7180, 75.8720);
+
+  @override
+  Widget build(BuildContext context) {
+    final trackingService = ref.watch(deliveryTrackingServiceProvider);
+    final locationStream = trackingService.agentLocationStream(widget.agentId);
+
+    // Approximate drop coordinates for the customer
+    final dropLoc = fallbackDrop;
+
+    return StreamBuilder<LatLng?>(
+      stream: locationStream,
+      builder: (context, snapshot) {
+        final agentPos = snapshot.data;
+        if (agentPos == null) {
+          return Container(
+            height: 220,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(color: AppColors.primaryBlue),
+                  SizedBox(height: 12),
+                  Text(
+                    'Waiting for driver location...',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        final route = <LatLng>[pickupHub, agentPos, dropLoc];
+
+        return Container(
+          height: 260,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border),
+            boxShadow: const [
+              BoxShadow(
+                color: AppColors.shadow,
+                blurRadius: 8,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Stack(
+              children: [
+                FlutterMap(
+                  mapController: _mapController,
+                  options: MapOptions(
+                    initialCenter: agentPos,
+                    initialZoom: 14,
+                    minZoom: 4,
+                    maxZoom: 18,
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName: 'com.example.dairy_app',
+                    ),
+                    PolylineLayer(
+                      polylines: [
+                        Polyline(
+                          points: route,
+                          strokeWidth: 4,
+                          color: AppColors.primaryBlue.withValues(alpha: 0.7),
+                        ),
+                      ],
+                    ),
+                    MarkerLayer(
+                      markers: [
+                        const Marker(
+                          point: pickupHub,
+                          width: 32,
+                          height: 32,
+                          child: Icon(
+                            Icons.store_rounded,
+                            color: AppColors.primaryBlue,
+                            size: 24,
+                          ),
+                        ),
+                        const Marker(
+                          point: fallbackDrop,
+                          width: 32,
+                          height: 32,
+                          child: Icon(
+                            Icons.home_rounded,
+                            color: AppColors.error,
+                            size: 24,
+                          ),
+                        ),
+                        Marker(
+                          point: agentPos,
+                          width: 38,
+                          height: 38,
+                          child: const Icon(
+                            Icons.delivery_dining_rounded,
+                            color: AppColors.freshGreen,
+                            size: 28,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                Positioned(
+                  top: 10,
+                  left: 10,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(
+                          Icons.gps_fixed_rounded,
+                          color: AppColors.freshGreen,
+                          size: 12,
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          'Agent Live Location',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
