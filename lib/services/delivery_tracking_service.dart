@@ -30,7 +30,7 @@ class DeliveryTrackingService {
     await _firestore.collection('delivery_agents').doc(agentId).set(
       {
         'location': [latitude, longitude],
-        if (orderId != null) 'orderId': orderId,
+        'orderId': orderId ?? FieldValue.delete(),
         'updatedAt': FieldValue.serverTimestamp(),
       },
       SetOptions(merge: true),
@@ -51,6 +51,13 @@ class DeliveryTrackingService {
       },
       SetOptions(merge: true),
     );
+  }
+
+  /// Clears the agent's active orderId from Firestore.
+  Future<void> clearActiveOrder(String agentId) async {
+    await _firestore.collection('delivery_agents').doc(agentId).update({
+      'orderId': FieldValue.delete(),
+    });
   }
 
   /// Streams the agent's live [LatLng] (emits `null` when no location yet).

@@ -9,6 +9,7 @@ import '../../../models/delivery_boy_model.dart';
 import '../../../models/order.dart';
 import '../../../providers/delivery_provider.dart';
 import '../../../services/order_service.dart';
+import '../../../services/delivery_tracking_service.dart';
 
 /// Active Delivery Tab - Pickup -> Out for Delivery -> Delivered flow
 class ActiveDeliveryTab extends ConsumerStatefulWidget {
@@ -729,6 +730,14 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
                 await ref
                     .read(orderServiceProvider)
                     .updateOrderStatus(order.id, OrderStatus.delivered);
+                
+                // Clear the agent's active orderId in Firestore & stop location tracking for that order
+                final agentId = ref.read(deliveryAgentProvider).id;
+                if (agentId.isNotEmpty) {
+                  await ref
+                      .read(deliveryTrackingServiceProvider)
+                      .clearActiveOrder(agentId);
+                }
               } catch (e, st) {
                 if (mounted) {
                   Navigator.pop(context);
