@@ -115,6 +115,33 @@ class AddressScreen extends ConsumerWidget {
                             address.id;
                         Navigator.pop(context);
                       },
+                      onEdit: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                AddAddressScreen(addressToEdit: address),
+                          ),
+                        );
+                      },
+                      onDelete: () {
+                        ref
+                            .read(addressesProvider.notifier)
+                            .removeAddress(address.id);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Address deleted successfully')),
+                        );
+                      },
+                      onSetDefault: () {
+                        ref
+                            .read(addressesProvider.notifier)
+                            .setDefault(address.id);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Default address updated')),
+                        );
+                      },
                     ),
                   ),
                 ],
