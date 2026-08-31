@@ -86,9 +86,11 @@ class AgentLiveLocationNotifier extends StateNotifier<bool> {
 
   void _write(double latitude, double longitude) {
     final agentId = _ref.read(deliveryAgentProvider).id;
+    final activeOrders = _ref.read(deliveryActiveOrdersStreamProvider).value ?? [];
+    final activeOrderId = activeOrders.isNotEmpty ? activeOrders.first.id : null;
     _ref
         .read(deliveryTrackingServiceProvider)
-        .updateAgentLocation(agentId, latitude, longitude);
+        .updateAgentLocation(agentId, latitude, longitude, orderId: activeOrderId);
   }
 
   @override
