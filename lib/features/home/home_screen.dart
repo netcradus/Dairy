@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:video_player/video_player.dart';
+import 'dart:ui';
 
 import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
@@ -124,43 +125,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     )
                   : SizedBox(
                       height: 245,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        clipBehavior: Clip.none,
-                        padding: EdgeInsets.zero,
-                        itemCount: bestSellers.length,
-                        separatorBuilder: (context, index) =>
-                            const SizedBox(width: AppSizes.p14),
-                        itemBuilder: (context, index) {
-                          final product = bestSellers[index];
-                          final qty = cartQuantities[product.id] ?? 0;
-                          return SizedBox(
-                            width: 175,
-                            child: ProductCard(
-                              product: product,
-                              quantity: qty,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        ProductDetailsScreen(product: product),
-                                  ),
-                                );
-                              },
-                              onIncrement: () {
-                                ref
-                                    .read(cartProvider.notifier)
-                                    .increment(product);
-                              },
-                              onDecrement: () {
-                                ref
-                                    .read(cartProvider.notifier)
-                                    .decrement(product.id);
-                              },
-                            ),
-                          );
-                        },
+                      child: ScrollConfiguration(
+                        behavior: ScrollConfiguration.of(context).copyWith(
+                          dragDevices: {
+                            PointerDeviceKind.touch,
+                            PointerDeviceKind.mouse,
+                          },
+                        ),
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          clipBehavior: Clip.none,
+                          padding: EdgeInsets.zero,
+                          itemCount: bestSellers.length,
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(width: AppSizes.p14),
+                          itemBuilder: (context, index) {
+                            final product = bestSellers[index];
+                            final qty = cartQuantities[product.id] ?? 0;
+                            return SizedBox(
+                              width: 175,
+                              child: ProductCard(
+                                product: product,
+                                quantity: qty,
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => ProductDetailsScreen(
+                                          product: product),
+                                    ),
+                                  );
+                                },
+                                onIncrement: () {
+                                  ref
+                                      .read(cartProvider.notifier)
+                                      .increment(product);
+                                },
+                                onDecrement: () {
+                                  ref
+                                      .read(cartProvider.notifier)
+                                      .decrement(product.id);
+                                },
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
 

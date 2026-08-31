@@ -131,6 +131,32 @@ class ProductRepository {
         reviewCount: 140,
         isBestSeller: true,
       ),
+      Product(
+        id: 'p9',
+        title: 'Water Bottle',
+        categoryId: 'cat_water',
+        categoryName: 'Water',
+        price: 80.0,
+        originalPrice: 90.0,
+        unit: '20 L',
+        imageUrl: 'assets/images/water.png',
+        rating: 4.9,
+        reviewCount: 150,
+        isBestSeller: true,
+      ),
+      Product(
+        id: 'p10',
+        title: 'Cow Dung Cake (Uple)',
+        categoryId: 'cat_uple',
+        categoryName: 'Pooja Essentials',
+        price: 50.0,
+        originalPrice: 60.0,
+        unit: '5 Pcs',
+        imageUrl: 'assets/images/uple.png',
+        rating: 4.8,
+        reviewCount: 98,
+        isBestSeller: true,
+      ),
     ];
   }
 }
