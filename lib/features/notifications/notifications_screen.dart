@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
 import '../../models/notification_item.dart';
-import '../../providers/navigation_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../../providers/order_provider.dart';
 import '../orders/order_details_screen.dart';
 
-/// Sawariya Dairy Phase 7 — Notifications Screen
+/// Sawariya Dairy — Notifications Screen (Task 11: Firestore-backed)
 class NotificationsScreen extends ConsumerWidget {
   const NotificationsScreen({super.key});
 
@@ -28,10 +28,16 @@ class NotificationsScreen extends ConsumerWidget {
 
   void _openNotification(
       BuildContext context, WidgetRef ref, NotificationItem item) {
-    ref.read(notificationsProvider.notifier).markRead(item.id);
+    // Mark read in Firestore
+    final userId = ref.read(currentUserIdProvider);
+    if (userId != null && userId.isNotEmpty) {
+      ref
+          .read(notificationRepositoryProvider)
+          .markRead(userId, item.id)
+          .catchError((_) {});
+    }
 
     if (item.orderId != null) {
-      final userId = ref.read(currentUserIdProvider);
       if (userId != null) {
         final asyncOrders = ref.read(userOrdersStreamProvider(userId));
         asyncOrders.whenData((orders) {
@@ -39,7 +45,8 @@ class NotificationsScreen extends ConsumerWidget {
           if (matches.isNotEmpty && context.mounted) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => OrderDetailsScreen(order: matches.first)),
+              MaterialPageRoute(
+                  builder: (_) => OrderDetailsScreen(order: matches.first)),
             );
             return;
           }
@@ -55,7 +62,9 @@ class NotificationsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final notifications = ref.watch(notificationsProvider);
+    final asyncNotifications = ref.watch(userNotificationsStreamProvider);
+    final userId = ref.watch(currentUserIdProvider);
+    final repo = ref.read(notificationRepositoryProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -64,54 +73,121 @@ class NotificationsScreen extends ConsumerWidget {
         backgroundColor: AppColors.surface,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
-        actions: [
-          if (notifications.any((n) => !n.isRead))
-            TextButton.icon(
-              onPressed: () =>
-                  ref.read(notificationsProvider.notifier).markAllRead(),
-              icon: const Icon(Icons.done_all_rounded, size: 18),
-              label: const Text(
-                'Mark all read',
-                style: TextStyle(
-                  color: AppColors.primaryBlue,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          if (notifications.isNotEmpty)
-            IconButton(
-              icon: const Icon(Icons.delete_sweep_rounded, size: 20),
-              tooltip: 'Clear all',
-              onPressed: () =>
-                  ref.read(notificationsProvider.notifier).clearAll(),
-            ),
-          const SizedBox(width: 8),
-        ],
+        actions: asyncNotifications.whenOrNull(
+              data: (notifications) => [
+                if (notifications.any((n) => !n.isRead) && userId != null)
+                  TextButton.icon(
+                    onPressed: () {
+                      final unreadIds = notifications
+                          .where((n) => !n.isRead)
+                          .map((n) => n.id)
+                          .toList();
+                      repo.markAllRead(userId, unreadIds).catchError((_) {});
+                    },
+                    icon: const Icon(Icons.done_all_rounded, size: 18),
+                    label: const Text(
+                      'Mark all read',
+                      style: TextStyle(
+                        color: AppColors.primaryBlue,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                if (notifications.isNotEmpty && userId != null)
+                  IconButton(
+                    icon:
+                        const Icon(Icons.delete_sweep_rounded, size: 20),
+                    tooltip: 'Clear all',
+                    onPressed: () {
+                      final allIds =
+                          notifications.map((n) => n.id).toList();
+                      repo.clearAll(userId, allIds).catchError((_) {});
+                    },
+                  ),
+                const SizedBox(width: 8),
+              ],
+            ) ??
+            const [],
       ),
-      body: notifications.isEmpty
-          ? _buildEmptyState(context, ref)
-          : ListView.separated(
-              padding: EdgeInsets.symmetric(
-                horizontal: context.responsiveHorizontalPadding,
-                vertical: AppSizes.p16,
-              ),
-              itemCount: notifications.length,
-              separatorBuilder: (_, __) => const SizedBox(height: AppSizes.p12),
-              itemBuilder: (context, index) {
-                final item = notifications[index];
-                return _NotificationTile(
-                  item: item,
-                  timeAgo: _timeAgo(item.timestamp),
-                  onTap: () => _openNotification(context, ref, item),
-                  onDismiss: (context) {
-                    ref.read(notificationsProvider.notifier).dismiss(item.id);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Notification dismissed')),
-                    );
-                  },
-                );
-              },
+      body: asyncNotifications.when(
+        loading: () => const Center(
+          child: CircularProgressIndicator(
+            color: AppColors.primaryBlue,
+          ),
+        ),
+        error: (error, _) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSizes.p24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.cloud_off_rounded,
+                  size: 56,
+                  color: AppColors.textSecondary,
+                ),
+                const SizedBox(height: AppSizes.p16),
+                const Text(
+                  'Could not load notifications',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: AppSizes.p8),
+                Text(
+                  error.toString(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: AppSizes.p16),
+                ElevatedButton.icon(
+                  onPressed: () => ref.invalidate(userNotificationsStreamProvider),
+                  icon: const Icon(Icons.refresh_rounded),
+                  label: const Text('Retry'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryBlue,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ],
             ),
+          ),
+        ),
+        data: (notifications) {
+          if (notifications.isEmpty) {
+            return _buildEmptyState(context, ref);
+          }
+          return ListView.separated(
+            padding: EdgeInsets.symmetric(
+              horizontal: context.responsiveHorizontalPadding,
+              vertical: AppSizes.p16,
+            ),
+            itemCount: notifications.length,
+            separatorBuilder: (_, __) => const SizedBox(height: AppSizes.p12),
+            itemBuilder: (context, index) {
+              final item = notifications[index];
+              return _NotificationTile(
+                item: item,
+                timeAgo: _timeAgo(item.timestamp),
+                onTap: () => _openNotification(context, ref, item),
+                onDismiss: (ctx) {
+                  if (userId != null) {
+                    repo.dismiss(userId, item.id).catchError((_) {});
+                  }
+                  ScaffoldMessenger.of(ctx).showSnackBar(
+                    const SnackBar(content: Text('Notification dismissed')),
+                  );
+                },
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
@@ -161,7 +237,11 @@ class NotificationsScreen extends ConsumerWidget {
               height: 48,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  ref.read(navigationProvider.notifier).setIndex(0);
+                  // context.go navigates correctly whether this screen was
+                  // pushed via Navigator.push (from Profile) or opened via
+                  // the bottom-nav tab — unlike navigationProvider.setIndex
+                  // which only works when already inside the MainLayout.
+                  context.go('/home');
                 },
                 icon: const Icon(Icons.home_rounded),
                 label: const Text(
@@ -290,6 +370,17 @@ class _NotificationTile extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
+                if (item.orderId != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'Order: ${item.orderId}',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.primaryBlue,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
                 if (item.isActionable) ...[
                   const SizedBox(height: 6),
                   Align(
