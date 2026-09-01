@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -40,10 +41,17 @@ class AdminProvider extends ChangeNotifier {
   bool _complaintsLoading = true;
   String? _complaintsError;
 
+  int _customersCount = 0;
+  int _deliveryAgentsCount = 0;
+  bool _usersLoading = true;
+  String? _usersError;
+
   StreamSubscription<List<Map<String, dynamic>>>? _productsSub;
   StreamSubscription<List<Map<String, dynamic>>>? _categoriesSub;
   StreamSubscription<List<order.Order>>? _ordersSub;
   StreamSubscription<List<CustomerComplaint>>? _complaintsSub;
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _usersSub;
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _deliveryAgentsSub;
 
   int get selectedNavIndex => _selectedNavIndex;
   String get searchQuery => _searchQuery;
@@ -62,6 +70,39 @@ class AdminProvider extends ChangeNotifier {
   bool get complaintsLoading => _complaintsLoading;
   String? get complaintsError => _complaintsError;
 
+  int get customersCount => _customersCount;
+  int get deliveryAgentsCount => _deliveryAgentsCount;
+  bool get usersLoading => _usersLoading;
+  String? get usersError => _usersError;
+
+  int get totalOrdersCount => _orders.length;
+  int get pendingOrdersCount =>
+      _orders.where((o) => o.status == OrderStatus.pending).length;
+  int get confirmedOrdersCount =>
+      _orders.where((o) => o.status == OrderStatus.confirmed).length;
+  int get preparingOrdersCount =>
+      _orders.where((o) => o.status == OrderStatus.preparing).length;
+  int get outForDeliveryOrdersCount =>
+      _orders.where((o) => o.status == OrderStatus.outForDelivery).length;
+  int get deliveredOrdersCount =>
+      _orders.where((o) => o.status == OrderStatus.delivered).length;
+  int get cancelledOrdersCount =>
+      _orders.where((o) => o.status == OrderStatus.cancelled).length;
+  int get activeOrdersCount => _orders
+      .where((o) =>
+          o.status == OrderStatus.confirmed ||
+          o.status == OrderStatus.preparing ||
+          o.status == OrderStatus.outForDelivery)
+      .length;
+
+  double get totalRevenue => _orders
+      .where((o) => o.status == OrderStatus.delivered)
+      .fold(0.0, (sum, o) => sum + o.amount);
+
+  double get totalOrderValue => _orders
+      .where((o) => o.status != OrderStatus.cancelled)
+      .fold(0.0, (sum, o) => sum + o.amount);
+
   List<DairyProduct> get topSellingProducts =>
       _products.where((p) => p.isBestSeller).toList();
 
@@ -76,6 +117,8 @@ class AdminProvider extends ChangeNotifier {
     _listenToCategories();
     _listenToOrders();
     _listenToComplaints();
+    _listenToUsers();
+    _listenToDeliveryAgents();
   }
 
   // ─── Firestore listeners ───────────────────────────────────────────────
@@ -418,35 +461,106 @@ class AdminProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ─── KPI Metrics (hardcoded) ──────────────────────────────────────────
+  // ─── KPI Metrics (Firestore-backed) ───────────────────────────────────
 
-  List<KpiMetric> get kpiMetrics => [
-        const KpiMetric(
-          title: "Today's Revenue",
-          value: '₹4,85,240',
-          growthText: '↑ 12.5% vs Yesterday',
-          isPositive: true,
-          icon: Icons.currency_rupee_rounded,
-          themeColor: AppColors.revenueGreen,
-          themeBgColor: AppColors.revenueGreenBg,
+  List<KpiMetric> get kpiMetrics {
+    final currencyFormatter =
+        NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final formattedRevenue = currencyFormatter.format(totalRevenue);
+
+    return [
+      KpiMetric(
+        title: "Total Revenue",
+        value: formattedRevenue,
+        growthText: deliveredOrdersCount > 0
+            ? '$deliveredOrdersCount orders delivered'
+            : 'From delivered orders',
+        isPositive: totalRevenue > 0,
+        icon: Icons.currency_rupee_rounded,
+        themeColor: AppColors.revenueGreen,
+        themeBgColor: AppColors.revenueGreenBg,
+      ),
+      KpiMetric(
+        title: "Total Orders",
+        value: '$totalOrdersCount',
+        growthText: pendingOrdersCount > 0
+            ? '$pendingOrdersCount pending, $activeOrdersCount active'
+            : (totalOrdersCount > 0
+                ? '$activeOrdersCount active orders'
+                : 'No orders yet'),
+        isPositive: totalOrdersCount > 0,
+        icon: Icons.shopping_bag_outlined,
+        themeColor: AppColors.ordersBlue,
+        themeBgColor: AppColors.ordersBlueBg,
+      ),
+      KpiMetric(
+        title: 'Total Customers',
+        value: '$_customersCount',
+        growthText: _customersCount > 0
+            ? 'Registered customer base'
+            : 'No customers yet',
+        isPositive: _customersCount > 0,
+        icon: Icons.people_outline_rounded,
+        themeColor: AppColors.customersOrange,
+        themeBgColor: AppColors.customersOrangeBg,
+      ),
+      KpiMetric(
+        title: 'Delivery Fleet',
+        value: '$_deliveryAgentsCount',
+        growthText: _deliveryAgentsCount > 0
+            ? 'Active delivery agents'
+            : 'No agents registered',
+        isPositive: _deliveryAgentsCount > 0,
+        icon: Icons.directions_bike_rounded,
+        themeColor: AppColors.deliveriesPurple,
+        themeBgColor: AppColors.deliveriesPurpleBg,
+      ),
+    ];
+  }
+
+  /// Order status lifecycle breakdown metrics
+  List<KpiMetric> get orderStatusKpis => [
+        KpiMetric(
+          title: 'Active / On Route',
+          value: '$activeOrdersCount',
+          growthText: '$outForDeliveryOrdersCount out for delivery',
+          isPositive: activeOrdersCount > 0,
+          icon: Icons.local_shipping_outlined,
+          themeColor: AppColors.statusOutForDelivery,
+          themeBgColor: const Color(0xFFE8F6FD),
         ),
-        const KpiMetric(
-          title: "Today's Orders",
-          value: '524',
-          growthText: '↑ 8.7% vs Yesterday',
-          isPositive: true,
-          icon: Icons.shopping_bag_outlined,
-          themeColor: AppColors.ordersBlue,
-          themeBgColor: AppColors.ordersBlueBg,
+        KpiMetric(
+          title: 'Pending Orders',
+          value: '$pendingOrdersCount',
+          growthText: pendingOrdersCount > 0
+              ? 'Action required'
+              : 'All orders processed',
+          isPositive: pendingOrdersCount == 0,
+          icon: Icons.pending_actions_rounded,
+          themeColor: AppColors.statusPending,
+          themeBgColor: const Color(0xFFFFF4EC),
         ),
-        const KpiMetric(
-          title: 'Total Customers',
-          value: '4,821',
-          growthText: '↑ 15.3% vs Last Month',
+        KpiMetric(
+          title: 'Delivered Orders',
+          value: '$deliveredOrdersCount',
+          growthText: deliveredOrdersCount > 0
+              ? '${((deliveredOrdersCount / (totalOrdersCount > 0 ? totalOrdersCount : 1)) * 100).toStringAsFixed(0)}% completion'
+              : 'None delivered yet',
           isPositive: true,
-          icon: Icons.people_outline_rounded,
-          themeColor: AppColors.customersOrange,
-          themeBgColor: AppColors.customersOrangeBg,
+          icon: Icons.check_circle_outline_rounded,
+          themeColor: AppColors.statusDelivered,
+          themeBgColor: const Color(0xFFE8FAF2),
+        ),
+        KpiMetric(
+          title: 'Cancelled Orders',
+          value: '$cancelledOrdersCount',
+          growthText: cancelledOrdersCount == 0
+              ? '0% cancellation rate'
+              : '$cancelledOrdersCount cancelled',
+          isPositive: cancelledOrdersCount == 0,
+          icon: Icons.cancel_outlined,
+          themeColor: AppColors.statusCancelled,
+          themeBgColor: const Color(0xFFF1F5F9),
         ),
       ];
 
@@ -552,9 +666,9 @@ class AdminProvider extends ChangeNotifier {
 
   List<DeliveryCorridor> get corridors => _corridors;
 
-  // ─── Customers Data (hardcoded) ───────────────────────────────────────
+  // ─── Customers Data ───────────────────────────────────────────────────
 
-  final List<DairyCustomer> _customers = [
+  List<DairyCustomer> _customers = [
     const DairyCustomer(
       id: 'CUST-1001',
       name: 'Rahul Sharma',
@@ -780,6 +894,92 @@ class AdminProvider extends ChangeNotifier {
     );
   }
 
+  // ─── Users & Delivery Agents Firestore Listeners ────────────────────
+
+  void _listenToUsers() {
+    _usersSub = FirebaseFirestore.instance
+        .collection('users')
+        .snapshots()
+        .listen(
+      (snap) {
+        int custCount = 0;
+        int delivCount = 0;
+        final List<DairyCustomer> custList = [];
+
+        for (final doc in snap.docs) {
+          final data = doc.data();
+          final role = (data['role'] as String? ?? 'customer').toLowerCase();
+          final name = (data['name'] as String? ?? '').trim();
+          final phone = (data['phone'] as String? ?? '').trim();
+          final email = (data['email'] as String? ?? '').trim();
+
+          if (role == 'delivery') {
+            delivCount++;
+          } else if (role == 'admin') {
+            // Admin account
+          } else {
+            custCount++;
+            custList.add(
+              DairyCustomer(
+                id: doc.id,
+                name: name.isNotEmpty ? name : 'Customer',
+                phone: phone,
+                email: email,
+                address: (data['address'] as String? ?? ''),
+                deliveryZone:
+                    (data['deliveryZone'] as String? ?? 'Standard Zone'),
+                subscriptionPlan:
+                    (data['subscriptionPlan'] as String? ?? 'None'),
+                milkPreference:
+                    (data['milkPreference'] as String? ?? 'Standard'),
+                walletBalance:
+                    (data['walletBalance'] as num?)?.toDouble() ?? 0.0,
+                status: (data['status'] as String? ?? 'Active'),
+                joinedDate: data['createdAt'] != null
+                    ? (data['createdAt'] is Timestamp
+                        ? DateFormat('dd MMM yyyy')
+                            .format((data['createdAt'] as Timestamp).toDate())
+                        : 'Active')
+                    : 'Active',
+              ),
+            );
+          }
+        }
+
+        _customersCount = custCount;
+        if (delivCount > _deliveryAgentsCount) {
+          _deliveryAgentsCount = delivCount;
+        }
+        if (custList.isNotEmpty) {
+          _customers = custList;
+        }
+        _usersLoading = false;
+        _usersError = null;
+        notifyListeners();
+      },
+      onError: (e) {
+        _usersError = 'Failed to load users: $e';
+        _usersLoading = false;
+        notifyListeners();
+      },
+    );
+  }
+
+  void _listenToDeliveryAgents() {
+    _deliveryAgentsSub = FirebaseFirestore.instance
+        .collection('delivery_agents')
+        .snapshots()
+        .listen(
+      (snap) {
+        if (snap.docs.isNotEmpty) {
+          _deliveryAgentsCount = snap.docs.length;
+          notifyListeners();
+        }
+      },
+      onError: (_) {},
+    );
+  }
+
   // ─── Cleanup ──────────────────────────────────────────────────────────
 
   @override
@@ -788,6 +988,8 @@ class AdminProvider extends ChangeNotifier {
     _categoriesSub?.cancel();
     _ordersSub?.cancel();
     _complaintsSub?.cancel();
+    _usersSub?.cancel();
+    _deliveryAgentsSub?.cancel();
     super.dispose();
   }
 }
