@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -13,11 +14,13 @@ import '../models/order.dart' as order;
 import '../models/order_model.dart';
 import '../models/product_model.dart';
 import '../repositories/firestore_product_repository.dart';
+import '../services/complaint_service.dart';
 import '../services/order_service.dart';
 
 class AdminProvider extends ChangeNotifier {
   final FirestoreProductRepository _repo;
   final OrderService _orderService;
+  final ComplaintService _complaintService;
 
   int _selectedNavIndex = 0;
   String _searchQuery = '';
@@ -34,9 +37,21 @@ class AdminProvider extends ChangeNotifier {
   bool _ordersLoading = true;
   String? _ordersError;
 
+  List<CustomerComplaint> _complaints = [];
+  bool _complaintsLoading = true;
+  String? _complaintsError;
+
+  int _customersCount = 0;
+  int _deliveryAgentsCount = 0;
+  bool _usersLoading = true;
+  String? _usersError;
+
   StreamSubscription<List<Map<String, dynamic>>>? _productsSub;
   StreamSubscription<List<Map<String, dynamic>>>? _categoriesSub;
   StreamSubscription<List<order.Order>>? _ordersSub;
+  StreamSubscription<List<CustomerComplaint>>? _complaintsSub;
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _usersSub;
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _deliveryAgentsSub;
 
   int get selectedNavIndex => _selectedNavIndex;
   String get searchQuery => _searchQuery;
@@ -51,15 +66,59 @@ class AdminProvider extends ChangeNotifier {
   bool get ordersLoading => _ordersLoading;
   String? get ordersError => _ordersError;
 
+  List<CustomerComplaint> get complaints => _complaints;
+  bool get complaintsLoading => _complaintsLoading;
+  String? get complaintsError => _complaintsError;
+
+  int get customersCount => _customersCount;
+  int get deliveryAgentsCount => _deliveryAgentsCount;
+  bool get usersLoading => _usersLoading;
+  String? get usersError => _usersError;
+
+  int get totalOrdersCount => _orders.length;
+  int get pendingOrdersCount =>
+      _orders.where((o) => o.status == OrderStatus.pending).length;
+  int get confirmedOrdersCount =>
+      _orders.where((o) => o.status == OrderStatus.confirmed).length;
+  int get preparingOrdersCount =>
+      _orders.where((o) => o.status == OrderStatus.preparing).length;
+  int get outForDeliveryOrdersCount =>
+      _orders.where((o) => o.status == OrderStatus.outForDelivery).length;
+  int get deliveredOrdersCount =>
+      _orders.where((o) => o.status == OrderStatus.delivered).length;
+  int get cancelledOrdersCount =>
+      _orders.where((o) => o.status == OrderStatus.cancelled).length;
+  int get activeOrdersCount => _orders
+      .where((o) =>
+          o.status == OrderStatus.confirmed ||
+          o.status == OrderStatus.preparing ||
+          o.status == OrderStatus.outForDelivery)
+      .length;
+
+  double get totalRevenue => _orders
+      .where((o) => o.status == OrderStatus.delivered)
+      .fold(0.0, (sum, o) => sum + o.amount);
+
+  double get totalOrderValue => _orders
+      .where((o) => o.status != OrderStatus.cancelled)
+      .fold(0.0, (sum, o) => sum + o.amount);
+
   List<DairyProduct> get topSellingProducts =>
       _products.where((p) => p.isBestSeller).toList();
 
-  AdminProvider({FirestoreProductRepository? repo, OrderService? orderService})
-      : _repo = repo ?? FirestoreProductRepository(),
-        _orderService = orderService ?? OrderService() {
+  AdminProvider({
+    FirestoreProductRepository? repo,
+    OrderService? orderService,
+    ComplaintService? complaintService,
+  })  : _repo = repo ?? FirestoreProductRepository(),
+        _orderService = orderService ?? OrderService(),
+        _complaintService = complaintService ?? ComplaintService() {
     _listenToProducts();
     _listenToCategories();
     _listenToOrders();
+    _listenToComplaints();
+    _listenToUsers();
+    _listenToDeliveryAgents();
   }
 
   // ─── Firestore listeners ───────────────────────────────────────────────
@@ -402,35 +461,106 @@ class AdminProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ─── KPI Metrics (hardcoded) ──────────────────────────────────────────
+  // ─── KPI Metrics (Firestore-backed) ───────────────────────────────────
 
-  List<KpiMetric> get kpiMetrics => [
-        const KpiMetric(
-          title: "Today's Revenue",
-          value: '₹4,85,240',
-          growthText: '↑ 12.5% vs Yesterday',
-          isPositive: true,
-          icon: Icons.currency_rupee_rounded,
-          themeColor: AppColors.revenueGreen,
-          themeBgColor: AppColors.revenueGreenBg,
+  List<KpiMetric> get kpiMetrics {
+    final currencyFormatter =
+        NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final formattedRevenue = currencyFormatter.format(totalRevenue);
+
+    return [
+      KpiMetric(
+        title: "Total Revenue",
+        value: formattedRevenue,
+        growthText: deliveredOrdersCount > 0
+            ? '$deliveredOrdersCount orders delivered'
+            : 'From delivered orders',
+        isPositive: totalRevenue > 0,
+        icon: Icons.currency_rupee_rounded,
+        themeColor: AppColors.revenueGreen,
+        themeBgColor: AppColors.revenueGreenBg,
+      ),
+      KpiMetric(
+        title: "Total Orders",
+        value: '$totalOrdersCount',
+        growthText: pendingOrdersCount > 0
+            ? '$pendingOrdersCount pending, $activeOrdersCount active'
+            : (totalOrdersCount > 0
+                ? '$activeOrdersCount active orders'
+                : 'No orders yet'),
+        isPositive: totalOrdersCount > 0,
+        icon: Icons.shopping_bag_outlined,
+        themeColor: AppColors.ordersBlue,
+        themeBgColor: AppColors.ordersBlueBg,
+      ),
+      KpiMetric(
+        title: 'Total Customers',
+        value: '$_customersCount',
+        growthText: _customersCount > 0
+            ? 'Registered customer base'
+            : 'No customers yet',
+        isPositive: _customersCount > 0,
+        icon: Icons.people_outline_rounded,
+        themeColor: AppColors.customersOrange,
+        themeBgColor: AppColors.customersOrangeBg,
+      ),
+      KpiMetric(
+        title: 'Delivery Fleet',
+        value: '$_deliveryAgentsCount',
+        growthText: _deliveryAgentsCount > 0
+            ? 'Active delivery agents'
+            : 'No agents registered',
+        isPositive: _deliveryAgentsCount > 0,
+        icon: Icons.directions_bike_rounded,
+        themeColor: AppColors.deliveriesPurple,
+        themeBgColor: AppColors.deliveriesPurpleBg,
+      ),
+    ];
+  }
+
+  /// Order status lifecycle breakdown metrics
+  List<KpiMetric> get orderStatusKpis => [
+        KpiMetric(
+          title: 'Active / On Route',
+          value: '$activeOrdersCount',
+          growthText: '$outForDeliveryOrdersCount out for delivery',
+          isPositive: activeOrdersCount > 0,
+          icon: Icons.local_shipping_outlined,
+          themeColor: AppColors.statusOutForDelivery,
+          themeBgColor: const Color(0xFFE8F6FD),
         ),
-        const KpiMetric(
-          title: "Today's Orders",
-          value: '524',
-          growthText: '↑ 8.7% vs Yesterday',
-          isPositive: true,
-          icon: Icons.shopping_bag_outlined,
-          themeColor: AppColors.ordersBlue,
-          themeBgColor: AppColors.ordersBlueBg,
+        KpiMetric(
+          title: 'Pending Orders',
+          value: '$pendingOrdersCount',
+          growthText: pendingOrdersCount > 0
+              ? 'Action required'
+              : 'All orders processed',
+          isPositive: pendingOrdersCount == 0,
+          icon: Icons.pending_actions_rounded,
+          themeColor: AppColors.statusPending,
+          themeBgColor: const Color(0xFFFFF4EC),
         ),
-        const KpiMetric(
-          title: 'Total Customers',
-          value: '4,821',
-          growthText: '↑ 15.3% vs Last Month',
+        KpiMetric(
+          title: 'Delivered Orders',
+          value: '$deliveredOrdersCount',
+          growthText: deliveredOrdersCount > 0
+              ? '${((deliveredOrdersCount / (totalOrdersCount > 0 ? totalOrdersCount : 1)) * 100).toStringAsFixed(0)}% completion'
+              : 'None delivered yet',
           isPositive: true,
-          icon: Icons.people_outline_rounded,
-          themeColor: AppColors.customersOrange,
-          themeBgColor: AppColors.customersOrangeBg,
+          icon: Icons.check_circle_outline_rounded,
+          themeColor: AppColors.statusDelivered,
+          themeBgColor: const Color(0xFFE8FAF2),
+        ),
+        KpiMetric(
+          title: 'Cancelled Orders',
+          value: '$cancelledOrdersCount',
+          growthText: cancelledOrdersCount == 0
+              ? '0% cancellation rate'
+              : '$cancelledOrdersCount cancelled',
+          isPositive: cancelledOrdersCount == 0,
+          icon: Icons.cancel_outlined,
+          themeColor: AppColors.statusCancelled,
+          themeBgColor: const Color(0xFFF1F5F9),
         ),
       ];
 
@@ -536,146 +666,159 @@ class AdminProvider extends ChangeNotifier {
 
   List<DeliveryCorridor> get corridors => _corridors;
 
-  // ─── Customers Data (hardcoded) ───────────────────────────────────────
+  // ─── Customers Data (Firestore-backed) ─────────────────────────────────
 
-  final List<DairyCustomer> _customers = [
-    const DairyCustomer(
-      id: 'CUST-1001',
-      name: 'Rahul Sharma',
-      phone: '+91 98765 43210',
-      email: 'rahul.sharma@example.com',
-      address: 'Flat 402, Lotus Greens, Sector 78, Noida',
-      deliveryZone: 'Sector 7x Highrise Belt',
-      subscriptionPlan: 'Daily Morning (2 Litres)',
-      milkPreference: 'Pure A2 Cow Milk',
-      walletBalance: 1240.0,
-      status: 'Active',
-      joinedDate: '12 Jan 2024',
-    ),
-    const DairyCustomer(
-      id: 'CUST-1002',
-      name: 'Priya Verma',
-      phone: '+91 98112 34567',
-      email: 'priya.v@example.com',
-      address: 'B-14, ATS Greens, Sector 50, Noida',
-      deliveryZone: 'Central Noida Hub',
-      subscriptionPlan: 'Daily (1 Litre Cow Milk + Curd 500g)',
-      milkPreference: 'Standard Cow Milk',
-      walletBalance: 860.0,
-      status: 'Active',
-      joinedDate: '04 Feb 2024',
-    ),
-    const DairyCustomer(
-      id: 'CUST-1003',
-      name: 'Anil Gupta',
-      phone: '+91 97123 45678',
-      email: 'anil.gupta@enterprise.in',
-      address: 'Villa 21, Jaypee Greens, Greater Noida',
-      deliveryZone: 'Noida Express Zone',
-      subscriptionPlan: 'Alternate Days (3 Litres)',
-      milkPreference: 'Full Cream Buffalo Milk',
-      walletBalance: 2450.0,
-      status: 'Active',
-      joinedDate: '18 Nov 2023',
-    ),
-    const DairyCustomer(
-      id: 'CUST-1004',
-      name: 'Sneha Patel',
-      phone: '+91 99887 76655',
-      email: 'sneha.patel@gmail.com',
-      address: 'Tower 4, Apex Golf Avenue, Sector 1',
-      deliveryZone: 'Greater Noida West',
-      subscriptionPlan: 'Daily (2 Litres)',
-      milkPreference: 'Pure A2 Cow Milk',
-      walletBalance: -45.0,
-      status: 'Low Balance',
-      joinedDate: '28 Mar 2024',
-    ),
-    const DairyCustomer(
-      id: 'CUST-1005',
-      name: 'Meenakshi Iyer',
-      phone: '+91 93456 78901',
-      email: 'm.iyer@chennai.org',
-      address: 'Flat 903, Mahagun Moderne, Sector 78',
-      deliveryZone: 'Sector 7x Highrise Belt',
-      subscriptionPlan: 'Daily Morning (1.5 Litres)',
-      milkPreference: 'Pure Cow Milk',
-      walletBalance: 520.0,
-      status: 'Active',
-      joinedDate: '15 Apr 2024',
-    ),
-  ];
+  List<DairyCustomer> _customers = [];
 
   List<DairyCustomer> get customers => _customers;
 
-  void addCustomer(DairyCustomer customer) {
-    _customers.insert(0, customer);
-    notifyListeners();
-  }
-
-  void updateCustomer(DairyCustomer customer) {
-    final index = _customers.indexWhere((c) => c.id == customer.id);
-    if (index != -1) {
-      _customers[index] = customer;
+  /// Saves a new customer document in the Firestore `users` collection.
+  Future<void> addCustomer(DairyCustomer customer) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(customer.id)
+          .set({
+        'id': customer.id,
+        'name': customer.name,
+        'phone': customer.phone,
+        'email': customer.email,
+        'address': customer.address,
+        'deliveryZone': customer.deliveryZone,
+        'subscriptionPlan': customer.subscriptionPlan,
+        'milkPreference': customer.milkPreference,
+        'walletBalance': customer.walletBalance,
+        'status': customer.status,
+        'role': 'customer',
+        'createdAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (e) {
+      debugPrint('AdminProvider: Failed to add customer to Firestore: $e');
+      _usersError = 'Failed to add customer: $e';
       notifyListeners();
     }
   }
 
-  void deleteCustomer(String id) {
-    _customers.removeWhere((c) => c.id == id);
-    notifyListeners();
+  /// Updates an existing customer document in the Firestore `users` collection.
+  Future<void> updateCustomer(DairyCustomer customer) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(customer.id)
+          .set({
+        'name': customer.name,
+        'phone': customer.phone,
+        'email': customer.email,
+        'address': customer.address,
+        'deliveryZone': customer.deliveryZone,
+        'subscriptionPlan': customer.subscriptionPlan,
+        'milkPreference': customer.milkPreference,
+        'walletBalance': customer.walletBalance,
+        'status': customer.status,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (e) {
+      debugPrint('AdminProvider: Failed to update customer in Firestore: $e');
+      _usersError = 'Failed to update customer: $e';
+      notifyListeners();
+    }
   }
 
-  // ─── Delivery Staff Riders (hardcoded) ────────────────────────────────
+  /// Deletes a customer document from the Firestore `users` collection.
+  Future<void> deleteCustomer(String id) async {
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(id).delete();
+    } catch (e) {
+      debugPrint('AdminProvider: Failed to delete customer from Firestore: $e');
+      _usersError = 'Failed to delete customer: $e';
+      notifyListeners();
+    }
+  }
 
-  final List<DeliveryRider> _riders = [
-    const DeliveryRider(
-      id: 'RDR-101',
-      name: 'Amit Kumar',
-      phone: '+91 98765 11223',
-      vehicle: 'Hero Electric Nyx (UP-16-DE-4412)',
-      assignedZone: 'Noida Express Zone',
-      totalDeliveriesToday: 82,
-      pendingDeliveries: 6,
-      rating: 4.9,
-      status: 'Active',
-    ),
-    const DeliveryRider(
-      id: 'RDR-102',
-      name: 'Rajesh Sharma',
-      phone: '+91 98112 55667',
-      vehicle: 'TVS iQube EV (UP-16-AX-8910)',
-      assignedZone: 'Central Noida Hub',
-      totalDeliveriesToday: 95,
-      pendingDeliveries: 0,
-      rating: 4.8,
-      status: 'Completed',
-    ),
-    const DeliveryRider(
-      id: 'RDR-103',
-      name: 'Vikram Singh',
-      phone: '+91 97123 99881',
-      vehicle: 'Euler HiLoad EV (UP-16-EM-3021)',
-      assignedZone: 'Sector 7x Highrise Belt',
-      totalDeliveriesToday: 88,
-      pendingDeliveries: 7,
-      rating: 4.95,
-      status: 'Active',
-    ),
-    const DeliveryRider(
-      id: 'RDR-104',
-      name: 'Suresh Verma',
-      phone: '+91 94567 22334',
-      vehicle: 'Mahindra Zor Grand (UP-16-TR-7721)',
-      assignedZone: 'Greater Noida West',
-      totalDeliveriesToday: 75,
-      pendingDeliveries: 5,
-      rating: 4.7,
-      status: 'Active',
-    ),
-  ];
+  // ─── Delivery Staff Riders (Firestore-backed) ─────────────────────────
+
+  List<DeliveryRider> _riders = [];
 
   List<DeliveryRider> get riders => _riders;
+
+  /// Registers a new delivery staff member in Firestore `users` and `delivery_agents`.
+  Future<void> addRider(DeliveryRider rider) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(rider.id)
+          .set({
+        'id': rider.id,
+        'name': rider.name,
+        'phone': rider.phone,
+        'email': rider.email,
+        'role': 'delivery',
+        'vehicle': rider.vehicle,
+        'assignedZone': rider.assignedZone,
+        'status': rider.status,
+        'rating': rider.rating,
+        'createdAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      await FirebaseFirestore.instance
+          .collection('delivery_agents')
+          .doc(rider.id)
+          .set({
+        'isOnline': rider.status.toLowerCase() == 'active' || rider.isOnline,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (e) {
+      debugPrint('AdminProvider: Failed to add delivery staff to Firestore: $e');
+      _usersError = 'Failed to add delivery staff: $e';
+      notifyListeners();
+    }
+  }
+
+  /// Updates a delivery staff member in Firestore `users` and `delivery_agents`.
+  Future<void> updateRider(DeliveryRider rider) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(rider.id)
+          .set({
+        'name': rider.name,
+        'phone': rider.phone,
+        'email': rider.email,
+        'vehicle': rider.vehicle,
+        'assignedZone': rider.assignedZone,
+        'status': rider.status,
+        'rating': rider.rating,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      await FirebaseFirestore.instance
+          .collection('delivery_agents')
+          .doc(rider.id)
+          .set({
+        'isOnline': rider.status.toLowerCase() == 'active' || rider.isOnline,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (e) {
+      debugPrint('AdminProvider: Failed to update delivery staff in Firestore: $e');
+      _usersError = 'Failed to update delivery staff: $e';
+      notifyListeners();
+    }
+  }
+
+  /// Deletes a delivery staff member from Firestore `users` and `delivery_agents`.
+  Future<void> deleteRider(String id) async {
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(id).delete();
+      await FirebaseFirestore.instance
+          .collection('delivery_agents')
+          .doc(id)
+          .delete();
+    } catch (e) {
+      debugPrint('AdminProvider: Failed to delete delivery staff: $e');
+      _usersError = 'Failed to delete delivery staff: $e';
+      notifyListeners();
+    }
+  }
 
   // ─── Payments Data (hardcoded) ────────────────────────────────────────
 
@@ -720,34 +863,232 @@ class AdminProvider extends ChangeNotifier {
 
   List<DairyPayment> get payments => _payments;
 
-  // ─── Support Complaints Data (hardcoded) ──────────────────────────────
+  // ─── Support Complaints (Firestore-backed) ───────────────────────────
 
-  final List<CustomerComplaint> _complaints = [
-    const CustomerComplaint(
-      id: 'CMP-301',
-      customerName: 'Sneha Patel',
-      phone: '+91 99887 76655',
-      issueType: 'Late Delivery',
-      description:
-          'Morning milk reached at 7:45 AM instead of committed 6:30 AM slot.',
-      priority: 'Medium',
-      status: 'In Progress',
-      createdAt: 'Today, 08:00 AM',
-    ),
-    const CustomerComplaint(
-      id: 'CMP-302',
-      customerName: 'Ramesh Chawla',
-      phone: '+91 98112 00998',
-      issueType: 'Damaged Seal',
-      description:
-          'Pouch corner was slightly punctured upon arrival. Requesting replacement.',
-      priority: 'High',
-      status: 'Resolved',
-      createdAt: 'Yesterday, 07:15 AM',
-    ),
-  ];
+  void _listenToComplaints() {
+    _complaintsSub = _complaintService.streamAllComplaints().listen(
+      (list) {
+        _complaints = list;
+        _complaintsLoading = false;
+        _complaintsError = null;
+        notifyListeners();
+      },
+      onError: (e) {
+        _complaintsError = 'Failed to load complaints: $e';
+        _complaintsLoading = false;
+        notifyListeners();
+      },
+    );
+  }
 
-  List<CustomerComplaint> get complaints => _complaints;
+  /// Update complaint status and optional admin reply in Firestore.
+  Future<void> updateComplaintStatus(
+    String complaintId,
+    String newStatus, {
+    String? adminReply,
+  }) async {
+    await _complaintService.updateComplaintStatus(
+      complaintId,
+      newStatus,
+      adminReply: adminReply,
+    );
+  }
+
+  /// Add or update admin response message for a complaint ticket.
+  Future<void> addComplaintReply(
+    String complaintId,
+    String adminReply, {
+    String? newStatus,
+  }) async {
+    await _complaintService.addAdminReply(
+      complaintId,
+      adminReply,
+      newStatus: newStatus,
+    );
+  }
+
+  // ─── Users & Delivery Agents Firestore Listeners ────────────────────
+
+  List<Map<String, String>> _staffList = [];
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> _lastUserDocs = [];
+
+  List<Map<String, String>> get staffList => _staffList;
+
+  void _rebuildCustomers() {
+    int custCount = 0;
+    final List<DairyCustomer> custList = [];
+    final List<Map<String, String>> staff = [];
+
+    for (final doc in _lastUserDocs) {
+      final data = doc.data();
+      final role = (data['role'] as String? ?? 'customer').toLowerCase();
+      final name = (data['name'] as String? ?? '').trim();
+      final phone = (data['phone'] as String? ?? '').trim();
+      final email = (data['email'] as String? ?? '').trim();
+
+      if (role == 'delivery') {
+        // Delivery agent account - excluded from customers
+        continue;
+      } else if (role == 'admin' ||
+          role == 'staff' ||
+          role == 'manager' ||
+          role == 'dispatcher') {
+        // Administrative / Staff account
+        staff.add({
+          'name': name.isNotEmpty ? name : 'Admin User',
+          'email': email.isNotEmpty ? email : 'admin@sawariyadairy.com',
+          'role': role == 'admin'
+              ? 'Super Admin'
+              : (data['roleTitle'] as String? ?? 'Staff Member'),
+          'status': (data['status'] as String? ?? 'Active'),
+        });
+      } else {
+        // Genuine Customer account
+        custCount++;
+        custList.add(
+          DairyCustomer(
+            id: doc.id,
+            name: name.isNotEmpty ? name : 'Customer',
+            phone: phone.isNotEmpty ? phone : '+91 99999 00000',
+            email: email.isNotEmpty
+                ? email
+                : '${doc.id.toLowerCase()}@sawariyadairy.com',
+            address: (data['address'] as String? ?? 'Noida, Uttar Pradesh'),
+            deliveryZone:
+                (data['deliveryZone'] as String? ?? 'Standard Zone'),
+            subscriptionPlan: (data['subscriptionPlan'] as String? ??
+                'Daily Morning (2 Litres)'),
+            milkPreference:
+                (data['milkPreference'] as String? ?? 'Standard Cow Milk'),
+            walletBalance:
+                (data['walletBalance'] as num?)?.toDouble() ?? 0.0,
+            status: (data['status'] as String? ?? 'Active'),
+            joinedDate: data['createdAt'] != null
+                ? (data['createdAt'] is Timestamp
+                    ? DateFormat('dd MMM yyyy')
+                        .format((data['createdAt'] as Timestamp).toDate())
+                    : 'Active')
+                : 'Active',
+          ),
+        );
+      }
+    }
+
+    _customers = custList;
+    _customersCount = custCount;
+    _staffList = staff;
+    _usersLoading = false;
+    _usersError = null;
+    notifyListeners();
+  }
+
+  void _rebuildRiders(
+      List<QueryDocumentSnapshot<Map<String, dynamic>>> deliveryDocs) {
+    final List<DeliveryRider> ridersList = [];
+
+    for (final doc in deliveryDocs) {
+      final data = doc.data();
+      final uid = (data['uid'] as String? ?? doc.id);
+      final name = (data['name'] as String? ?? '').trim();
+      final phone = (data['phone'] as String? ?? '').trim();
+      final email = (data['email'] as String? ?? '').trim();
+      final rating = (data['rating'] as num?)?.toDouble() ?? 5.0;
+
+      final vehicleParts = [
+        data['vehicle'] as String?,
+        data['vehicleNumber'] as String?,
+        data['vehicleType'] as String?,
+      ]
+          .where((s) => s != null && s.trim().isNotEmpty)
+          .map((s) => s!.trim())
+          .toList();
+
+      final vehicle = vehicleParts.isNotEmpty
+          ? vehicleParts.join(' • ')
+          : 'Electric Delivery Vehicle';
+
+      final assignedZone = (data['assignedZone'] as String? ??
+          data['zone'] as String? ??
+          'Delivery Zone');
+
+      final isOnline = (data['isOnline'] as bool?) ??
+          (data['status']?.toString().toLowerCase() == 'active');
+      final status =
+          isOnline ? 'Active' : (data['status'] as String? ?? 'Offline');
+
+      final totalDeliveriesToday =
+          (data['totalDeliveriesToday'] as num?)?.toInt() ??
+          (data['completedDeliveries'] as num?)?.toInt() ??
+          (data['totalDeliveries'] as num?)?.toInt() ?? 0;
+
+      final pendingDeliveries =
+          (data['pendingDeliveries'] as num?)?.toInt() ??
+          ((data['orderId'] != null &&
+                  (data['orderId'] as String).trim().isNotEmpty)
+              ? 1
+              : 0);
+
+      final joinedDate = data['createdAt'] is Timestamp
+          ? DateFormat('dd MMM yyyy')
+              .format((data['createdAt'] as Timestamp).toDate())
+          : (data['updatedAt'] is Timestamp
+              ? DateFormat('dd MMM yyyy')
+                  .format((data['updatedAt'] as Timestamp).toDate())
+              : 'Active');
+
+      ridersList.add(
+        DeliveryRider(
+          id: uid,
+          name: name.isNotEmpty ? name : 'Delivery Agent',
+          phone: phone.isNotEmpty ? phone : '+91 98765 00000',
+          email: email,
+          vehicle: vehicle,
+          assignedZone: assignedZone,
+          totalDeliveriesToday: totalDeliveriesToday,
+          pendingDeliveries: pendingDeliveries,
+          rating: rating,
+          status: status,
+          isOnline: isOnline,
+          joinedDate: joinedDate,
+        ),
+      );
+    }
+
+    _riders = ridersList;
+    _deliveryAgentsCount = ridersList.length;
+    notifyListeners();
+  }
+
+  void _listenToUsers() {
+    _usersSub = FirebaseFirestore.instance
+        .collection('users')
+        .snapshots()
+        .listen(
+      (snap) {
+        _lastUserDocs = snap.docs;
+        _rebuildCustomers();
+      },
+      onError: (e) {
+        _usersError = 'Failed to load users: $e';
+        _usersLoading = false;
+        notifyListeners();
+      },
+    );
+  }
+
+  void _listenToDeliveryAgents() {
+    _deliveryAgentsSub = FirebaseFirestore.instance
+        .collection('delivery_agents')
+        .snapshots()
+        .listen(
+      (snap) {
+        _rebuildRiders(snap.docs);
+      },
+      onError: (e) {
+        debugPrint('AdminProvider: delivery_agents stream error: $e');
+      },
+    );
+  }
 
   // ─── Cleanup ──────────────────────────────────────────────────────────
 
@@ -756,6 +1097,9 @@ class AdminProvider extends ChangeNotifier {
     _productsSub?.cancel();
     _categoriesSub?.cancel();
     _ordersSub?.cancel();
+    _complaintsSub?.cancel();
+    _usersSub?.cancel();
+    _deliveryAgentsSub?.cancel();
     super.dispose();
   }
 }

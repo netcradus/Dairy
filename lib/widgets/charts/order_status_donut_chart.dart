@@ -25,20 +25,26 @@ class _OrderStatusDonutChartState extends State<OrderStatusDonutChart> {
     final textSecondary = AppColors.textSecondaryOf(context);
     final textMuted = AppColors.textMutedOf(context);
 
+    final pendingCount = provider.pendingOrdersCount;
+    final confirmedCount = provider.confirmedOrdersCount;
+    final preparingCount = provider.preparingOrdersCount;
+    final outForDeliveryCount = provider.outForDeliveryOrdersCount;
+    final deliveredCount = provider.deliveredOrdersCount;
+    final cancelledCount = provider.cancelledOrdersCount;
+    final totalOrders = provider.totalOrdersCount;
+
     final sectionsData = [
-      {'label': 'Pending', 'value': 86, 'color': AppColors.statusPending},
-      {'label': 'Confirmed', 'value': 42, 'color': AppColors.statusConfirmed},
-      {'label': 'Preparing', 'value': 31, 'color': AppColors.statusPreparing},
+      {'label': 'Pending', 'value': pendingCount, 'color': AppColors.statusPending},
+      {'label': 'Confirmed', 'value': confirmedCount, 'color': AppColors.statusConfirmed},
+      {'label': 'Preparing', 'value': preparingCount, 'color': AppColors.statusPreparing},
       {
         'label': 'Out for Delivery',
-        'value': 54,
+        'value': outForDeliveryCount,
         'color': AppColors.statusOutForDelivery
       },
-      {'label': 'Delivered', 'value': 280, 'color': AppColors.statusDelivered},
-      {'label': 'Cancelled', 'value': 12, 'color': AppColors.statusCancelled},
+      {'label': 'Delivered', 'value': deliveredCount, 'color': AppColors.statusDelivered},
+      {'label': 'Cancelled', 'value': cancelledCount, 'color': AppColors.statusCancelled},
     ];
-
-    const int totalOrders = 505;
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -133,18 +139,28 @@ class _OrderStatusDonutChartState extends State<OrderStatusDonutChart> {
                           borderData: FlBorderData(show: false),
                           sectionsSpace: 2,
                           centerSpaceRadius: 36,
-                          sections: List.generate(sectionsData.length, (i) {
-                            final isTouched = i == touchedIndex;
-                            final radius = isTouched ? 22.0 : 18.0;
-                            final data = sectionsData[i];
+                          sections: totalOrders == 0
+                              ? [
+                                  PieChartSectionData(
+                                    color: cardBorder,
+                                    value: 1,
+                                    title: '',
+                                    radius: 18.0,
+                                  ),
+                                ]
+                              : List.generate(sectionsData.length, (i) {
+                                  final isTouched = i == touchedIndex;
+                                  final radius = isTouched ? 22.0 : 18.0;
+                                  final data = sectionsData[i];
+                                  final val = data['value'] as int;
 
-                            return PieChartSectionData(
-                              color: data['color'] as Color,
-                              value: (data['value'] as int).toDouble(),
-                              title: '',
-                              radius: radius,
-                            );
-                          }),
+                                  return PieChartSectionData(
+                                    color: data['color'] as Color,
+                                    value: val > 0 ? val.toDouble() : 0.001,
+                                    title: '',
+                                    radius: radius,
+                                  );
+                                }),
                         ),
                       ),
                       Column(
