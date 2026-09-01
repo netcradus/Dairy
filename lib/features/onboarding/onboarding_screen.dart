@@ -69,24 +69,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final List<OnboardingData> pages = [
       OnboardingData(
         title: tr('Fresh Dairy, Every Day'),
-        description:
-            tr('Enjoy fresh and quality dairy products delivered with care from Sawariya Dairy.'),
+        description: tr(
+            'Enjoy fresh and quality dairy products delivered with care from Sawariya Dairy.'),
         imageAsset: AppAssets.landingHeroMilk,
         showProductGrid: false,
         visualWidget: _DairyFreshVisual(),
       ),
       OnboardingData(
         title: tr('Pure Products, Trusted Quality'),
-        description:
-            tr('Every product is sourced fresh, hygienically packed and quality-checked to bring you the best of Sawariya Dairy.'),
+        description: tr(
+            'Every product is sourced fresh, hygienically packed and quality-checked to bring you the best of Sawariya Dairy.'),
         imageAsset: AppAssets.landingHeroProducts,
         showProductGrid: true,
         visualWidget: _DairyCollectionVisual(),
       ),
       OnboardingData(
         title: tr('Simple Shopping, Fresh Delivery'),
-        description:
-            tr('Discover your favorite dairy products, order easily and enjoy freshness at your doorstep.'),
+        description: tr(
+            'Discover your favorite dairy products, order easily and enjoy freshness at your doorstep.'),
         imageAsset: AppAssets.landingHeroScooter,
         showProductGrid: false,
         visualWidget: _DairyDeliveryVisual(),

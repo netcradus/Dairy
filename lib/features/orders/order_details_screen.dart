@@ -22,7 +22,8 @@ class OrderDetailsScreen extends ConsumerWidget {
     // Watch for live Firestore state changes (e.g., after cancel)
     final asyncOrders = ref.watch(customerOrdersProvider);
     final liveOrder = asyncOrders.when(
-      data: (orders) => orders.firstWhere((o) => o.id == order.id, orElse: () => order),
+      data: (orders) =>
+          orders.firstWhere((o) => o.id == order.id, orElse: () => order),
       loading: () => order,
       error: (_, __) => order,
     );

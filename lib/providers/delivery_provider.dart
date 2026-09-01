@@ -1,10 +1,14 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' hide Order;
 
 import '../models/delivery_boy_model.dart';
 import '../models/order.dart';
+import '../models/user.dart';
 import '../services/delivery_tracking_service.dart';
 import '../services/order_service.dart';
+import 'user_provider.dart';
 
 /// Maps a Firestore [Order] into the delivery panel's [DeliveryOrder] view
 /// model. Active orders from the `orders` collection don't carry an assigned
@@ -13,7 +17,7 @@ DeliveryOrder deliveryOrderFromOrder(Order order) {
   const hub = 'Sawariya Dairy Hub, Vijay Nagar';
   const hubPhone = '+91 731 400 5000';
 
-  DeliveryOrderStatus status;
+  DeliveryOrderStatus status = DeliveryOrderStatus.pendingAcceptance;
   switch (order.status) {
     case OrderStatus.placed:
       // A freshly placed order is a delivery request awaiting driver acceptance.
@@ -67,7 +71,8 @@ final deliveryOrdersStreamProvider = StreamProvider<List<DeliveryOrder>>((ref) {
   return ref
       .watch(orderServiceProvider)
       .streamDeliveryOrdersForAgent(agentId)
-      .map((orders) => orders.map(deliveryOrderFromOrder).toList());
+      .map<List<DeliveryOrder>>((List<Order> orders) =>
+          orders.map<DeliveryOrder>(deliveryOrderFromOrder).toList());
 });
 
 /// Live Firestore stream of the agent's active (accepted / in-progress) orders,
@@ -79,9 +84,9 @@ final deliveryActiveOrdersStreamProvider =
   return ref
       .watch(orderServiceProvider)
       .streamDeliveryOrdersForAgent(agentId)
-      .map((orders) => orders
-          .map(deliveryOrderFromOrder)
-          .where((o) =>
+      .map<List<DeliveryOrder>>((List<Order> orders) => orders
+          .map<DeliveryOrder>(deliveryOrderFromOrder)
+          .where((DeliveryOrder o) =>
               o.status == DeliveryOrderStatus.accepted ||
               o.status == DeliveryOrderStatus.pickup ||
               o.status == DeliveryOrderStatus.outForDelivery)
@@ -120,19 +125,19 @@ final deliveryHistoryStreamProvider =
 
 class DeliveryNotifier extends StateNotifier<DeliveryAgent> {
   final Ref _ref;
+  final User _user;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  StreamSubscription<DocumentSnapshot>? _subscription;
 
-  DeliveryNotifier(this._ref) : super(_getMockAgent());
+  DeliveryNotifier(this._ref, this._user) : super(_getDefaultAgent(_user)) {
+    _listenToAgentDoc();
+  }
 
-  /// Returns the signed-in delivery agent's Firebase Auth uid, falling back to a
-  /// placeholder only when no user is authenticated (e.g. during local dev).
-  static String get _agentId =>
-      FirebaseAuth.instance.currentUser?.uid ?? 'unknown_agent';
-
-  static DeliveryAgent _getMockAgent() {
+  static DeliveryAgent _getDefaultAgent(User user) {
     return DeliveryAgent(
-      id: _agentId,
-      name: 'Rajesh Kumar',
-      phone: '+91 98765 43210',
+      id: user.id.isNotEmpty ? user.id : 'unknown_agent',
+      name: user.name.isNotEmpty ? user.name : 'Rajesh Kumar',
+      phone: user.phone.isNotEmpty ? user.phone : '+91 98765 43210',
       vehicle: 'Honda Activa',
       vehicleNumber: 'MP 09 AB 1234',
       assignedZone: 'Zone A - Vijay Nagar',
@@ -141,30 +146,114 @@ class DeliveryNotifier extends StateNotifier<DeliveryAgent> {
       completedDeliveriesToday: 0,
       earningsToday: 0.0,
       rating: 4.8,
-      profileImageUrl: null,
+      profileImageUrl: user.profileImageUrl,
     );
   }
 
-  void toggleDuty() {
-    final newStatus = state.status == DeliveryStatus.offDuty
-        ? DeliveryStatus.onDuty
-        : DeliveryStatus.offDuty;
-    final isOnline = newStatus == DeliveryStatus.onDuty;
-    state = state.copyWith(
-      status: newStatus,
-      totalDeliveriesToday:
-          newStatus == DeliveryStatus.onDuty ? 0 : state.totalDeliveriesToday,
-      completedDeliveriesToday: newStatus == DeliveryStatus.onDuty
-          ? 0
-          : state.completedDeliveriesToday,
-      earningsToday:
-          newStatus == DeliveryStatus.onDuty ? 0.0 : state.earningsToday,
-    );
-    // Persist the evaluated duty state so Firestore never keeps a stale
-    // `isOnline` value (e.g. staying `true` after the agent goes offline).
-    _ref
-        .read(deliveryTrackingServiceProvider)
-        .updateAgentOnlineStatus(state.id, isOnline);
+  Future<void> _populateAgentProfileDoc({bool isNew = false}) async {
+    if (_user.id.isEmpty) return;
+    try {
+      final docRef = _firestore.collection('delivery_agents').doc(_user.id);
+      await docRef.set({
+        'uid': _user.id,
+        'name': _user.name.isNotEmpty ? _user.name : 'Rajesh Kumar',
+        'phone': _user.phone.isNotEmpty ? _user.phone : '+91 7777777777',
+        'email': (_user.email?.isNotEmpty ?? false)
+            ? _user.email!
+            : 'delivery@sawariyadairy.com',
+        'vehicle': 'Honda Activa',
+        'vehicleType': 'Honda Activa',
+        'vehicleNumber': 'MP 09 AB 1234',
+        'assignedZone': 'Zone A - Vijay Nagar',
+        'profileImageUrl': _user.profileImageUrl,
+        'rating': 4.8,
+        if (isNew) ...{
+          'isOnline': false,
+          'isOnDuty': false,
+          'totalDeliveriesToday': 0,
+          'completedDeliveriesToday': 0,
+          'earningsToday': 0.0,
+          'createdAt': FieldValue.serverTimestamp(),
+        },
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (_) {}
+  }
+
+  void _listenToAgentDoc() {
+    _subscription?.cancel();
+    if (_user.id.isEmpty) return;
+
+    _subscription = _firestore
+        .collection('delivery_agents')
+        .doc(_user.id)
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.exists) {
+        final data = snapshot.data();
+        if (data != null) {
+          // If profile fields are missing, populate them in the background
+          if (data['name'] == null ||
+              data['phone'] == null ||
+              data['vehicle'] == null) {
+            _populateAgentProfileDoc();
+          }
+
+          final isOnline = data['isOnline'] ?? data['isOnDuty'] ?? false;
+          state = DeliveryAgent(
+            id: _user.id,
+            name: data['name'] ??
+                (_user.name.isNotEmpty ? _user.name : 'Rajesh Kumar'),
+            phone: data['phone'] ??
+                (_user.phone.isNotEmpty ? _user.phone : '+91 98765 43210'),
+            vehicle: data['vehicle'] ?? data['vehicleType'] ?? 'Honda Activa',
+            vehicleNumber: data['vehicleNumber'] ?? 'MP 09 AB 1234',
+            assignedZone: data['assignedZone'] ?? 'Zone A - Vijay Nagar',
+            status: isOnline ? DeliveryStatus.onDuty : DeliveryStatus.offDuty,
+            totalDeliveriesToday: (data['totalDeliveriesToday'] ?? 0) as int,
+            completedDeliveriesToday:
+                (data['completedDeliveriesToday'] ?? 0) as int,
+            earningsToday: ((data['earningsToday'] ?? 0.0) as num).toDouble(),
+            rating: ((data['rating'] ?? 4.8) as num).toDouble(),
+            profileImageUrl: data['profileImageUrl'] ?? _user.profileImageUrl,
+          );
+        }
+      } else {
+        // Document does not exist, populate new profile doc
+        _populateAgentProfileDoc(isNew: true);
+      }
+    }, onError: (_) {
+      // Ignore background errors
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> toggleDuty() async {
+    if (_user.id.isEmpty) return;
+
+    final isOnline = state.status != DeliveryStatus.onDuty;
+    final newStatus = isOnline ? DeliveryStatus.onDuty : DeliveryStatus.offDuty;
+
+    // Optimistically update local state
+    state = state.copyWith(status: newStatus);
+
+    try {
+      await _firestore.collection('delivery_agents').doc(_user.id).set({
+        'isOnline': isOnline,
+        'isOnDuty': isOnline,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      // Update legacy tracking service
+      await _ref
+          .read(deliveryTrackingServiceProvider)
+          .updateAgentOnlineStatus(_user.id, isOnline);
+    } catch (_) {}
   }
 
   void startBreak() {
@@ -191,7 +280,8 @@ class DeliveryNotifier extends StateNotifier<DeliveryAgent> {
 
 final deliveryAgentProvider =
     StateNotifierProvider<DeliveryNotifier, DeliveryAgent>((ref) {
-  return DeliveryNotifier(ref);
+  final user = ref.watch(userProvider);
+  return DeliveryNotifier(ref, user);
 });
 
 class DeliveryEarningsNotifier extends StateNotifier<List<DeliveryEarnings>> {

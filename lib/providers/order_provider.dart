@@ -172,8 +172,7 @@ final currentUserIdProvider = Provider<String?>((ref) {
 });
 
 /// All orders for the current user from Firestore.
-final customerOrdersProvider =
-    StreamProvider.autoDispose<List<Order>>((ref) {
+final customerOrdersProvider = StreamProvider.autoDispose<List<Order>>((ref) {
   final userId = ref.watch(currentUserIdProvider);
   if (userId == null) {
     return const Stream.empty();
@@ -189,14 +188,16 @@ final customerUpcomingOrdersProvider = Provider<AsyncValue<List<Order>>>((ref) {
 });
 
 /// Completed orders for the current user from Firestore.
-final customerCompletedOrdersProvider = Provider<AsyncValue<List<Order>>>((ref) {
+final customerCompletedOrdersProvider =
+    Provider<AsyncValue<List<Order>>>((ref) {
   return ref.watch(customerOrdersProvider).whenData(
         (orders) => orders.where((o) => o.isCompleted).toList(),
       );
 });
 
 /// Cancelled orders for the current user from Firestore.
-final customerCancelledOrdersProvider = Provider<AsyncValue<List<Order>>>((ref) {
+final customerCancelledOrdersProvider =
+    Provider<AsyncValue<List<Order>>>((ref) {
   return ref.watch(customerOrdersProvider).whenData(
         (orders) => orders.where((o) => o.isCancelled).toList(),
       );

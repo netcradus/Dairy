@@ -52,7 +52,7 @@ class AdminProvider extends ChangeNotifier {
   String? get ordersError => _ordersError;
 
   List<DairyProduct> get topSellingProducts =>
-      _products.where((p) => p.isBestSeller).toList().take(5).toList();
+      _products.where((p) => p.isBestSeller).toList();
 
   AdminProvider({FirestoreProductRepository? repo, OrderService? orderService})
       : _repo = repo ?? FirestoreProductRepository(),
@@ -178,12 +178,25 @@ class AdminProvider extends ChangeNotifier {
   // ─── Mapping helpers ──────────────────────────────────────────────────
 
   static const Map<String, String> _categoryNameToId = {
+    'Milk': 'cat_milk',
     'Milk & Creams': 'cat_milk',
+    'Paneer': 'cat_paneer',
     'Paneer & Curd': 'cat_paneer',
+    'Paneer & Butter': 'cat_paneer',
+    'Ghee': 'cat_ghee',
+    'Pure Ghee': 'cat_ghee',
     'Ghee & Butter': 'cat_ghee',
     'Beverages': 'cat_lassi',
     'Lassi': 'cat_lassi',
+    'Curd & Lassi': 'cat_lassi',
     'Makhan': 'cat_makhan',
+    'Uple': 'cat_uple',
+    'Cow Dung Cake': 'cat_uple',
+    'Organic Uple': 'cat_uple',
+    'Pooja Essentials': 'cat_uple',
+    'Water': 'cat_water',
+    'Water Bottle': 'cat_water',
+    'Water Bottle 20L': 'cat_water',
   };
 
   static String _categoryIdForName(String name) {
