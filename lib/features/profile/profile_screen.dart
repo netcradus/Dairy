@@ -162,6 +162,17 @@ class ProfileScreen extends ConsumerWidget {
                                     height: 1, color: Color(0xFFF1F5F9)),
                                 _buildMenuTile(
                                   context,
+                                  Icons.support_agent_rounded,
+                                  'Support / Complaints',
+                                  'Raise queries & view ticket status',
+                                  () {
+                                    context.push('/support');
+                                  },
+                                ),
+                                const Divider(
+                                    height: 1, color: Color(0xFFF1F5F9)),
+                                _buildMenuTile(
+                                  context,
                                   Icons.info_outline_rounded,
                                   'About Sawariya Dairy',
                                   'Know more about us',
