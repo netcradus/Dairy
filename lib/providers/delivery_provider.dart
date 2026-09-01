@@ -158,7 +158,9 @@ class DeliveryNotifier extends StateNotifier<DeliveryAgent> {
         'uid': _user.id,
         'name': _user.name.isNotEmpty ? _user.name : 'Rajesh Kumar',
         'phone': _user.phone.isNotEmpty ? _user.phone : '+91 7777777777',
-        'email': (_user.email?.isNotEmpty ?? false) ? _user.email! : 'delivery@sawariyadairy.com',
+        'email': (_user.email?.isNotEmpty ?? false)
+            ? _user.email!
+            : 'delivery@sawariyadairy.com',
         'vehicle': 'Honda Activa',
         'vehicleType': 'Honda Activa',
         'vehicleNumber': 'MP 09 AB 1234',
@@ -200,14 +202,17 @@ class DeliveryNotifier extends StateNotifier<DeliveryAgent> {
           final isOnline = data['isOnline'] ?? data['isOnDuty'] ?? false;
           state = DeliveryAgent(
             id: _user.id,
-            name: data['name'] ?? (_user.name.isNotEmpty ? _user.name : 'Rajesh Kumar'),
-            phone: data['phone'] ?? (_user.phone.isNotEmpty ? _user.phone : '+91 98765 43210'),
+            name: data['name'] ??
+                (_user.name.isNotEmpty ? _user.name : 'Rajesh Kumar'),
+            phone: data['phone'] ??
+                (_user.phone.isNotEmpty ? _user.phone : '+91 98765 43210'),
             vehicle: data['vehicle'] ?? data['vehicleType'] ?? 'Honda Activa',
             vehicleNumber: data['vehicleNumber'] ?? 'MP 09 AB 1234',
             assignedZone: data['assignedZone'] ?? 'Zone A - Vijay Nagar',
             status: isOnline ? DeliveryStatus.onDuty : DeliveryStatus.offDuty,
             totalDeliveriesToday: (data['totalDeliveriesToday'] ?? 0) as int,
-            completedDeliveriesToday: (data['completedDeliveriesToday'] ?? 0) as int,
+            completedDeliveriesToday:
+                (data['completedDeliveriesToday'] ?? 0) as int,
             earningsToday: ((data['earningsToday'] ?? 0.0) as num).toDouble(),
             rating: ((data['rating'] ?? 4.8) as num).toDouble(),
             profileImageUrl: data['profileImageUrl'] ?? _user.profileImageUrl,

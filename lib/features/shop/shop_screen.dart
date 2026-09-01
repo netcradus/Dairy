@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:video_player/video_player.dart';
+import 'dart:ui';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/responsive/responsive.dart';
@@ -87,14 +88,24 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
             !product.title.toLowerCase().contains('butter') &&
             !product.title.toLowerCase().contains('makhan');
       } else if (selectedCategoryId == 'cat_ghee') {
-        matchesCategory = product.categoryId == 'cat_ghee';
+        matchesCategory = product.categoryId == 'cat_ghee' ||
+            product.title.toLowerCase().contains('ghee');
       } else if (selectedCategoryId == 'cat_lassi') {
-        matchesCategory = product.categoryId == 'cat_curd' ||
+        matchesCategory = product.categoryId == 'cat_lassi' ||
+            product.categoryId == 'cat_curd' ||
             product.title.toLowerCase().contains('lassi') ||
             product.title.toLowerCase().contains('dahi');
       } else if (selectedCategoryId == 'cat_makhan') {
-        matchesCategory = product.title.toLowerCase().contains('butter') ||
+        matchesCategory = product.categoryId == 'cat_makhan' ||
+            product.title.toLowerCase().contains('butter') ||
             product.title.toLowerCase().contains('makhan');
+      } else if (selectedCategoryId == 'cat_uple') {
+        matchesCategory = product.categoryId == 'cat_uple' ||
+            product.title.toLowerCase().contains('uple') ||
+            product.title.toLowerCase().contains('dung');
+      } else if (selectedCategoryId == 'cat_water') {
+        matchesCategory = product.categoryId == 'cat_water' ||
+            product.title.toLowerCase().contains('water');
       } else {
         matchesCategory = product.categoryId == selectedCategoryId;
       }
@@ -123,12 +134,6 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         'description': '100% pure A2 milk sourced daily from healthy cows.'
       },
       {
-        'id': 'cat_makhan',
-        'title': 'Makhan',
-        'image': 'assets/images/mak.png',
-        'description': 'Freshly churned creamy unsalted white table butter.'
-      },
-      {
         'id': 'cat_paneer',
         'title': 'Paneer',
         'image': 'assets/images/pan.png',
@@ -137,9 +142,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       },
       {
         'id': 'cat_ghee',
-        'title': 'Butter',
+        'title': 'Pure Ghee',
         'image': 'assets/images/gh.png',
-        'description': 'Rich golden butter roll and slab made from fresh cream.'
+        'description': 'Traditional bilona method pure cow ghee.'
       },
       {
         'id': 'cat_lassi',
@@ -148,16 +153,22 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         'description': 'Thick, creamy, and refreshing probiotic sweet lassi.'
       },
       {
+        'id': 'cat_makhan',
+        'title': 'Makhan',
+        'image': 'assets/images/mak.png',
+        'description': 'Freshly churned creamy unsalted white table butter.'
+      },
+      {
+        'id': 'cat_uple',
+        'title': 'Uple',
+        'image': 'assets/images/u3.png',
+        'description': 'Premium organic cow dung cakes for pooja and rituals.'
+      },
+      {
         'id': 'cat_water',
         'title': 'Water',
         'image': 'assets/images/w3.png',
         'description': 'Pure 20L Water Bottle delivered to your doorstep.'
-      },
-      {
-        'id': 'cat_uple',
-        'title': 'Cow Dung Cake',
-        'image': 'assets/images/u3.png',
-        'description': 'Premium organic cow dung cakes for pooja and rituals.'
       },
     ];
 
@@ -301,129 +312,142 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
               // ── Horizontal Categories Row ──
               SizedBox(
                 height: 125,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: categoryOptions.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
-                  itemBuilder: (context, index) {
-                    final cat = categoryOptions[index];
-                    final isSelected = cat['id'] == selectedCategoryId;
+                child: ScrollConfiguration(
+                  behavior: ScrollConfiguration.of(context).copyWith(
+                    dragDevices: {
+                      PointerDeviceKind.touch,
+                      PointerDeviceKind.mouse,
+                      PointerDeviceKind.trackpad,
+                      PointerDeviceKind.stylus,
+                    },
+                  ),
+                  child: ListView.separated(
+                    physics: const BouncingScrollPhysics(
+                        parent: AlwaysScrollableScrollPhysics()),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: categoryOptions.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 12),
+                    itemBuilder: (context, index) {
+                      final cat = categoryOptions[index];
+                      final isSelected = cat['id'] == selectedCategoryId;
 
-                    // Color mapping matching mockups
-                    Color getBorderColor(String id) {
-                      switch (id) {
-                        case 'cat_milk':
-                          return const Color(0xFF5B9BD5);
-                        case 'cat_ghee':
-                          return const Color(0xFFEDC240);
-                        case 'cat_lassi':
-                          return const Color(0xFFD38B27);
-                        case 'cat_makhan':
-                          return const Color(0xFFF2D16D);
-                        case 'cat_paneer':
-                          return const Color(0xFF70AD47);
-                        default:
-                          return const Color(0xFF005F38);
+                      // Color mapping matching mockups
+                      Color getBorderColor(String id) {
+                        switch (id) {
+                          case 'cat_milk':
+                            return const Color(0xFF5B9BD5);
+                          case 'cat_ghee':
+                            return const Color(0xFFEDC240);
+                          case 'cat_lassi':
+                            return const Color(0xFFD38B27);
+                          case 'cat_makhan':
+                            return const Color(0xFFF2D16D);
+                          case 'cat_paneer':
+                            return const Color(0xFF70AD47);
+                          default:
+                            return const Color(0xFF005F38);
+                        }
                       }
-                    }
 
-                    Color getBgColor(String id) {
-                      switch (id) {
-                        case 'cat_milk':
-                          return const Color(0xFFEAF5FF);
-                        case 'cat_ghee':
-                          return const Color(0xFFFFF9EE);
-                        case 'cat_lassi':
-                          return const Color(0xFFEBF3FE);
-                        case 'cat_makhan':
-                          return const Color(0xFFF0F9F4);
-                        case 'cat_paneer':
-                          return const Color(0xFFFFF5EA);
-                        default:
-                          return const Color(0xFFEAF5EF);
+                      Color getBgColor(String id) {
+                        switch (id) {
+                          case 'cat_milk':
+                            return const Color(0xFFEAF5FF);
+                          case 'cat_ghee':
+                            return const Color(0xFFFFF9EE);
+                          case 'cat_lassi':
+                            return const Color(0xFFEBF3FE);
+                          case 'cat_makhan':
+                            return const Color(0xFFF0F9F4);
+                          case 'cat_paneer':
+                            return const Color(0xFFFFF5EA);
+                          default:
+                            return const Color(0xFFEAF5EF);
+                        }
                       }
-                    }
 
-                    return GestureDetector(
-                      onTap: () {
-                        ref.read(selectedCategoryProvider.notifier).state =
-                            (cat['id'] as String?) ?? 'cat_all';
-                        _showCategoryPopup(context, cat);
-                      },
-                      child: AnimatedScale(
-                        duration: const Duration(milliseconds: 200),
-                        scale: isSelected ? 1.08 : 0.95,
-                        child: SizedBox(
-                          width: 80,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                height: 76,
-                                width: 76,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  color: getBgColor(cat['id'] as String),
-                                  border: Border.all(
-                                    color: getBorderColor(cat['id'] as String),
-                                    width: isSelected ? 3.0 : 1.5,
-                                  ),
-                                  boxShadow: [
-                                    if (isSelected)
-                                      BoxShadow(
-                                        color:
-                                            getBorderColor(cat['id'] as String)
-                                                .withOpacity(0.25),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 3),
-                                      )
-                                    else
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.03),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 1.5),
-                                      ),
-                                  ],
-                                ),
-                                child: Center(
-                                  child: cat['id'] == 'cat_all'
-                                      ? Icon(
-                                          Icons
-                                              .cabin_rounded, // farm/barn-like icon
-                                          color: AppColors.primary,
-                                          size: 36,
+                      return GestureDetector(
+                        onTap: () {
+                          ref.read(selectedCategoryProvider.notifier).state =
+                              (cat['id'] as String?) ?? 'cat_all';
+                          _showCategoryPopup(context, cat);
+                        },
+                        child: AnimatedScale(
+                          duration: const Duration(milliseconds: 200),
+                          scale: isSelected ? 1.08 : 0.95,
+                          child: SizedBox(
+                            width: 80,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  height: 76,
+                                  width: 76,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(20),
+                                    color: getBgColor(cat['id'] as String),
+                                    border: Border.all(
+                                      color:
+                                          getBorderColor(cat['id'] as String),
+                                      width: isSelected ? 3.0 : 1.5,
+                                    ),
+                                    boxShadow: [
+                                      if (isSelected)
+                                        BoxShadow(
+                                          color: getBorderColor(
+                                                  cat['id'] as String)
+                                              .withOpacity(0.25),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 3),
                                         )
-                                      : Padding(
-                                          padding: const EdgeInsets.all(2),
-                                          child: Image.asset(
-                                            (cat['image'] as String?) ?? '',
-                                            fit: BoxFit.contain,
-                                          ),
+                                      else
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.03),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 1.5),
                                         ),
+                                    ],
+                                  ),
+                                  child: Center(
+                                    child: cat['id'] == 'cat_all'
+                                        ? Icon(
+                                            Icons
+                                                .cabin_rounded, // farm/barn-like icon
+                                            color: AppColors.primary,
+                                            size: 36,
+                                          )
+                                        : Padding(
+                                            padding: const EdgeInsets.all(2),
+                                            child: Image.asset(
+                                              (cat['image'] as String?) ?? '',
+                                              fit: BoxFit.contain,
+                                            ),
+                                          ),
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                cat['id'] == 'cat_all'
-                                    ? 'ALL'
-                                    : (cat['title'] as String?) ?? '',
-                                style: TextStyle(
-                                  fontSize: 12.5,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w900
-                                      : FontWeight.w500,
-                                  color: isSelected
-                                      ? const Color(0xFF005F38)
-                                      : const Color(0xFF667085),
+                                const SizedBox(height: 8),
+                                Text(
+                                  cat['id'] == 'cat_all'
+                                      ? 'ALL'
+                                      : (cat['title'] as String?) ?? '',
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w900
+                                        : FontWeight.w500,
+                                    color: isSelected
+                                        ? const Color(0xFF005F38)
+                                        : const Color(0xFF667085),
+                                  ),
+                                  textAlign: TextAlign.center,
                                 ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
               ),
               const SizedBox(height: 18),

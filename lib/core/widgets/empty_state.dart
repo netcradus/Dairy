@@ -82,7 +82,7 @@ class EmptyStateWidget extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             if (buttonText != null && onButtonPressed != null) ...[
-             const SizedBox(height: 28),
+              const SizedBox(height: 28),
               SizedBox(
                 width: 200,
                 child: AppButton(

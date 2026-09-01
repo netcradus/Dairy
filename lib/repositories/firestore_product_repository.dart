@@ -30,18 +30,66 @@ class FirestoreProductRepository {
   CollectionReference<Map<String, dynamic>> get _categories =>
       _firestore.collection('categories');
 
-  // ─── Streams ─────────────────────────────────────────────────────────────
+  // ─── Merging Helpers for Missing Defaults ─────────────────────────────────
 
-  /// Real-time stream of all products.
-  Stream<List<Product>> streamProducts() {
-    return _products.snapshots().map((snap) =>
-        snap.docs.map((d) => Product.fromFirestore(d.data(), d.id)).toList());
+  static List<Category> _mergeMissingDefaultCategories(List<Category> list) {
+    final existingIds = {for (final c in list) c.id};
+    final merged = List<Category>.from(list);
+    for (final entry in _defaultCategories.entries) {
+      if (!existingIds.contains(entry.key)) {
+        merged.add(Category.fromFirestore(entry.value, entry.key));
+      }
+    }
+    return merged;
   }
 
-  /// Real-time stream of all categories.
+  static List<Map<String, dynamic>> _mergeMissingDefaultRawCategories(
+      List<Map<String, dynamic>> list) {
+    final existingIds = {for (final c in list) c['id'] as String?};
+    final merged = List<Map<String, dynamic>>.from(list);
+    for (final entry in _defaultCategories.entries) {
+      if (!existingIds.contains(entry.key)) {
+        merged.add({'id': entry.key, ...entry.value});
+      }
+    }
+    return merged;
+  }
+
+  static List<Product> _mergeMissingDefaultProducts(List<Product> list) {
+    final existingIds = {for (final p in list) p.id};
+    final merged = List<Product>.from(list);
+    for (final entry in _defaultProducts.entries) {
+      if (!existingIds.contains(entry.key)) {
+        merged.add(Product.fromFirestore(entry.value, entry.key));
+      }
+    }
+    return merged;
+  }
+
+  static List<Map<String, dynamic>> _mergeMissingDefaultRawProducts(
+      List<Map<String, dynamic>> list) {
+    final existingIds = {for (final p in list) p['id'] as String?};
+    final merged = List<Map<String, dynamic>>.from(list);
+    for (final entry in _defaultProducts.entries) {
+      if (!existingIds.contains(entry.key)) {
+        merged.add({'id': entry.key, ...entry.value});
+      }
+    }
+    return merged;
+  }
+
+  // ─── Streams ─────────────────────────────────────────────────────────────
+
+  /// Real-time stream of all products (with missing default products safely merged).
+  Stream<List<Product>> streamProducts() {
+    return _products.snapshots().map((snap) => _mergeMissingDefaultProducts(
+        snap.docs.map((d) => Product.fromFirestore(d.data(), d.id)).toList()));
+  }
+
+  /// Real-time stream of all categories (with missing default categories safely merged).
   Stream<List<Category>> streamCategories() {
-    return _categories.snapshots().map((snap) =>
-        snap.docs.map((d) => Category.fromFirestore(d.data(), d.id)).toList());
+    return _categories.snapshots().map((snap) => _mergeMissingDefaultCategories(
+        snap.docs.map((d) => Category.fromFirestore(d.data(), d.id)).toList()));
   }
 
   /// Real-time stream of raw product documents.
@@ -51,14 +99,15 @@ class FirestoreProductRepository {
   /// packaging, emoji, stockQuantity, etc.) that are not part of the
   /// customer-facing [Product] model.
   Stream<List<Map<String, dynamic>>> streamRawProducts() {
-    return _products.snapshots().map(
-        (snap) => snap.docs.map((d) => {'id': d.id, ...d.data()}).toList());
+    return _products.snapshots().map((snap) => _mergeMissingDefaultRawProducts(
+        snap.docs.map((d) => {'id': d.id, ...d.data()}).toList()));
   }
 
   /// Real-time stream of raw category documents (with `'id'` key).
   Stream<List<Map<String, dynamic>>> streamRawCategories() {
-    return _categories.snapshots().map(
-        (snap) => snap.docs.map((d) => {'id': d.id, ...d.data()}).toList());
+    return _categories.snapshots().map((snap) =>
+        _mergeMissingDefaultRawCategories(
+            snap.docs.map((d) => {'id': d.id, ...d.data()}).toList()));
   }
 
   // ─── One-time fetches ────────────────────────────────────────────────────
@@ -66,15 +115,17 @@ class FirestoreProductRepository {
   /// One-time fetch of all products (useful with a [FutureBuilder]).
   Future<List<Product>> fetchProducts() async {
     final snap = await _products.get();
-    return snap.docs.map((d) => Product.fromFirestore(d.data(), d.id)).toList();
+    final list =
+        snap.docs.map((d) => Product.fromFirestore(d.data(), d.id)).toList();
+    return _mergeMissingDefaultProducts(list);
   }
 
   /// One-time fetch of all categories (useful with a [FutureBuilder]).
   Future<List<Category>> fetchCategories() async {
     final snap = await _categories.get();
-    return snap.docs
-        .map((d) => Category.fromFirestore(d.data(), d.id))
-        .toList();
+    final list =
+        snap.docs.map((d) => Category.fromFirestore(d.data(), d.id)).toList();
+    return _mergeMissingDefaultCategories(list);
   }
 
   // ─── Writes ──────────────────────────────────────────────────────────────
@@ -108,54 +159,45 @@ class FirestoreProductRepository {
 
   // ─── Default seeding ─────────────────────────────────────────────────────
 
-  static const String _seedConfigPath = '_config/seed_status';
-  static const String _seedField = 'defaultsSeeded';
-
-  /// Writes the 5 default categories and 5 default products to Firestore on
-  /// first launch.  Subsequent calls are no-ops because a config document
-  /// (`_config/seed_status`) is set to `true` after the first successful seed.
-  ///
-  /// This is intentionally idempotent:
-  ///   - A static flag prevents per-process re-runs.
-  ///   - The Firestore config doc persists across restarts.
-  ///   - Using `SetOptions(merge: true)` + deterministic IDs means re-running
-  ///     (e.g. if the flag check races) will not duplicate or overwrite
-  ///     Admin-modified data.
+  /// Safely seeds missing default categories and products (including Uple & Water)
+  /// to Firestore.  Uses `SetOptions(merge: true)` with deterministic IDs so it
+  /// never overwrites existing modified data or duplicates records.
   Future<void> seedDefaultsIfNeeded() async {
     try {
-      final configDoc = _firestore.doc(_seedConfigPath);
-      final configSnap = await configDoc.get();
-
-      if (configSnap.exists &&
-          (configSnap.data()?[_seedField] as bool?) == true) {
-        return;
-      }
-
       final batch = _firestore.batch();
+      bool hasWrites = false;
 
       for (final entry in _defaultCategories.entries) {
-        batch.set(
-          _categories.doc(entry.key),
-          entry.value,
-          SetOptions(merge: true),
-        );
+        final doc = await _categories.doc(entry.key).get();
+        if (!doc.exists) {
+          batch.set(
+            _categories.doc(entry.key),
+            entry.value,
+            SetOptions(merge: true),
+          );
+          hasWrites = true;
+        }
       }
 
       for (final entry in _defaultProducts.entries) {
-        batch.set(
-          _products.doc(entry.key),
-          entry.value,
-          SetOptions(merge: true),
-        );
+        final doc = await _products.doc(entry.key).get();
+        if (!doc.exists) {
+          batch.set(
+            _products.doc(entry.key),
+            entry.value,
+            SetOptions(merge: true),
+          );
+          hasWrites = true;
+        }
       }
 
-      batch.set(configDoc, {_seedField: true}, SetOptions(merge: true));
-
-      await batch.commit();
-      developer.log(
-        'Default categories & products seeded successfully.',
-        name: 'FirestoreProductRepository',
-      );
+      if (hasWrites) {
+        await batch.commit();
+        developer.log(
+          'Missing default categories & products seeded to Firestore successfully.',
+          name: 'FirestoreProductRepository',
+        );
+      }
     } catch (e) {
       developer.log(
         'seedDefaultsIfNeeded failed (non-fatal): $e',

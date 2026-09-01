@@ -202,8 +202,8 @@ class AddressScreen extends ConsumerWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => AddAddressScreen(
-                                      addressToEdit: address),
+                                  builder: (_) =>
+                                      AddAddressScreen(addressToEdit: address),
                                 ),
                               );
                             },
@@ -213,8 +213,8 @@ class AddressScreen extends ConsumerWidget {
                                   .removeAddress(address.id);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                    content: Text(
-                                        'Address deleted successfully')),
+                                    content:
+                                        Text('Address deleted successfully')),
                               );
                             },
                             onSetDefault: () {
@@ -223,8 +223,7 @@ class AddressScreen extends ConsumerWidget {
                                   .setDefault(address.id);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                    content:
-                                        Text('Default address updated')),
+                                    content: Text('Default address updated')),
                               );
                             },
                           );
