@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/responsive/responsive_layout.dart';
+import '../../providers/admin_provider.dart';
 import '../../widgets/status_badge.dart';
 
 class StaffRolesScreen extends StatelessWidget {
@@ -9,6 +11,7 @@ class StaffRolesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<AdminProvider>();
     final isDesktop = ResponsiveLayout.isDesktop(context);
     final cardBg = AppColors.cardBgOf(context);
     final cardBorder = AppColors.cardBorderOf(context);
@@ -16,32 +19,16 @@ class StaffRolesScreen extends StatelessWidget {
     final textSecondary = AppColors.textSecondaryOf(context);
     final dividerColor = AppColors.dividerOf(context);
 
-    final staffList = [
-      {
-        'name': 'Admin User',
-        'email': 'admin@sawariyadairy.com',
-        'role': 'Super Admin',
-        'status': 'Active'
-      },
-      {
-        'name': 'Karan Grover',
-        'email': 'karan.g@sawariyadairy.com',
-        'role': 'Dispatch Manager',
-        'status': 'Active'
-      },
-      {
-        'name': 'Neha Soni',
-        'email': 'neha.soni@sawariyadairy.com',
-        'role': 'Accounts Lead',
-        'status': 'Active'
-      },
-      {
-        'name': 'Deepak Joshi',
-        'email': 'deepak.j@sawariyadairy.com',
-        'role': 'Inventory Head',
-        'status': 'Active'
-      },
-    ];
+    final staffList = provider.staffList.isNotEmpty
+        ? provider.staffList
+        : [
+            {
+              'name': 'Primary Admin',
+              'email': 'admin@sawariyadairy.com',
+              'role': 'Super Admin',
+              'status': 'Active',
+            }
+          ];
 
     return SingleChildScrollView(
       padding: EdgeInsets.symmetric(
@@ -98,7 +85,7 @@ class StaffRolesScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              staff['name']!,
+                              staff['name'] ?? 'Admin User',
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
@@ -106,7 +93,7 @@ class StaffRolesScreen extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              '${staff['email']} • ${staff['role']}',
+                              '${staff['email'] ?? ''} • ${staff['role'] ?? 'Staff'}',
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 12,
                                 color: textSecondary,
@@ -115,7 +102,7 @@ class StaffRolesScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      StatusBadge.fromString(staff['status']!),
+                      StatusBadge.fromString(staff['status'] ?? 'Active'),
                     ],
                   ),
                 );
