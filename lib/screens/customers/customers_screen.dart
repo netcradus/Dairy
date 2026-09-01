@@ -17,6 +17,10 @@ class CustomersScreen extends StatelessWidget {
     final isDesktop = ResponsiveLayout.isDesktop(context);
     final currencyFormatter =
         NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final cardBg = AppColors.cardBgOf(context);
+    final cardBorder = AppColors.cardBorderOf(context);
+    final textPrimary = AppColors.textPrimaryOf(context);
+    final textSecondary = AppColors.textSecondaryOf(context);
 
     final filteredCustomers = provider.customers.where((c) {
       if (provider.searchQuery.isEmpty) return true;
@@ -87,9 +91,9 @@ class CustomersScreen extends StatelessWidget {
           // Customer List Table / Cards
           Container(
             decoration: BoxDecoration(
-              color: AppColors.cardBg,
+              color: cardBg,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.cardBorder),
+              border: Border.all(color: cardBorder),
               boxShadow: AppColors.cardShadow,
             ),
             child: filteredCustomers.isEmpty
@@ -141,7 +145,7 @@ class CustomersScreen extends StatelessWidget {
                                     style: GoogleFonts.plusJakartaSans(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w700,
-                                      color: AppColors.textPrimary,
+                                      color: textPrimary,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -151,7 +155,7 @@ class CustomersScreen extends StatelessWidget {
                                     '${customer.phone} • ${customer.deliveryZone}',
                                     style: GoogleFonts.plusJakartaSans(
                                       fontSize: 12,
-                                      color: AppColors.textSecondary,
+                                      color: textSecondary,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -181,7 +185,7 @@ class CustomersScreen extends StatelessWidget {
                                       style: GoogleFonts.plusJakartaSans(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
-                                        color: AppColors.textPrimary,
+                                        color: textPrimary,
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,

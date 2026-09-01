@@ -138,32 +138,6 @@ class AppHeader extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: 12),
-        // Theme Switch Button (Light / Dark Mode)
-        Container(
-          width: 42,
-          height: 42,
-          decoration: BoxDecoration(
-            color: cardBg,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: cardBorder),
-            boxShadow: AppColors.cardShadow,
-          ),
-          child: IconButton(
-            icon: Icon(
-              provider.isDarkMode
-                  ? Icons.light_mode_rounded
-                  : Icons.dark_mode_rounded,
-              size: 20,
-              color: provider.isDarkMode ? Colors.amber : AppColors.sidebarBg,
-            ),
-            tooltip: provider.isDarkMode
-                ? 'Switch to Light Mode'
-                : 'Switch to Dark Mode',
-            onPressed: () => provider.toggleTheme(),
-          ),
-        ),
-        const SizedBox(width: 12),
         // Notifications Bell
         _buildNotificationBell(context, provider),
         const SizedBox(width: 12),
@@ -263,17 +237,7 @@ class AppHeader extends StatelessWidget {
                 ],
               ),
             ),
-            // Mobile Theme Toggle
-            IconButton(
-              icon: Icon(
-                provider.isDarkMode
-                    ? Icons.light_mode_rounded
-                    : Icons.dark_mode_rounded,
-                size: 20,
-                color: provider.isDarkMode ? Colors.amber : AppColors.sidebarBg,
-              ),
-              onPressed: () => provider.toggleTheme(),
-            ),
+            // Mobile Theme Toggle removed
             _buildNotificationBell(context, provider),
           ],
         ),

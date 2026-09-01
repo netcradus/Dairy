@@ -17,6 +17,11 @@ class ProductsScreen extends StatelessWidget {
     final isDesktop = ResponsiveLayout.isDesktop(context);
     final currencyFormatter =
         NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final cardBg = AppColors.cardBgOf(context);
+    final cardBorder = AppColors.cardBorderOf(context);
+    final textPrimary = AppColors.textPrimaryOf(context);
+    final textSecondary = AppColors.textSecondaryOf(context);
+    final bgColor = AppColors.bgOf(context);
 
     if (provider.isLoading) {
       return Center(
@@ -168,9 +173,9 @@ class ProductsScreen extends StatelessWidget {
                     return Container(
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
-                        color: AppColors.cardBg,
+                        color: cardBg,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.cardBorder),
+                        border: Border.all(color: cardBorder),
                         boxShadow: AppColors.cardShadow,
                       ),
                       child: Column(
@@ -182,10 +187,9 @@ class ProductsScreen extends StatelessWidget {
                                 width: 44,
                                 height: 44,
                                 decoration: BoxDecoration(
-                                  color: AppColors.background,
+                                  color: bgColor,
                                   borderRadius: BorderRadius.circular(12),
-                                  border:
-                                      Border.all(color: AppColors.cardBorder),
+                                  border: Border.all(color: cardBorder),
                                 ),
                                 alignment: Alignment.center,
                                 clipBehavior: Clip.antiAlias,
@@ -223,7 +227,7 @@ class ProductsScreen extends StatelessWidget {
                                       style: GoogleFonts.plusJakartaSans(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w700,
-                                        color: AppColors.textPrimary,
+                                        color: textPrimary,
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -232,7 +236,7 @@ class ProductsScreen extends StatelessWidget {
                                       product.subtitle,
                                       style: GoogleFonts.plusJakartaSans(
                                         fontSize: 11,
-                                        color: AppColors.textSecondary,
+                                        color: textSecondary,
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -310,7 +314,7 @@ class ProductsScreen extends StatelessWidget {
                                     style: GoogleFonts.plusJakartaSans(
                                       fontSize: 17,
                                       fontWeight: FontWeight.w800,
-                                      color: AppColors.textPrimary,
+                                      color: textPrimary,
                                     ),
                                   ),
                                   Text(
