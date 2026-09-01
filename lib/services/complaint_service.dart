@@ -1,0 +1,143 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/complaint_model.dart';
+
+/// Service for managing customer complaints and support tickets in Cloud Firestore.
+class ComplaintService {
+  final FirebaseFirestore _firestore;
+
+  ComplaintService({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
+
+  CollectionReference<Map<String, dynamic>> get _complaintsRef =>
+      _firestore.collection('complaints');
+
+  /// Creates and stores a new complaint / support ticket in Firestore.
+  Future<CustomerComplaint> createComplaint({
+    required String customerId,
+    required String customerName,
+    required String phone,
+    String email = '',
+    required String subject,
+    required String description,
+    required String category,
+    String? orderId,
+    String priority = 'Medium',
+  }) async {
+    final docRef = _complaintsRef.doc();
+    final now = DateTime.now();
+    // Unique human-readable ticket ID (e.g. CMP-492018)
+    final ticketNum = (now.millisecondsSinceEpoch % 1000000).toString().padLeft(6, '0');
+    final ticketId = 'CMP-$ticketNum';
+
+    final data = <String, dynamic>{
+      'id': docRef.id,
+      'ticketId': ticketId,
+      'customerId': customerId,
+      'customerName': customerName.trim(),
+      'customerPhone': phone.trim(),
+      'customerEmail': email.trim(),
+      'subject': subject.trim(),
+      'category': category.trim(),
+      'issueType': category.trim(),
+      'description': description.trim(),
+      'orderId': (orderId != null && orderId.trim().isNotEmpty) ? orderId.trim() : null,
+      'priority': priority,
+      'status': 'Open',
+      'adminReply': null,
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+
+    await docRef.set(data);
+
+    return CustomerComplaint(
+      id: docRef.id,
+      ticketId: ticketId,
+      customerId: customerId,
+      customerName: customerName.trim(),
+      phone: phone.trim(),
+      email: email.trim(),
+      subject: subject.trim(),
+      issueType: category.trim(),
+      description: description.trim(),
+      orderId: (orderId != null && orderId.trim().isNotEmpty) ? orderId.trim() : null,
+      priority: priority,
+      status: 'Open',
+      adminReply: null,
+      createdAt: now,
+      updatedAt: now,
+    );
+  }
+
+  /// Real-time stream of complaints filed by a specific customer.
+  /// Result is sorted client-side by date descending to prevent index requirement issues.
+  Stream<List<CustomerComplaint>> streamComplaintsForCustomer(String customerId) {
+    if (customerId.isEmpty) {
+      return Stream.value(<CustomerComplaint>[]);
+    }
+
+    return _complaintsRef
+        .where('customerId', isEqualTo: customerId)
+        .snapshots()
+        .map((snapshot) {
+      final list = snapshot.docs
+          .map((doc) => CustomerComplaint.fromFirestore(doc))
+          .toList();
+      // Sort newest first
+      list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return list;
+    });
+  }
+
+  /// Real-time stream of all complaints across the system for the Admin panel.
+  Stream<List<CustomerComplaint>> streamAllComplaints() {
+    return _complaintsRef.snapshots().map((snapshot) {
+      final list = snapshot.docs
+          .map((doc) => CustomerComplaint.fromFirestore(doc))
+          .toList();
+      // Sort newest first
+      list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return list;
+    });
+  }
+
+  /// Updates complaint status and optionally attaches admin response / resolution notes.
+  Future<void> updateComplaintStatus(
+    String complaintId,
+    String newStatus, {
+    String? adminReply,
+  }) async {
+    if (complaintId.isEmpty) return;
+
+    final updates = <String, dynamic>{
+      'status': newStatus,
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+
+    if (adminReply != null) {
+      updates['adminReply'] = adminReply.trim();
+    }
+
+    await _complaintsRef.doc(complaintId).update(updates);
+  }
+
+  /// Adds or updates the admin reply message for a complaint ticket.
+  Future<void> addAdminReply(
+    String complaintId,
+    String adminReply, {
+    String? newStatus,
+  }) async {
+    if (complaintId.isEmpty) return;
+
+    final updates = <String, dynamic>{
+      'adminReply': adminReply.trim(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+
+    if (newStatus != null && newStatus.isNotEmpty) {
+      updates['status'] = newStatus;
+    }
+
+    await _complaintsRef.doc(complaintId).update(updates);
+  }
+}

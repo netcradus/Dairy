@@ -13,11 +13,13 @@ import '../models/order.dart' as order;
 import '../models/order_model.dart';
 import '../models/product_model.dart';
 import '../repositories/firestore_product_repository.dart';
+import '../services/complaint_service.dart';
 import '../services/order_service.dart';
 
 class AdminProvider extends ChangeNotifier {
   final FirestoreProductRepository _repo;
   final OrderService _orderService;
+  final ComplaintService _complaintService;
 
   int _selectedNavIndex = 0;
   String _searchQuery = '';
@@ -34,9 +36,14 @@ class AdminProvider extends ChangeNotifier {
   bool _ordersLoading = true;
   String? _ordersError;
 
+  List<CustomerComplaint> _complaints = [];
+  bool _complaintsLoading = true;
+  String? _complaintsError;
+
   StreamSubscription<List<Map<String, dynamic>>>? _productsSub;
   StreamSubscription<List<Map<String, dynamic>>>? _categoriesSub;
   StreamSubscription<List<order.Order>>? _ordersSub;
+  StreamSubscription<List<CustomerComplaint>>? _complaintsSub;
 
   int get selectedNavIndex => _selectedNavIndex;
   String get searchQuery => _searchQuery;
@@ -51,15 +58,24 @@ class AdminProvider extends ChangeNotifier {
   bool get ordersLoading => _ordersLoading;
   String? get ordersError => _ordersError;
 
+  List<CustomerComplaint> get complaints => _complaints;
+  bool get complaintsLoading => _complaintsLoading;
+  String? get complaintsError => _complaintsError;
+
   List<DairyProduct> get topSellingProducts =>
       _products.where((p) => p.isBestSeller).toList();
 
-  AdminProvider({FirestoreProductRepository? repo, OrderService? orderService})
-      : _repo = repo ?? FirestoreProductRepository(),
-        _orderService = orderService ?? OrderService() {
+  AdminProvider({
+    FirestoreProductRepository? repo,
+    OrderService? orderService,
+    ComplaintService? complaintService,
+  })  : _repo = repo ?? FirestoreProductRepository(),
+        _orderService = orderService ?? OrderService(),
+        _complaintService = complaintService ?? ComplaintService() {
     _listenToProducts();
     _listenToCategories();
     _listenToOrders();
+    _listenToComplaints();
   }
 
   // ─── Firestore listeners ───────────────────────────────────────────────
@@ -720,34 +736,49 @@ class AdminProvider extends ChangeNotifier {
 
   List<DairyPayment> get payments => _payments;
 
-  // ─── Support Complaints Data (hardcoded) ──────────────────────────────
+  // ─── Support Complaints (Firestore-backed) ───────────────────────────
 
-  final List<CustomerComplaint> _complaints = [
-    const CustomerComplaint(
-      id: 'CMP-301',
-      customerName: 'Sneha Patel',
-      phone: '+91 99887 76655',
-      issueType: 'Late Delivery',
-      description:
-          'Morning milk reached at 7:45 AM instead of committed 6:30 AM slot.',
-      priority: 'Medium',
-      status: 'In Progress',
-      createdAt: 'Today, 08:00 AM',
-    ),
-    const CustomerComplaint(
-      id: 'CMP-302',
-      customerName: 'Ramesh Chawla',
-      phone: '+91 98112 00998',
-      issueType: 'Damaged Seal',
-      description:
-          'Pouch corner was slightly punctured upon arrival. Requesting replacement.',
-      priority: 'High',
-      status: 'Resolved',
-      createdAt: 'Yesterday, 07:15 AM',
-    ),
-  ];
+  void _listenToComplaints() {
+    _complaintsSub = _complaintService.streamAllComplaints().listen(
+      (list) {
+        _complaints = list;
+        _complaintsLoading = false;
+        _complaintsError = null;
+        notifyListeners();
+      },
+      onError: (e) {
+        _complaintsError = 'Failed to load complaints: $e';
+        _complaintsLoading = false;
+        notifyListeners();
+      },
+    );
+  }
 
-  List<CustomerComplaint> get complaints => _complaints;
+  /// Update complaint status and optional admin reply in Firestore.
+  Future<void> updateComplaintStatus(
+    String complaintId,
+    String newStatus, {
+    String? adminReply,
+  }) async {
+    await _complaintService.updateComplaintStatus(
+      complaintId,
+      newStatus,
+      adminReply: adminReply,
+    );
+  }
+
+  /// Add or update admin response message for a complaint ticket.
+  Future<void> addComplaintReply(
+    String complaintId,
+    String adminReply, {
+    String? newStatus,
+  }) async {
+    await _complaintService.addAdminReply(
+      complaintId,
+      adminReply,
+      newStatus: newStatus,
+    );
+  }
 
   // ─── Cleanup ──────────────────────────────────────────────────────────
 
@@ -756,6 +787,7 @@ class AdminProvider extends ChangeNotifier {
     _productsSub?.cancel();
     _categoriesSub?.cancel();
     _ordersSub?.cancel();
+    _complaintsSub?.cancel();
     super.dispose();
   }
 }
