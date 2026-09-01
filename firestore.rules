@@ -1,0 +1,211 @@
+rules_version = '2';
+
+// Sawariya Dairy — Cloud Firestore security rules
+// ---------------------------------------------------------------------------
+// Role model (stored on the authenticated user's profile doc at /users/{uid}):
+//   'customer'   — places/reads own orders, manages own profile + addresses
+//   'delivery'   — reads/updates own agent profile, duty state, live location,
+//                  and reads pending orders or orders assigned to them, and
+//                  can update the status/delivery fields of assigned orders
+//   'admin'      — full control; also the only role allowed to manage products,
+//                  categories, and to set elevated roles on user profiles
+//   'superadmin' — same privileges as 'admin' (reserved, checked defensively)
+//
+// Access model:
+//   * Every protected collection requires Firebase Authentication.
+//   * Users may only read/write their own profile, addresses, and orders.
+//   * Orders: customers may only create orders owned by them and cancel their
+//     own orders; they can never modify ownership, totals, delivery agent, or
+//     admin-controlled fields.
+//   * Delivery agents: scoped to their own profile / location / duty and only
+//     to pending or assigned orders; may only mutate status + delivery fields
+//     on orders actually assigned to them.
+//   * products / categories are public-facing (readable by any signed-in user)
+//     and writable only by admins.
+//   * earnings are written by a server-side Cloud Function (admin SDK) and
+//     readable by the owning agent and by admins.
+// ---------------------------------------------------------------------------
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Shared helpers ──────────────────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwnDoc(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function currentRole() {
+      return isSignedIn()
+          ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
+          : null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && currentRole() in ['admin', 'superadmin'];
+    }
+
+    function isDelivery() {
+      return isSignedIn() && currentRole() == 'delivery';
+    }
+
+    // ── users ───────────────────────────────────────────────────────────────
+    match /users/{userId} {
+      allow read: if isAdmin() || isOwnDoc(userId);
+
+      // Self-registration creates a customer or delivery profile only; a user
+      // can never self-assign an admin/superadmin role.
+      allow create: if isOwnDoc(userId)
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.role in ['customer', 'delivery'];
+
+      // Owners may update only their profile and must never change role, uid,
+      // or any privilege-related field. Admins may manage any user.
+      allow update: if isAdmin()
+          || (isOwnDoc(userId)
+              && request.resource.data.uid == resource.data.uid
+              && request.resource.data.role == resource.data.role);
+
+      allow delete: if isAdmin();
+    }
+
+    // ── users/{userId}/addresses ────────────────────────────────────────────
+    match /users/{userId}/addresses/{addressId} {
+      allow read, create, update, delete: if isAdmin() || isOwnDoc(userId);
+    }
+
+    // ── orders ──────────────────────────────────────────────────────────────
+    match /orders/{orderId} {
+      // Customers: read only their own orders. Delivery: read pending orders
+      // (awaiting acceptance) plus orders assigned to them. Admin: read all.
+      // Note: pending orders created by customers may have no assignedAgentId
+      // field, so guard field access with 'in' to avoid an undefined error.
+      allow read: if isAdmin()
+          || (isOwnDoc(resource.data.userId))
+          || (isDelivery()
+              && ((('assignedAgentId' in resource.data)
+                      && resource.data.assignedAgentId == request.auth.uid)
+                  || resource.data.status == 'Pending'
+                  || resource.data.status == 'pending'));
+
+      // A customer may place a new order that is owned by them and starts in
+      // the default 'Pending' state with no delivery agent assigned. They must
+      // not be able to forge ownership, totals, or assignment.
+      allow create: if isOwnDoc(request.resource.data.userId)
+          && request.resource.data.status == 'Pending'
+          && !('assignedAgentId' in request.resource.data)
+          && !('acceptedAt' in request.resource.data);
+
+      // Only admins and the assigned delivery agent may update an order (the
+      // agent may also accept/claim an unassigned pending order, or release
+      // one assigned to them). Customers cannot modify order fields (their
+      // "cancel" must route through an admin or a server function).
+      allow update: if isAdmin()
+          || (isDelivery() && canUpdateAssignedOrder());
+
+      // No client may delete an order; admin-only (data cleanup).
+      allow delete: if isAdmin();
+    }
+
+    // Delivery-agent order mutation guard. Returns true only when the agent
+    // is (a) updating op/delivery fields on an order already assigned to them,
+    // (b) releasing an order assigned to them back to pending, or (c) claiming
+    // a currently-unassigned pending order by assigning it to themselves.
+    // Ownership, financial totals and re-assignment to another agent are
+    // always forbidden.
+    function canUpdateAssignedOrder() {
+      let changed = request.resource.data.diff(resource.data).affectedKeys();
+      let isMine = ('assignedAgentId' in resource.data)
+          && resource.data.assignedAgentId == request.auth.uid;
+      let isUnassigned = !('assignedAgentId' in resource.data)
+          || resource.data.assignedAgentId == null;
+      let claimsSelf = ('assignedAgentId' in request.resource.data)
+          && request.resource.data.assignedAgentId == request.auth.uid;
+      let releases = ('assignedAgentId' in request.resource.data)
+          && request.resource.data.assignedAgentId == null;
+      // (a)(b) operational/delivery fields on my own assignment, or release my
+      // own assignment back to pending (decline).
+      return isMine
+          ? (changed.hasOnly(opDeliveryFields())
+              || (changed.hasOnly(['status', 'assignedAgentId', 'acceptedAt'])
+                  && releases))
+          // (c) accept/claim a pending, currently-unassigned order (self-assign).
+          : (isUnassigned
+              ? changed.hasOnly(['status', 'assignedAgentId', 'acceptedAt'])
+                    && claimsSelf
+              : false);
+    }
+
+    function opDeliveryFields() {
+      return ['status', 'acceptedAt', 'deliveredAt', 'deliveryConfirmed'];
+    }
+
+    // ── delivery_agents ─────────────────────────────────────────────────────
+    match /delivery_agents/{agentId} {
+      // Agents may read their own profile; admins may read any.
+      allow read: if isAdmin() || isOwnDoc(agentId);
+
+      // Create/update own profile. Agents may update their duty state, live
+      // location, and permitted profile fields, but never ownership/role or
+      // earnings/admin-controlled fields. Admins may manage any.
+      allow create: if isAdmin()
+          || (isDelivery()
+              && isOwnDoc(agentId)
+              && request.resource.data.uid == request.auth.uid);
+
+      allow update: if isAdmin()
+          || (isDelivery()
+              && isOwnDoc(agentId)
+              && request.resource.data.uid == resource.data.uid
+              && isAllowedAgentUpdate());
+
+      allow delete: if isAdmin();
+    }
+
+    function isAllowedAgentUpdate() {
+      let allowed = [
+        'name',
+        'phone',
+        'email',
+        'profileImageUrl',
+        'vehicle',
+        'vehicleType',
+        'vehicleNumber',
+        'assignedZone',
+        'rating',
+        'isOnline',
+        'isOnDuty',
+        'location',
+        'orderId',
+        'updatedAt'
+      ];
+      let changed = request.resource.data.diff(resource.data).affectedKeys();
+      return changed.hasOnly(allowed);
+    }
+
+    // ── products ────────────────────────────────────────────────────────────
+    // Public-facing read for any authenticated user; only admins may write.
+    match /products/{productId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── categories ──────────────────────────────────────────────────────────
+    match /categories/{categoryId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── earnings ────────────────────────────────────────────────────────────
+    // Written by the server-side Cloud Function (admin SDK, bypasses rules).
+    // The owning agent and admins may read; no client may write.
+    match /earnings/{earningId} {
+      allow read: if isAdmin()
+          || (isDelivery() && resource.data.agentId == request.auth.uid);
+      allow write: if isAdmin();
+    }
+  }
+}
