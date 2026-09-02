@@ -744,10 +744,7 @@ class AdminProvider extends ChangeNotifier {
   /// Registers a new delivery staff member in Firestore `users` and `delivery_agents`.
   Future<void> addRider(DeliveryRider rider) async {
     try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(rider.id)
-          .set({
+      await FirebaseFirestore.instance.collection('users').doc(rider.id).set({
         'id': rider.id,
         'name': rider.name,
         'phone': rider.phone,
@@ -768,7 +765,8 @@ class AdminProvider extends ChangeNotifier {
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
     } catch (e) {
-      debugPrint('AdminProvider: Failed to add delivery staff to Firestore: $e');
+      debugPrint(
+          'AdminProvider: Failed to add delivery staff to Firestore: $e');
       _usersError = 'Failed to add delivery staff: $e';
       notifyListeners();
     }
@@ -777,10 +775,7 @@ class AdminProvider extends ChangeNotifier {
   /// Updates a delivery staff member in Firestore `users` and `delivery_agents`.
   Future<void> updateRider(DeliveryRider rider) async {
     try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(rider.id)
-          .set({
+      await FirebaseFirestore.instance.collection('users').doc(rider.id).set({
         'name': rider.name,
         'phone': rider.phone,
         'email': rider.email,
@@ -799,7 +794,8 @@ class AdminProvider extends ChangeNotifier {
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
     } catch (e) {
-      debugPrint('AdminProvider: Failed to update delivery staff in Firestore: $e');
+      debugPrint(
+          'AdminProvider: Failed to update delivery staff in Firestore: $e');
       _usersError = 'Failed to update delivery staff: $e';
       notifyListeners();
     }
@@ -954,14 +950,12 @@ class AdminProvider extends ChangeNotifier {
                 ? email
                 : '${doc.id.toLowerCase()}@sawariyadairy.com',
             address: (data['address'] as String? ?? 'Noida, Uttar Pradesh'),
-            deliveryZone:
-                (data['deliveryZone'] as String? ?? 'Standard Zone'),
+            deliveryZone: (data['deliveryZone'] as String? ?? 'Standard Zone'),
             subscriptionPlan: (data['subscriptionPlan'] as String? ??
                 'Daily Morning (2 Litres)'),
             milkPreference:
                 (data['milkPreference'] as String? ?? 'Standard Cow Milk'),
-            walletBalance:
-                (data['walletBalance'] as num?)?.toDouble() ?? 0.0,
+            walletBalance: (data['walletBalance'] as num?)?.toDouble() ?? 0.0,
             status: (data['status'] as String? ?? 'Active'),
             joinedDate: data['createdAt'] != null
                 ? (data['createdAt'] is Timestamp
@@ -1018,11 +1012,11 @@ class AdminProvider extends ChangeNotifier {
 
       final totalDeliveriesToday =
           (data['totalDeliveriesToday'] as num?)?.toInt() ??
-          (data['completedDeliveries'] as num?)?.toInt() ??
-          (data['totalDeliveries'] as num?)?.toInt() ?? 0;
+              (data['completedDeliveries'] as num?)?.toInt() ??
+              (data['totalDeliveries'] as num?)?.toInt() ??
+              0;
 
-      final pendingDeliveries =
-          (data['pendingDeliveries'] as num?)?.toInt() ??
+      final pendingDeliveries = (data['pendingDeliveries'] as num?)?.toInt() ??
           ((data['orderId'] != null &&
                   (data['orderId'] as String).trim().isNotEmpty)
               ? 1
@@ -1060,10 +1054,8 @@ class AdminProvider extends ChangeNotifier {
   }
 
   void _listenToUsers() {
-    _usersSub = FirebaseFirestore.instance
-        .collection('users')
-        .snapshots()
-        .listen(
+    _usersSub =
+        FirebaseFirestore.instance.collection('users').snapshots().listen(
       (snap) {
         _lastUserDocs = snap.docs;
         _rebuildCustomers();
