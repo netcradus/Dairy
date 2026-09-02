@@ -60,26 +60,3 @@ class DairyPayment {
     required this.timestamp,
   });
 }
-
-class CustomerComplaint {
-  final String id;
-  final String customerName;
-  final String phone;
-  final String
-      issueType; // 'Late Delivery', 'Damaged Pouch', 'Wrong Quantity', 'Quality Concern'
-  final String description;
-  final String priority; // 'High', 'Medium', 'Low'
-  final String status; // 'Open', 'In Progress', 'Resolved'
-  final String createdAt;
-
-  const CustomerComplaint({
-    required this.id,
-    required this.customerName,
-    required this.phone,
-    required this.issueType,
-    required this.description,
-    required this.priority,
-    required this.status,
-    required this.createdAt,
-  });
-}

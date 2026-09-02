@@ -409,20 +409,26 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                                     ],
                                   ),
                                   child: Center(
-                                    child: cat['id'] == 'cat_all'
-                                        ? Icon(
-                                            Icons
-                                                .cabin_rounded, // farm/barn-like icon
-                                            color: AppColors.primary,
-                                            size: 36,
-                                          )
-                                        : Padding(
-                                            padding: const EdgeInsets.all(2),
-                                            child: Image.asset(
-                                              (cat['image'] as String?) ?? '',
-                                              fit: BoxFit.contain,
-                                            ),
-                                          ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(2),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: Image.asset(
+                                          (cat['image'] as String?) ?? '',
+                                          fit: cat['id'] == 'cat_all'
+                                              ? BoxFit.cover
+                                              : BoxFit.contain,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            return Icon(
+                                              Icons.grid_view_rounded,
+                                              color: AppColors.primary,
+                                              size: 32,
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 8),
