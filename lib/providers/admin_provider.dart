@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import '../core/constants/app_colors.dart';
 import '../models/category_model.dart';
+import '../models/complaint_model.dart' as complaint_model;
 import '../models/customer_model.dart';
 import '../models/delivery_model.dart';
 import '../models/delivery_staff_model.dart';
@@ -37,7 +38,7 @@ class AdminProvider extends ChangeNotifier {
   bool _ordersLoading = true;
   String? _ordersError;
 
-  List<CustomerComplaint> _complaints = [];
+  List<complaint_model.CustomerComplaint> _complaints = [];
   bool _complaintsLoading = true;
   String? _complaintsError;
 
@@ -49,7 +50,7 @@ class AdminProvider extends ChangeNotifier {
   StreamSubscription<List<Map<String, dynamic>>>? _productsSub;
   StreamSubscription<List<Map<String, dynamic>>>? _categoriesSub;
   StreamSubscription<List<order.Order>>? _ordersSub;
-  StreamSubscription<List<CustomerComplaint>>? _complaintsSub;
+  StreamSubscription<List<complaint_model.CustomerComplaint>>? _complaintsSub;
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _usersSub;
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _deliveryAgentsSub;
 
@@ -66,7 +67,7 @@ class AdminProvider extends ChangeNotifier {
   bool get ordersLoading => _ordersLoading;
   String? get ordersError => _ordersError;
 
-  List<CustomerComplaint> get complaints => _complaints;
+  List<complaint_model.CustomerComplaint> get complaints => _complaints;
   bool get complaintsLoading => _complaintsLoading;
   String? get complaintsError => _complaintsError;
 
