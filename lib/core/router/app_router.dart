@@ -24,6 +24,7 @@ import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/product/product_details_screen.dart';
 import '../../features/shop/shop_screen.dart';
 import '../../features/splash/splash_screen.dart';
+import '../../features/profile/customer_support_screen.dart';
 import '../../screens/settings/settings_screen.dart';
 import '../../models/product.dart';
 import '../../providers/user_provider.dart';
@@ -153,6 +154,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/support',
+        builder: (context, state) => const CustomerSupportScreen(),
       ),
       GoRoute(
         path: '/admin',

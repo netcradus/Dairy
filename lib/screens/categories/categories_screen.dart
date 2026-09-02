@@ -13,6 +13,11 @@ class CategoriesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<AdminProvider>();
     final isDesktop = ResponsiveLayout.isDesktop(context);
+    final cardBg = AppColors.cardBgOf(context);
+    final cardBorder = AppColors.cardBorderOf(context);
+    final textPrimary = AppColors.textPrimaryOf(context);
+    final textSecondary = AppColors.textSecondaryOf(context);
+    final bgColor = AppColors.bgOf(context);
 
     if (provider.isLoading && provider.categories.isEmpty) {
       return Center(
@@ -132,9 +137,9 @@ class CategoriesScreen extends StatelessWidget {
                     return Container(
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
-                        color: AppColors.cardBg,
+                        color: cardBg,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.cardBorder),
+                        border: Border.all(color: cardBorder),
                         boxShadow: AppColors.cardShadow,
                       ),
                       child: Column(
@@ -160,17 +165,16 @@ class CategoriesScreen extends StatelessWidget {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
-                                  color: AppColors.background,
+                                  color: bgColor,
                                   borderRadius: BorderRadius.circular(12),
-                                  border:
-                                      Border.all(color: AppColors.cardBorder),
+                                  border: Border.all(color: cardBorder),
                                 ),
                                 child: Text(
                                   '${cat.productCount} Products',
                                   style: GoogleFonts.plusJakartaSans(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
-                                    color: AppColors.textSecondary,
+                                    color: textSecondary,
                                   ),
                                 ),
                               ),
@@ -203,7 +207,7 @@ class CategoriesScreen extends StatelessWidget {
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+                              color: textPrimary,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -214,7 +218,7 @@ class CategoriesScreen extends StatelessWidget {
                               cat.description,
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 12,
-                                color: AppColors.textSecondary,
+                                color: textSecondary,
                               ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,

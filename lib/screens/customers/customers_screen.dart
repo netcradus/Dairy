@@ -15,6 +15,10 @@ class CustomersScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<AdminProvider>();
     final isDesktop = ResponsiveLayout.isDesktop(context);
+    final cardBg = AppColors.cardBgOf(context);
+    final cardBorder = AppColors.cardBorderOf(context);
+    final textPrimary = AppColors.textPrimaryOf(context);
+    final textSecondary = AppColors.textSecondaryOf(context);
     final currencyFormatter =
         NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
 
@@ -23,6 +27,7 @@ class CustomersScreen extends StatelessWidget {
       final q = provider.searchQuery.toLowerCase();
       return c.name.toLowerCase().contains(q) ||
           c.phone.contains(q) ||
+          c.email.toLowerCase().contains(q) ||
           c.deliveryZone.toLowerCase().contains(q);
     }).toList();
 
@@ -47,14 +52,15 @@ class CustomersScreen extends StatelessWidget {
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 20,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
+                        color: textPrimary,
                       ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
-                      'Manage dairy subscriptions, addresses, and customer wallets.',
+                      'Manage registered dairy subscribers, addresses, and customer wallet balances.',
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 13,
-                        color: AppColors.textSecondary,
+                        color: textSecondary,
                       ),
                     ),
                   ],
@@ -83,177 +89,426 @@ class CustomersScreen extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
+
+          // Error Banner
+          if (provider.usersError != null) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEE2E2),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFF87171)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.error_outline_rounded,
+                      color: Color(0xFFDC2626)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      provider.usersError!,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: const Color(0xFF991B1B),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+
           // Customer List Table / Cards
           Container(
             decoration: BoxDecoration(
-              color: AppColors.cardBg,
+              color: cardBg,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.cardBorder),
+              border: Border.all(color: cardBorder),
               boxShadow: AppColors.cardShadow,
             ),
-            child: filteredCustomers.isEmpty
-                ? Padding(
-                    padding: const EdgeInsets.all(32.0),
+            child: provider.usersLoading && provider.customers.isEmpty
+                ? const Padding(
+                    padding: EdgeInsets.all(48.0),
                     child: Center(
-                      child: Text(
-                        'No customers found.',
-                        style: GoogleFonts.plusJakartaSans(
-                            color: AppColors.textMuted),
-                      ),
+                      child: CircularProgressIndicator(),
                     ),
                   )
-                : ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: filteredCustomers.length,
-                    separatorBuilder: (ctx, idx) => const Divider(),
-                    itemBuilder: (ctx, idx) {
-                      final customer = filteredCustomers[idx];
-                      return Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            CircleAvatar(
-                              radius: 22,
-                              backgroundColor: AppColors.primaryLight,
-                              child: Text(
-                                customer.name.isNotEmpty
-                                    ? customer.name
-                                        .substring(0, 1)
-                                        .toUpperCase()
-                                    : 'C',
+                : filteredCustomers.isEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24.0, vertical: 48.0),
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.people_outline_rounded,
+                                size: 48,
+                                color: AppColors.textMutedOf(context),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                provider.searchQuery.isEmpty
+                                    ? 'No customers registered yet.'
+                                    : 'No customers matching "${provider.searchQuery}".',
                                 style: GoogleFonts.plusJakartaSans(
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.primary,
+                                  color: textSecondary,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              flex: 3,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    customer.name,
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    '${customer.phone} • ${customer.deliveryZone}',
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 12,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  if (!isDesktop) ...[
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      customer.subscriptionPlan,
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 11,
-                                        color: AppColors.primary,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                            if (isDesktop)
-                              Expanded(
-                                flex: 3,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      customer.subscriptionPlan,
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.textPrimary,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    Text(
-                                      customer.milkPreference,
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 11,
-                                        color: AppColors.textMuted,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
+                              const SizedBox(height: 6),
+                              Text(
+                                'Click "Add Customer" to create a new customer record.',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: AppColors.textMutedOf(context),
+                                  fontSize: 12,
                                 ),
                               ),
-                            Expanded(
-                              flex: 2,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    currencyFormatter
-                                        .format(customer.walletBalance),
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w800,
-                                      color: customer.walletBalance >= 0
-                                          ? AppColors.revenueGreen
-                                          : const Color(0xFFEF4444),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  StatusBadge.fromString(customer.status),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            // Actions: Edit and Delete
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit_outlined,
-                                      size: 18, color: AppColors.primary),
-                                  tooltip: 'Edit Customer',
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(
-                                      minWidth: 32, minHeight: 32),
-                                  onPressed: () => _showCustomerDialog(
-                                      context, provider, customer),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete_outline_rounded,
-                                      size: 18, color: Color(0xFFEF4444)),
-                                  tooltip: 'Delete Customer',
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(
-                                      minWidth: 32, minHeight: 32),
-                                  onPressed: () => _showDeleteConfirmation(
-                                      context, provider, customer),
-                                ),
-                              ],
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      );
-                    },
-                  ),
+                      )
+                    : ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: filteredCustomers.length,
+                        separatorBuilder: (ctx, idx) =>
+                            Divider(height: 1, color: cardBorder),
+                        itemBuilder: (ctx, idx) {
+                          final customer = filteredCustomers[idx];
+                          return InkWell(
+                            onTap: () => _showCustomerDetailsDialog(
+                                context, provider, customer),
+                            borderRadius: BorderRadius.circular(16),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  CircleAvatar(
+                                    radius: 22,
+                                    backgroundColor: AppColors.primaryLight
+                                        .withValues(alpha: 0.2),
+                                    child: Text(
+                                      customer.name.isNotEmpty
+                                          ? customer.name
+                                              .substring(0, 1)
+                                              .toUpperCase()
+                                          : 'C',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontWeight: FontWeight.w800,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    flex: 3,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          customer.name,
+                                          style: GoogleFonts.plusJakartaSans(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700,
+                                            color: textPrimary,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          '${customer.phone}${customer.deliveryZone.isNotEmpty ? ' • ${customer.deliveryZone}' : ''}',
+                                          style: GoogleFonts.plusJakartaSans(
+                                            fontSize: 12,
+                                            color: textSecondary,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        if (!isDesktop) ...[
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            customer.subscriptionPlan,
+                                            style: GoogleFonts.plusJakartaSans(
+                                              fontSize: 11,
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                  if (isDesktop)
+                                    Expanded(
+                                      flex: 3,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            customer.subscriptionPlan,
+                                            style: GoogleFonts.plusJakartaSans(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                              color: textPrimary,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          Text(
+                                            customer.milkPreference,
+                                            style: GoogleFonts.plusJakartaSans(
+                                              fontSize: 11,
+                                              color: AppColors.textMutedOf(
+                                                  context),
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  Expanded(
+                                    flex: 2,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          currencyFormatter
+                                              .format(customer.walletBalance),
+                                          style: GoogleFonts.plusJakartaSans(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w800,
+                                            color: customer.walletBalance >= 0
+                                                ? AppColors.revenueGreen
+                                                : const Color(0xFFEF4444),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        StatusBadge.fromString(customer.status),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  // Actions: Details, Edit and Delete
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(
+                                            Icons.visibility_outlined,
+                                            size: 18,
+                                            color: AppColors.primary),
+                                        tooltip: 'View Details',
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(
+                                            minWidth: 32, minHeight: 32),
+                                        onPressed: () =>
+                                            _showCustomerDetailsDialog(
+                                                context, provider, customer),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.edit_outlined,
+                                            size: 18,
+                                            color: AppColors.ordersBlue),
+                                        tooltip: 'Edit Customer',
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(
+                                            minWidth: 32, minHeight: 32),
+                                        onPressed: () => _showCustomerDialog(
+                                            context, provider, customer),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                            Icons.delete_outline_rounded,
+                                            size: 18,
+                                            color: Color(0xFFEF4444)),
+                                        tooltip: 'Delete Customer',
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(
+                                            minWidth: 32, minHeight: 32),
+                                        onPressed: () =>
+                                            _showDeleteConfirmation(
+                                                context, provider, customer),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
           ),
         ],
       ),
+    );
+  }
+
+  void _showCustomerDetailsDialog(
+      BuildContext context, AdminProvider provider, DairyCustomer customer) {
+    final currencyFormatter =
+        NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            CircleAvatar(
+              radius: 20,
+              backgroundColor: AppColors.primaryLight.withValues(alpha: 0.2),
+              child: Text(
+                customer.name.isNotEmpty
+                    ? customer.name.substring(0, 1).toUpperCase()
+                    : 'C',
+                style: GoogleFonts.plusJakartaSans(
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    customer.name,
+                    style: GoogleFonts.plusJakartaSans(
+                        fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                  Text(
+                    'ID: ${customer.id}',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11,
+                      color: AppColors.textMutedOf(context),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            StatusBadge.fromString(customer.status),
+          ],
+        ),
+        content: SizedBox(
+          width: 460,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildDetailRow(
+                    context, Icons.phone_outlined, 'Phone', customer.phone),
+                const SizedBox(height: 10),
+                _buildDetailRow(
+                    context, Icons.email_outlined, 'Email', customer.email),
+                const SizedBox(height: 10),
+                _buildDetailRow(context, Icons.location_on_outlined, 'Address',
+                    customer.address),
+                const SizedBox(height: 10),
+                _buildDetailRow(context, Icons.map_outlined, 'Delivery Zone',
+                    customer.deliveryZone),
+                const Divider(height: 24),
+                _buildDetailRow(context, Icons.autorenew_rounded,
+                    'Subscription Plan', customer.subscriptionPlan),
+                const SizedBox(height: 10),
+                _buildDetailRow(context, Icons.water_drop_outlined,
+                    'Milk Preference', customer.milkPreference),
+                const SizedBox(height: 10),
+                _buildDetailRow(
+                  context,
+                  Icons.account_balance_wallet_outlined,
+                  'Wallet Balance',
+                  currencyFormatter.format(customer.walletBalance),
+                  valueColor: customer.walletBalance >= 0
+                      ? AppColors.revenueGreen
+                      : const Color(0xFFEF4444),
+                ),
+                const SizedBox(height: 10),
+                _buildDetailRow(context, Icons.calendar_today_outlined,
+                    'Joined Date', customer.joinedDate),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Close'),
+          ),
+          OutlinedButton.icon(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _showCustomerDialog(context, provider, customer);
+            },
+            icon: const Icon(Icons.edit_outlined, size: 16),
+            label: const Text('Edit'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _showDeleteConfirmation(context, provider, customer);
+            },
+            icon: const Icon(Icons.delete_outline_rounded,
+                size: 16, color: Colors.white),
+            label: const Text('Delete', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String value, {
+    Color? valueColor,
+  }) {
+    final textPrimary = AppColors.textPrimaryOf(context);
+    final textSecondary = AppColors.textSecondaryOf(context);
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 16, color: AppColors.primary),
+        const SizedBox(width: 10),
+        SizedBox(
+          width: 130,
+          child: Text(
+            label,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: textSecondary,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value.isNotEmpty ? value : '—',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: valueColor ?? textPrimary,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -290,7 +545,7 @@ class CustomersScreen extends StatelessWidget {
                 TextField(
                   controller: nameCtrl,
                   decoration:
-                      const InputDecoration(labelText: 'Customer Full Name'),
+                      const InputDecoration(labelText: 'Customer Full Name *'),
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -299,7 +554,7 @@ class CustomersScreen extends StatelessWidget {
                       child: TextField(
                         controller: phoneCtrl,
                         decoration:
-                            const InputDecoration(labelText: 'Phone Number'),
+                            const InputDecoration(labelText: 'Phone Number *'),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -361,10 +616,10 @@ class CustomersScreen extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               if (nameCtrl.text.trim().isNotEmpty) {
                 if (isEdit) {
-                  provider.updateCustomer(
+                  await provider.updateCustomer(
                     existing.copyWith(
                       name: nameCtrl.text.trim(),
                       phone: phoneCtrl.text.trim().isEmpty
@@ -389,24 +644,28 @@ class CustomersScreen extends StatelessWidget {
                           existing.walletBalance,
                     ),
                   );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text(
-                            'Customer "${nameCtrl.text}" updated successfully!')),
-                  );
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text(
+                              'Customer "${nameCtrl.text}" updated successfully!')),
+                    );
+                  }
                 } else {
-                  provider.addCustomer(
+                  final customerId =
+                      'CUST-${DateTime.now().millisecondsSinceEpoch % 100000}';
+                  await provider.addCustomer(
                     DairyCustomer(
-                      id: 'CUST-${DateTime.now().millisecondsSinceEpoch % 10000}',
+                      id: customerId,
                       name: nameCtrl.text.trim(),
                       phone: phoneCtrl.text.trim().isEmpty
                           ? '+91 99999 00000'
                           : phoneCtrl.text.trim(),
                       email: emailCtrl.text.trim().isEmpty
-                          ? '${nameCtrl.text.toLowerCase().replaceAll(' ', '')}@gmail.com'
+                          ? '${nameCtrl.text.toLowerCase().replaceAll(' ', '')}@sawariyadairy.com'
                           : emailCtrl.text.trim(),
                       address: addressCtrl.text.trim().isEmpty
-                          ? 'Flat 101, Noida'
+                          ? 'Noida, Uttar Pradesh'
                           : addressCtrl.text.trim(),
                       deliveryZone: zoneCtrl.text.trim().isEmpty
                           ? 'Central Noida Hub'
@@ -419,16 +678,21 @@ class CustomersScreen extends StatelessWidget {
                           : milkCtrl.text.trim(),
                       walletBalance: double.tryParse(walletCtrl.text) ?? 500.0,
                       status: 'Active',
-                      joinedDate: 'Today',
+                      joinedDate:
+                          DateFormat('dd MMM yyyy').format(DateTime.now()),
                     ),
                   );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text(
-                            'Customer "${nameCtrl.text}" added successfully!')),
-                  );
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text(
+                              'Customer "${nameCtrl.text}" added successfully!')),
+                    );
+                  }
                 }
-                Navigator.pop(ctx);
+                if (ctx.mounted) {
+                  Navigator.pop(ctx);
+                }
               }
             },
             style: ElevatedButton.styleFrom(
@@ -463,9 +727,9 @@ class CustomersScreen extends StatelessWidget {
           ],
         ),
         content: Text(
-          'Are you sure you want to remove customer "${customer.name}" (${customer.id})? All associated subscriptions will be removed.',
+          'Are you sure you want to remove customer "${customer.name}" (${customer.id}) from Firestore? This action cannot be undone.',
           style: GoogleFonts.plusJakartaSans(
-              fontSize: 13, color: AppColors.textSecondary),
+              fontSize: 13, color: AppColors.textSecondaryOf(context)),
         ),
         actions: [
           TextButton(
@@ -473,14 +737,18 @@ class CustomersScreen extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
-              provider.deleteCustomer(customer.id);
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                    content: Text(
-                        'Customer "${customer.name}" removed successfully.')),
-              );
+            onPressed: () async {
+              await provider.deleteCustomer(customer.id);
+              if (ctx.mounted) {
+                Navigator.pop(ctx);
+              }
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      content: Text(
+                          'Customer "${customer.name}" deleted successfully.')),
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),

@@ -10,7 +10,8 @@ import '../../providers/address_provider.dart';
 
 /// Sawariya Dairy Phase 6 — Add New Address Screen
 class AddAddressScreen extends ConsumerStatefulWidget {
-  const AddAddressScreen({super.key});
+  final Address? addressToEdit;
+  const AddAddressScreen({super.key, this.addressToEdit});
 
   @override
   ConsumerState<AddAddressScreen> createState() => _AddAddressScreenState();
@@ -19,15 +20,33 @@ class AddAddressScreen extends ConsumerStatefulWidget {
 class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  final _fullNameController = TextEditingController();
-  final _mobileController = TextEditingController();
-  final _houseFlatController = TextEditingController();
-  final _streetAreaController = TextEditingController();
-  final _cityController = TextEditingController(text: 'Indore');
-  final _stateController = TextEditingController(text: 'Madhya Pradesh');
-  final _pinCodeController = TextEditingController();
+  late final TextEditingController _fullNameController;
+  late final TextEditingController _mobileController;
+  late final TextEditingController _houseFlatController;
+  late final TextEditingController _streetAreaController;
+  late final TextEditingController _cityController;
+  late final TextEditingController _stateController;
+  late final TextEditingController _pinCodeController;
   String _selectedLabel = 'Home';
   bool _isDefault = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final addr = widget.addressToEdit;
+    _fullNameController = TextEditingController(text: addr?.fullName ?? '');
+    _mobileController = TextEditingController(text: addr?.mobileNumber ?? '');
+    _houseFlatController = TextEditingController(text: addr?.houseFlat ?? '');
+    _streetAreaController = TextEditingController(text: addr?.streetArea ?? '');
+    _cityController = TextEditingController(text: addr?.city ?? 'Indore');
+    _stateController =
+        TextEditingController(text: addr?.state ?? 'Madhya Pradesh');
+    _pinCodeController = TextEditingController(text: addr?.pinCode ?? '');
+    if (addr != null) {
+      _selectedLabel = addr.label;
+      _isDefault = addr.isDefault;
+    }
+  }
 
   @override
   void dispose() {
@@ -43,8 +62,11 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
 
   void _onSaveAddress() {
     if (_formKey.currentState!.validate()) {
-      final newAddress = Address(
-        id: 'addr_${DateTime.now().millisecondsSinceEpoch}',
+      final isEdit = widget.addressToEdit != null;
+      final address = Address(
+        id: isEdit
+            ? widget.addressToEdit!.id
+            : 'addr_${DateTime.now().millisecondsSinceEpoch}',
         label: _selectedLabel,
         fullName: _fullNameController.text.trim(),
         mobileNumber: _mobileController.text.trim(),
@@ -56,11 +78,19 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
         isDefault: _isDefault,
       );
 
-      ref.read(addressesProvider.notifier).addAddress(newAddress);
-      ref.read(selectedAddressIdProvider.notifier).state = newAddress.id;
+      if (isEdit) {
+        ref.read(addressesProvider.notifier).updateAddress(address);
+      } else {
+        ref.read(addressesProvider.notifier).addAddress(address);
+        ref.read(selectedAddressIdProvider.notifier).state = address.id;
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Delivery address saved successfully!')),
+        SnackBar(
+          content: Text(isEdit
+              ? 'Delivery address updated successfully!'
+              : 'Delivery address saved successfully!'),
+        ),
       );
 
       Navigator.pop(context);

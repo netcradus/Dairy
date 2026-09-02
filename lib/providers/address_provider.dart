@@ -1,60 +1,201 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/address.dart';
+import 'user_provider.dart';
 
-/// Default initial mock address for Sawariya Dairy
-const _initialAddresses = [
-  Address(
-    id: 'addr_1',
-    label: 'Home',
-    fullName: 'Rahul Sharma',
-    mobileNumber: '+91 9876543210',
-    houseFlat: 'Flat 402, Sunshine Heights',
-    streetArea: 'MG Road, Vijay Nagar',
-    city: 'Indore',
-    state: 'Madhya Pradesh',
-    pinCode: '452010',
-    isDefault: true,
-  ),
-  Address(
-    id: 'addr_2',
-    label: 'Office',
-    fullName: 'Rahul Sharma (Office)',
-    mobileNumber: '+91 9876543210',
-    houseFlat: 'Suite 305, Tech Park',
-    streetArea: 'AB Road, Palasia',
-    city: 'Indore',
-    state: 'Madhya Pradesh',
-    pinCode: '452001',
-    isDefault: false,
-  ),
-];
+final addressLoadingProvider = StateProvider<bool>((ref) => false);
+final addressErrorProvider = StateProvider<String?>((ref) => null);
 
 class AddressNotifier extends StateNotifier<List<Address>> {
-  AddressNotifier() : super(_initialAddresses);
+  final String _userId;
+  final Ref _ref;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  void addAddress(Address address) {
-    if (address.isDefault) {
-      state = [
-        ...state.map((a) => a.copyWith(isDefault: false)),
-        address,
-      ];
-    } else {
-      state = [...state, address];
+  AddressNotifier(this._userId, this._ref) : super([]) {
+    _loadAddresses();
+  }
+
+  String get _activeUid {
+    final firebaseUid = _auth.currentUser?.uid;
+    if (firebaseUid != null && firebaseUid.isNotEmpty) {
+      return firebaseUid;
+    }
+    return _userId;
+  }
+
+  Future<void> _loadAddresses() async {
+    final activeId = _activeUid;
+    if (activeId.isEmpty) {
+      state = [];
+      return;
+    }
+
+    try {
+      Future.microtask(() {
+        _ref.read(addressLoadingProvider.notifier).state = true;
+        _ref.read(addressErrorProvider.notifier).state = null;
+      });
+
+      final snapshot = await _firestore
+          .collection('users')
+          .doc(activeId)
+          .collection('addresses')
+          .get();
+
+      final list = snapshot.docs.map((doc) {
+        final data = doc.data();
+        return Address(
+          id: doc.id,
+          label: data['label'] ?? 'Home',
+          fullName: data['fullName'] ?? '',
+          mobileNumber: data['mobileNumber'] ?? '',
+          houseFlat: data['houseFlat'] ?? '',
+          streetArea: data['streetArea'] ?? '',
+          city: data['city'] ?? '',
+          state: data['state'] ?? '',
+          pinCode: data['pinCode'] ?? '',
+          isDefault: data['isDefault'] ?? false,
+        );
+      }).toList();
+
+      state = list;
+    } catch (e) {
+      state = [];
+      Future.microtask(() {
+        _ref.read(addressErrorProvider.notifier).state = e.toString();
+      });
+    } finally {
+      Future.microtask(() {
+        _ref.read(addressLoadingProvider.notifier).state = false;
+      });
     }
   }
 
-  void removeAddress(String id) {
-    state = state.where((a) => a.id != id).toList();
+  Future<void> addAddress(Address address) async {
+    final activeId = _activeUid;
+    if (activeId.isEmpty) return;
+    try {
+      final colRef =
+          _firestore.collection('users').doc(activeId).collection('addresses');
+
+      if (address.isDefault) {
+        final batch = _firestore.batch();
+        for (var a in state) {
+          if (a.isDefault) {
+            batch.update(colRef.doc(a.id), {'isDefault': false});
+          }
+        }
+        final docRef = colRef.doc(address.id);
+        batch.set(docRef, {
+          'label': address.label,
+          'fullName': address.fullName,
+          'mobileNumber': address.mobileNumber,
+          'houseFlat': address.houseFlat,
+          'streetArea': address.streetArea,
+          'city': address.city,
+          'state': address.state,
+          'pinCode': address.pinCode,
+          'isDefault': address.isDefault,
+        });
+        await batch.commit();
+      } else {
+        await colRef.doc(address.id).set({
+          'label': address.label,
+          'fullName': address.fullName,
+          'mobileNumber': address.mobileNumber,
+          'houseFlat': address.houseFlat,
+          'streetArea': address.streetArea,
+          'city': address.city,
+          'state': address.state,
+          'pinCode': address.pinCode,
+          'isDefault': address.isDefault,
+        });
+      }
+
+      await _loadAddresses();
+    } catch (_) {}
   }
 
-  void setDefault(String id) {
-    state = state.map((a) => a.copyWith(isDefault: a.id == id)).toList();
+  Future<void> updateAddress(Address address) async {
+    final activeId = _activeUid;
+    if (activeId.isEmpty) return;
+    try {
+      final colRef =
+          _firestore.collection('users').doc(activeId).collection('addresses');
+
+      if (address.isDefault) {
+        final batch = _firestore.batch();
+        for (var a in state) {
+          if (a.isDefault && a.id != address.id) {
+            batch.update(colRef.doc(a.id), {'isDefault': false});
+          }
+        }
+        batch.update(colRef.doc(address.id), {
+          'label': address.label,
+          'fullName': address.fullName,
+          'mobileNumber': address.mobileNumber,
+          'houseFlat': address.houseFlat,
+          'streetArea': address.streetArea,
+          'city': address.city,
+          'state': address.state,
+          'pinCode': address.pinCode,
+          'isDefault': address.isDefault,
+        });
+        await batch.commit();
+      } else {
+        await colRef.doc(address.id).update({
+          'label': address.label,
+          'fullName': address.fullName,
+          'mobileNumber': address.mobileNumber,
+          'houseFlat': address.houseFlat,
+          'streetArea': address.streetArea,
+          'city': address.city,
+          'state': address.state,
+          'pinCode': address.pinCode,
+          'isDefault': address.isDefault,
+        });
+      }
+
+      await _loadAddresses();
+    } catch (_) {}
+  }
+
+  Future<void> removeAddress(String id) async {
+    final activeId = _activeUid;
+    if (activeId.isEmpty) return;
+    try {
+      await _firestore
+          .collection('users')
+          .doc(activeId)
+          .collection('addresses')
+          .doc(id)
+          .delete();
+      await _loadAddresses();
+    } catch (_) {}
+  }
+
+  Future<void> setDefault(String id) async {
+    final activeId = _activeUid;
+    if (activeId.isEmpty) return;
+    try {
+      final colRef =
+          _firestore.collection('users').doc(activeId).collection('addresses');
+      final batch = _firestore.batch();
+      for (var a in state) {
+        batch.update(colRef.doc(a.id), {'isDefault': a.id == id});
+      }
+      await batch.commit();
+      await _loadAddresses();
+    } catch (_) {}
   }
 }
 
 final addressesProvider =
     StateNotifierProvider<AddressNotifier, List<Address>>((ref) {
-  return AddressNotifier();
+  final user = ref.watch(userProvider);
+  return AddressNotifier(user.id, ref);
 });
 
 /// Currently selected address ID for checkout

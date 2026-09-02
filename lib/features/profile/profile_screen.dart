@@ -6,7 +6,6 @@ import '../../core/responsive/responsive.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/navigation_provider.dart';
-import '../address/address_screen.dart';
 import 'edit_profile_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../subscription/subscriptions_screen.dart';
@@ -117,11 +116,7 @@ class ProfileScreen extends ConsumerWidget {
                                   tr('Delivery Addresses'),
                                   tr('Add or edit delivery addresses'),
                                   () {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (_) =>
-                                                const AddressScreen()));
+                                    context.push('/address');
                                   },
                                 ),
                                 const Divider(
@@ -161,6 +156,17 @@ class ProfileScreen extends ConsumerWidget {
                                         MaterialPageRoute(
                                             builder: (_) =>
                                                 const NotificationsScreen()));
+                                  },
+                                ),
+                                const Divider(
+                                    height: 1, color: Color(0xFFF1F5F9)),
+                                _buildMenuTile(
+                                  context,
+                                  Icons.support_agent_rounded,
+                                  'Support / Complaints',
+                                  'Raise queries & view ticket status',
+                                  () {
+                                    context.push('/support');
                                   },
                                 ),
                                 const Divider(
