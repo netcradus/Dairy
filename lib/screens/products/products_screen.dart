@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/responsive/responsive_layout.dart';
 import '../../models/product_model.dart';
 import '../../providers/admin_provider.dart';
+import '../../services/firebase_storage_service.dart';
+import '../../core/widgets/app_network_image.dart';
 
 class ProductsScreen extends StatelessWidget {
   const ProductsScreen({super.key});
@@ -138,7 +141,7 @@ class ProductsScreen extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.inventory_2_outlined,
+                        const Icon(Icons.inventory_2_outlined,
                             size: 48, color: AppColors.textMuted),
                         const SizedBox(height: 12),
                         Text(
@@ -194,26 +197,92 @@ class ProductsScreen extends StatelessWidget {
                                 alignment: Alignment.center,
                                 clipBehavior: Clip.antiAlias,
                                 child: Builder(builder: (context) {
-                                  final image = product.resolvedImageUrl;
+                                  final image = product.resolvedImageUrl.trim();
+                                  if (product.id == 'prod_1788762789345') {
+                                    debugPrint('ADMIN PRODUCT ${product.id}');
+                                    debugPrint(
+                                        'Firestore imageUrl: ${product.imageUrl}');
+                                    debugPrint('Resolved imageUrl: $image');
+                                  }
                                   if (image.isEmpty) {
                                     return Text(
                                       product.emoji,
                                       style: const TextStyle(fontSize: 22),
                                     );
                                   }
-                                  Widget img = image.startsWith('http')
-                                      ? Image.network(
-                                          image,
-                                          width: 44,
-                                          height: 44,
-                                          fit: BoxFit.cover,
-                                        )
-                                      : Image.asset(
-                                          image,
-                                          width: 44,
-                                          height: 44,
-                                          fit: BoxFit.cover,
+                                  Widget img;
+                                  if (image.startsWith('http://') ||
+                                      image.startsWith('https://')) {
+                                    img = AppNetworkImage(
+                                      imageUrl: image,
+                                      width: 44,
+                                      height: 44,
+                                      fit: BoxFit.cover,
+                                      loadingBuilder:
+                                          (context, child, loadingProgress) {
+                                        if (loadingProgress == null) {
+                                          return child;
+                                        }
+                                        return const Center(
+                                          child: SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 1.5,
+                                              color: AppColors.primary,
+                                            ),
+                                          ),
                                         );
+                                      },
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        debugPrint(
+                                            'ProductsScreen: Image failed for "$image": $error');
+                                        return Container(
+                                          width: 44,
+                                          height: 44,
+                                          color: AppColors.cardBorder
+                                              .withValues(alpha: 0.2),
+                                          alignment: Alignment.center,
+                                          child: const Icon(
+                                            Icons.broken_image_outlined,
+                                            size: 20,
+                                            color: AppColors.textMuted,
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  } else if (image.startsWith('assets/')) {
+                                    img = Image.asset(
+                                      image,
+                                      width: 44,
+                                      height: 44,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        debugPrint(
+                                            'ProductsScreen: Image.asset failed for "$image": $error');
+                                        return Text(
+                                          product.emoji,
+                                          style: const TextStyle(fontSize: 22),
+                                        );
+                                      },
+                                    );
+                                  } else {
+                                    final fallback = AppAssets.productImage(
+                                        categoryKey: product.category);
+                                    img = (fallback != null &&
+                                            fallback.startsWith('assets/'))
+                                        ? Image.asset(fallback,
+                                            width: 44,
+                                            height: 44,
+                                            fit: BoxFit.cover)
+                                        : Text(
+                                            product.emoji,
+                                            style:
+                                                const TextStyle(fontSize: 22),
+                                          );
+                                  }
                                   return img;
                                 }),
                               ),
@@ -342,7 +411,7 @@ class ProductsScreen extends StatelessWidget {
                                     scale: 0.8,
                                     child: Switch(
                                       value: product.inStock,
-                                      activeColor: AppColors.revenueGreen,
+                                      activeThumbColor: AppColors.revenueGreen,
                                       activeTrackColor: AppColors.revenueGreen
                                           .withValues(alpha: 0.3),
                                       onChanged: (val) => provider
@@ -394,6 +463,8 @@ class ProductsScreen extends StatelessWidget {
   void _showProductDialog(
       BuildContext context, AdminProvider provider, DairyProduct? existing) {
     final isEdit = existing != null;
+    final prodId =
+        existing?.id ?? 'prod_${DateTime.now().millisecondsSinceEpoch}';
     final nameCtrl = TextEditingController(text: existing?.name ?? '');
     final subtitleCtrl = TextEditingController(text: existing?.subtitle ?? '');
     final priceCtrl = TextEditingController(
@@ -411,6 +482,7 @@ class ProductsScreen extends StatelessWidget {
       context: context,
       builder: (ctx) {
         bool isSaving = false;
+        bool isUploadingImage = false;
         String selectedImageUrl = existing?.imageUrl ?? '';
         return StatefulBuilder(
           builder: (ctx, setDialogState) => AlertDialog(
@@ -428,35 +500,185 @@ class ProductsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // ── Product Image Selector ──
-                    Text(
-                      'Product Image',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    if (selectedImageUrl.isNotEmpty) ...[
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.asset(
-                          selectedImageUrl,
-                          height: 100,
-                          width: double.infinity,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Container(
-                            height: 100,
-                            width: double.infinity,
-                            color: AppColors.background,
-                            child: const Icon(Icons.image_not_supported,
-                                color: AppColors.textMuted),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Product Image',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
                           ),
                         ),
+                        TextButton.icon(
+                          onPressed: isUploadingImage
+                              ? null
+                              : () async {
+                                  try {
+                                    final picker = ImagePicker();
+                                    final picked = await picker.pickImage(
+                                      source: ImageSource.gallery,
+                                      maxWidth: 1024,
+                                      maxHeight: 1024,
+                                      imageQuality: 85,
+                                    );
+                                    if (picked == null) return;
+
+                                    setDialogState(
+                                        () => isUploadingImage = true);
+                                    final bytes = await picked.readAsBytes();
+
+                                    final downloadUrl =
+                                        await FirebaseStorageService
+                                            .instance
+                                            .uploadProductImage(
+                                                productId: prodId,
+                                                bytes: bytes);
+
+                                    setDialogState(() {
+                                      selectedImageUrl = downloadUrl;
+                                      isUploadingImage = false;
+                                    });
+
+                                    // If editing an existing product, persist imageUrl immediately to Firestore
+                                    if (existing != null) {
+                                      final updated = existing.copyWith(
+                                          imageUrl: downloadUrl);
+                                      await provider.updateProduct(updated);
+                                    }
+
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                              'Product image uploaded successfully!'),
+                                          backgroundColor: AppColors.freshGreen,
+                                        ),
+                                      );
+                                    }
+                                  } catch (e) {
+                                    setDialogState(
+                                        () => isUploadingImage = false);
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Failed to upload image: ${e.toString().replaceAll("Exception: ", "")}',
+                                          ),
+                                          backgroundColor: AppColors.error,
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                          icon: isUploadingImage
+                              ? const SizedBox(
+                                  width: 14,
+                                  height: 14,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.primary,
+                                  ),
+                                )
+                              : const Icon(Icons.cloud_upload_outlined,
+                                  size: 16, color: AppColors.primary),
+                          label: Text(
+                            isUploadingImage ? 'Uploading...' : 'Upload Image',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    if (isUploadingImage)
+                      Container(
+                        height: 100,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: AppColors.background,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppColors.cardBorder),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const CircularProgressIndicator(
+                                color: AppColors.primary),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Uploading to Firebase Storage...',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    else if (selectedImageUrl.isNotEmpty) ...[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: (selectedImageUrl.trim().startsWith('http://') ||
+                                selectedImageUrl.trim().startsWith('https://'))
+                            ? AppNetworkImage(
+                                imageUrl: selectedImageUrl.trim(),
+                                height: 100,
+                                width: double.infinity,
+                                fit: BoxFit.contain,
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Container(
+                                    height: 100,
+                                    width: double.infinity,
+                                    color: AppColors.background,
+                                    child: const Center(
+                                      child: CircularProgressIndicator(
+                                          color: AppColors.primary),
+                                    ),
+                                  );
+                                },
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Container(
+                                  height: 100,
+                                  width: double.infinity,
+                                  color: AppColors.background,
+                                  child: const Icon(Icons.image_not_supported,
+                                      color: AppColors.textMuted),
+                                ),
+                              )
+                            : Image.asset(
+                                selectedImageUrl,
+                                height: 100,
+                                width: double.infinity,
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Container(
+                                  height: 100,
+                                  width: double.infinity,
+                                  color: AppColors.background,
+                                  child: const Icon(Icons.image_not_supported,
+                                      color: AppColors.textMuted),
+                                ),
+                              ),
                       ),
                       const SizedBox(height: 8),
                     ],
+                    Text(
+                      'Or choose a preset default image:',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
                     SizedBox(
                       height: 72,
                       child: ListView.separated(
@@ -647,7 +869,7 @@ class ProductsScreen extends StatelessWidget {
                           } else {
                             await provider.addProduct(
                               DairyProduct(
-                                id: 'PRD-${DateTime.now().millisecondsSinceEpoch % 100000}',
+                                id: prodId,
                                 name: nameCtrl.text.trim(),
                                 subtitle: subtitleCtrl.text.trim().isEmpty
                                     ? fatCtrl.text.trim()

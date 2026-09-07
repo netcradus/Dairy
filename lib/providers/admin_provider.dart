@@ -23,7 +23,7 @@ class AdminProvider extends ChangeNotifier {
   final OrderService _orderService;
   final ComplaintService _complaintService;
 
-  int _selectedNavIndex = 0;
+  int _selectedNavIndex = 2;
   String _searchQuery = '';
   String _orderStatusTimeFilter = 'Today';
   int _unreadNotifications = 5;
@@ -98,11 +98,11 @@ class AdminProvider extends ChangeNotifier {
 
   double get totalRevenue => _orders
       .where((o) => o.status == OrderStatus.delivered)
-      .fold(0.0, (sum, o) => sum + o.amount);
+      .fold(0.0, (total, o) => total + o.amount);
 
   double get totalOrderValue => _orders
       .where((o) => o.status != OrderStatus.cancelled)
-      .fold(0.0, (sum, o) => sum + o.amount);
+      .fold(0.0, (total, o) => total + o.amount);
 
   List<DairyProduct> get topSellingProducts =>
       _products.where((p) => p.isBestSeller).toList();
@@ -265,11 +265,24 @@ class AdminProvider extends ChangeNotifier {
   }
 
   DairyProduct _rawToDairyProduct(Map<String, dynamic> raw) {
-    return DairyProduct(
-      id: raw['id'] as String? ?? '',
-      name: (raw['title'] as String?) ?? '',
-      subtitle: (raw['description'] as String?) ?? '',
-      category: (raw['categoryName'] as String?) ?? '',
+    final id = (raw['id'] as String?) ?? (raw['productId'] as String?) ?? '';
+    final rawImageUrl = (raw['imageUrl'] as String?) ??
+        (raw['image'] as String?) ??
+        (raw['image_url'] as String?) ??
+        (raw['imageURL'] as String?) ??
+        (raw['photoUrl'] as String?) ??
+        '';
+    final name = (raw['title'] as String?) ?? (raw['name'] as String?) ?? '';
+    final subtitle =
+        (raw['description'] as String?) ?? (raw['subtitle'] as String?) ?? '';
+    final category =
+        (raw['categoryName'] as String?) ?? (raw['category'] as String?) ?? '';
+
+    final product = DairyProduct(
+      id: id,
+      name: name,
+      subtitle: subtitle,
+      category: category,
       unit: (raw['unit'] as String?) ?? '',
       price: (raw['price'] as num?)?.toDouble() ?? 0.0,
       ordersCount: (raw['ordersCount'] as num?)?.toInt() ?? 0,
@@ -280,8 +293,16 @@ class AdminProvider extends ChangeNotifier {
       inStock: (raw['inStock'] as bool?) ?? true,
       emoji: (raw['emoji'] as String?) ?? '🥛',
       isBestSeller: (raw['isBestSeller'] as bool?) ?? false,
-      imageUrl: (raw['imageUrl'] as String?) ?? '',
+      imageUrl: rawImageUrl.trim(),
     );
+
+    if (product.id == 'prod_1788762789345' || product.imageUrl.isNotEmpty) {
+      debugPrint('ADMIN PRODUCT ${product.id}');
+      debugPrint('Firestore imageUrl: ${product.imageUrl}');
+      debugPrint('Resolved imageUrl: ${product.resolvedImageUrl}');
+    }
+
+    return product;
   }
 
   Map<String, dynamic> _dairyProductToFirestore(DairyProduct p) {
@@ -322,6 +343,7 @@ class AdminProvider extends ChangeNotifier {
       icon: Icons.category_rounded,
       color: colorValue != null ? Color(colorValue) : AppColors.primary,
       emoji: (raw['emoji'] as String?) ?? '🥛',
+      imageUrl: (raw['imageUrl'] as String?) ?? '',
     );
   }
 
@@ -329,9 +351,9 @@ class AdminProvider extends ChangeNotifier {
     return {
       'title': c.name,
       'subtitle': c.description,
-      'imageUrl': '',
+      'imageUrl': c.imageUrl,
       'iconName': null,
-      'colorValue': c.color.value,
+      'colorValue': c.color.toARGB32(),
       'itemCount': c.productCount,
       'name': c.name,
       'description': c.description,

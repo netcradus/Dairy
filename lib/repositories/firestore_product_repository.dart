@@ -100,14 +100,14 @@ class FirestoreProductRepository {
   /// customer-facing [Product] model.
   Stream<List<Map<String, dynamic>>> streamRawProducts() {
     return _products.snapshots().map((snap) => _mergeMissingDefaultRawProducts(
-        snap.docs.map((d) => {'id': d.id, ...d.data()}).toList()));
+        snap.docs.map((d) => {...d.data(), 'id': d.id}).toList()));
   }
 
   /// Real-time stream of raw category documents (with `'id'` key).
   Stream<List<Map<String, dynamic>>> streamRawCategories() {
     return _categories.snapshots().map((snap) =>
         _mergeMissingDefaultRawCategories(
-            snap.docs.map((d) => {'id': d.id, ...d.data()}).toList()));
+            snap.docs.map((d) => {...d.data(), 'id': d.id}).toList()));
   }
 
   // ─── One-time fetches ────────────────────────────────────────────────────

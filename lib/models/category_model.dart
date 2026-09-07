@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../core/constants/app_assets.dart';
+
 class DairyCategory {
   final String id;
   final String name;
@@ -8,6 +10,7 @@ class DairyCategory {
   final IconData icon;
   final Color color;
   final String emoji;
+  final String imageUrl;
 
   const DairyCategory({
     required this.id,
@@ -17,7 +20,11 @@ class DairyCategory {
     required this.icon,
     required this.color,
     required this.emoji,
+    this.imageUrl = '',
   });
+
+  String get resolvedImageUrl =>
+      AppAssets.categoryImage(imageUrl: imageUrl, categoryKey: id) ?? '';
 
   DairyCategory copyWith({
     String? id,
@@ -27,6 +34,7 @@ class DairyCategory {
     IconData? icon,
     Color? color,
     String? emoji,
+    String? imageUrl,
   }) {
     return DairyCategory(
       id: id ?? this.id,
@@ -36,6 +44,7 @@ class DairyCategory {
       icon: icon ?? this.icon,
       color: color ?? this.color,
       emoji: emoji ?? this.emoji,
+      imageUrl: imageUrl ?? this.imageUrl,
     );
   }
 }
