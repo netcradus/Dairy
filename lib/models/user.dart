@@ -1,3 +1,5 @@
+import '../core/auth/app_role.dart';
+
 /// User Model for Sawariya Dairy
 class User {
   final String id;
@@ -13,12 +15,13 @@ class User {
     required this.phone,
     this.email,
     this.profileImageUrl,
-    this.role = 'customer',
+    this.role = UserRole.customerValue,
   });
 
-  bool get isDelivery => role == 'delivery';
-  bool get isAdmin => role == 'admin';
-  bool get isCustomer => role == 'customer';
+  UserRole get userRole => UserRole.fromString(role);
+  bool get isDelivery => userRole.isDelivery;
+  bool get isAdmin => userRole.isAdmin;
+  bool get isCustomer => userRole.isCustomer;
 
   Map<String, dynamic> toMap() {
     return {
@@ -27,18 +30,18 @@ class User {
       'phone': phone,
       'email': email,
       'profileImageUrl': profileImageUrl,
-      'role': role,
+      'role': UserRole.sanitize(role),
     };
   }
 
   factory User.fromMap(Map<String, dynamic> map) {
     return User(
-      id: map['id'] ?? '',
+      id: map['id'] ?? map['uid'] ?? '',
       name: map['name'] ?? '',
       phone: map['phone'] ?? '',
       email: map['email'],
       profileImageUrl: map['profileImageUrl'],
-      role: map['role'] ?? 'customer',
+      role: UserRole.sanitize(map['role'] as String?),
     );
   }
 }

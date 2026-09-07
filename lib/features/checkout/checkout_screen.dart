@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
@@ -37,12 +39,23 @@ class CheckoutScreen extends ConsumerWidget {
       return;
     }
 
+    final authUser = FirebaseAuth.instance.currentUser;
+    if (authUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please log in to place an order.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      context.push('/login');
+      return;
+    }
+
     final selectedAddress = ref.read(selectedAddressProvider);
     final paymentMethod = ref.read(paymentMethodProvider);
     final paymentName = paymentMethod == PaymentMethodType.cashOnDelivery
         ? 'Cash on Delivery'
         : 'Online Payment';
-    final userId = ref.read(userProvider).id;
 
     // Show a loading indicator while the order is persisted to Firestore.
     showDialog(
@@ -54,7 +67,7 @@ class CheckoutScreen extends ConsumerWidget {
     Order newOrder;
     try {
       newOrder = await ref.read(orderServiceProvider).placeOrder(
-            userId: userId,
+            userId: authUser.uid,
             items: cartItems,
             deliveryAddress: selectedAddress ?? _fallbackAddress(),
             paymentMethod: paymentName,

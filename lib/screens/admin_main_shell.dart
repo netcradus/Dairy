@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart' as provider;
 import '../core/constants/app_colors.dart';
 import '../core/responsive/responsive_layout.dart';
 import '../providers/admin_provider.dart';
+import '../providers/user_provider.dart';
 import '../widgets/app_header.dart';
 import '../widgets/sidebar_navigation.dart';
 import 'categories/categories_screen.dart';
@@ -17,15 +20,77 @@ import 'products/products_screen.dart';
 import 'staff/staff_roles_screen.dart';
 import 'support/support_screen.dart';
 
-class AdminMainShell extends StatelessWidget {
+class AdminMainShell extends ConsumerWidget {
   const AdminMainShell({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final provider = context.watch<AdminProvider>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(userProvider);
     final isDesktop = ResponsiveLayout.isDesktop(context);
     final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
     final bgColor = AppColors.bgOf(context);
+
+    // Defense-in-depth: Ensure only authenticated admins can render admin screens
+    if (!user.isAdmin) {
+      return Scaffold(
+        backgroundColor: bgColor,
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.gpp_bad_rounded,
+                  size: 64,
+                  color: AppColors.error,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Access Denied',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.error,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'You do not have administrative privileges to access the admin portal.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    if (user.isDelivery) {
+                      context.go('/delivery');
+                    } else if (user.id.isNotEmpty) {
+                      context.go('/home');
+                    } else {
+                      context.go('/login');
+                    }
+                  },
+                  icon: const Icon(Icons.arrow_back),
+                  label: const Text('Return to Safe Screen'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.freshGreen,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    final adminProv = provider.Provider.of<AdminProvider>(context);
 
     Widget getActiveScreen(int index) {
       switch (index) {
@@ -69,7 +134,7 @@ class AdminMainShell extends StatelessWidget {
                 children: [
                   const AppHeader(),
                   Expanded(
-                    child: getActiveScreen(provider.selectedNavIndex),
+                    child: getActiveScreen(adminProv.selectedNavIndex),
                   ),
                 ],
               ),
@@ -92,7 +157,7 @@ class AdminMainShell extends StatelessWidget {
                 onOpenDrawer: () => scaffoldKey.currentState?.openDrawer(),
               ),
               Expanded(
-                child: getActiveScreen(provider.selectedNavIndex),
+                child: getActiveScreen(adminProv.selectedNavIndex),
               ),
             ],
           ),

@@ -4,9 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' hide Order;
 
 import '../models/delivery_boy_model.dart';
+import '../models/earning_model.dart';
 import '../models/order.dart';
 import '../models/user.dart';
 import '../services/delivery_tracking_service.dart';
+import '../services/earnings_service.dart';
 import '../services/order_service.dart';
 import 'user_provider.dart';
 
@@ -280,41 +282,113 @@ final deliveryAgentProvider =
 });
 
 class DeliveryEarningsNotifier extends StateNotifier<List<DeliveryEarnings>> {
-  DeliveryEarningsNotifier() : super(_getMockEarnings());
+  final Ref _ref;
+  StreamSubscription<List<EarningModel>>? _subscription;
 
-  static List<DeliveryEarnings> _getMockEarnings() {
-    final now = DateTime.now();
-    return List.generate(7, (index) {
-      final date = now.subtract(Duration(days: 6 - index));
-      final base = 200.0 + (index * 50.0);
-      final tips = 20.0 + (index * 5.0);
-      final bonuses = index % 3 == 0 ? 50.0 : 0.0;
-      final count = 8 + index;
+  DeliveryEarningsNotifier(this._ref) : super(const []) {
+    _listenToEarnings();
+  }
+
+  void _listenToEarnings() {
+    _subscription?.cancel();
+    final agentId = _currentAgentId;
+    if (agentId.isEmpty) return;
+
+    _subscription = _ref
+        .read(earningsServiceProvider)
+        .getAgentEarnings(agentId)
+        .listen((earningModels) {
+      state = _groupEarningsByDate(earningModels);
+    }, onError: (_) {
+      // Gracefully maintain state on connection error
+    });
+  }
+
+  static List<DeliveryEarnings> _groupEarningsByDate(List<EarningModel> models) {
+    if (models.isEmpty) return const [];
+
+    final Map<String, List<EarningModel>> byDay = {};
+    for (final m in models) {
+      final d = m.timestamp;
+      final dayKey =
+          '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+      byDay.putIfAbsent(dayKey, () => []).add(m);
+    }
+
+    final sortedKeys = byDay.keys.toList()..sort((a, b) => b.compareTo(a));
+
+    return sortedKeys.map((key) {
+      final dayList = byDay[key]!;
+      final date = dayList.first.timestamp;
+      final base = dayList.fold(0.0, (acc, e) => acc + e.amountEarned);
+      final tips = dayList.fold(0.0, (acc, e) => acc + e.tipAmount);
+      final count = dayList.length;
       return DeliveryEarnings(
         date: date,
         baseEarnings: base,
         tips: tips,
-        bonuses: bonuses,
+        bonuses: 0.0,
         deliveriesCount: count,
-        total: base + tips + bonuses,
+        total: base + tips,
       );
-    });
+    }).toList();
   }
 
   void addEarnings(DeliveryEarnings earnings) {
     state = [earnings, ...state.take(30)].toList();
   }
 
-  double get todayTotal => state.isNotEmpty ? state.first.total : 0.0;
-  int get todayDeliveries => state.isNotEmpty ? state.first.deliveriesCount : 0;
-  double get weekTotal => state.fold(0.0, (sum, e) => sum + e.total);
-  int get weekDeliveries => state.fold(0, (sum, e) => sum + e.deliveriesCount);
+  double get todayTotal {
+    final now = DateTime.now();
+    for (final e in state) {
+      if (e.date.year == now.year &&
+          e.date.month == now.month &&
+          e.date.day == now.day) {
+        return e.total;
+      }
+    }
+    return 0.0;
+  }
+
+  int get todayDeliveries {
+    final now = DateTime.now();
+    for (final e in state) {
+      if (e.date.year == now.year &&
+          e.date.month == now.month &&
+          e.date.day == now.day) {
+        return e.deliveriesCount;
+      }
+    }
+    return 0;
+  }
+
+  double get weekTotal {
+    final now = DateTime.now();
+    final sevenDaysAgo = now.subtract(const Duration(days: 7));
+    return state
+        .where((e) => e.date.isAfter(sevenDaysAgo))
+        .fold(0.0, (acc, e) => acc + e.total);
+  }
+
+  int get weekDeliveries {
+    final now = DateTime.now();
+    final sevenDaysAgo = now.subtract(const Duration(days: 7));
+    return state
+        .where((e) => e.date.isAfter(sevenDaysAgo))
+        .fold(0, (acc, e) => acc + e.deliveriesCount);
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
 }
 
 final deliveryEarningsProvider =
     StateNotifierProvider<DeliveryEarningsNotifier, List<DeliveryEarnings>>(
         (ref) {
-  return DeliveryEarningsNotifier();
+  return DeliveryEarningsNotifier(ref);
 });
 
 class DeliveryHistoryNotifier extends StateNotifier<List<DeliveryHistoryItem>> {

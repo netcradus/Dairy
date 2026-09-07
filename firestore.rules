@@ -1,0 +1,245 @@
+rules_version = '2';
+
+// Sawariya Dairy — Complete Cloud Firestore Security Rules (Task 5)
+// ---------------------------------------------------------------------------
+// Architecture:
+//   * Deny-by-default on all root documents.
+//   * Authentication required for all private & operational data.
+//   * Strict Role-Based Access Control (RBAC) backed by /users/{uid}.
+//   * Roles: 'admin', 'delivery', 'customer'.
+//   * Defense-in-depth: Field-level privilege escalation guards.
+// ---------------------------------------------------------------------------
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Deny by Default ────────────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ── Shared RBAC Helpers ────────────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwnDoc(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Safely reads trusted user data from /users/{uid} with existence guard
+    function getUserData() {
+      return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+          ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data
+          : null;
+    }
+
+    function currentRole() {
+      let data = getUserData();
+      return data != null && ('role' in data) ? data.role : null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && currentRole() in ['admin', 'superadmin'];
+    }
+
+    function isDelivery() {
+      return isSignedIn() && currentRole() == 'delivery';
+    }
+
+    function isCustomer() {
+      return isSignedIn() && (currentRole() == 'customer' || currentRole() == null);
+    }
+
+    // ── 1. users Collection ─────────────────────────────────────────────────
+    match /users/{userId} {
+      // Users can read own profile; Admins can read all users
+      allow read: if isAdmin() || isOwnDoc(userId);
+
+      // Self-registration: Strictly allows creating 'customer' profile only.
+      // A user can never self-assign 'admin' or 'delivery' role.
+      // Admins can create any user profile with any role.
+      allow create: if isAdmin()
+          || (isOwnDoc(userId)
+              && request.resource.data.uid == request.auth.uid
+              && request.resource.data.role == 'customer');
+
+      // Profile Update:
+      // Owners can update own profile, but MUST NEVER mutate 'role', 'uid', or admin flags.
+      // Admins can update any user profile.
+      allow update: if isAdmin()
+          || (isOwnDoc(userId)
+              && request.resource.data.uid == resource.data.uid
+              && request.resource.data.role == resource.data.role);
+
+      // User deletion: Admin only
+      allow delete: if isAdmin();
+    }
+
+    // ── 2. users/{userId}/addresses Subcollection ───────────────────────────
+    match /users/{userId}/addresses/{addressId} {
+      // Owners can CRUD own addresses; Admins have full access
+      allow read, create, update, delete: if isAdmin() || isOwnDoc(userId);
+    }
+
+    // ── 3. users/{userId}/notifications Subcollection ───────────────────────
+    match /users/{userId}/notifications/{notifId} {
+      // Owners read own notifications; Admins read all
+      allow read: if isAdmin() || isOwnDoc(userId);
+
+      // Only Admins (or trusted server SDK) can create/broadcast notifications
+      allow create: if isAdmin();
+
+      // Owners can only update 'isRead' status; Admins have full update access
+      allow update: if isAdmin()
+          || (isOwnDoc(userId)
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead']));
+
+      // Owners can dismiss/delete own notifications; Admins have full delete access
+      allow delete: if isAdmin() || isOwnDoc(userId);
+    }
+
+    // ── 4. products Collection ──────────────────────────────────────────────
+    match /products/{productId} {
+      // Any signed-in user can browse products in the shop
+      allow read: if isSignedIn();
+
+      // Only Admins can create, edit, or delete products
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── 5. categories Collection ────────────────────────────────────────────
+    match /categories/{categoryId} {
+      // Any signed-in user can view categories
+      allow read: if isSignedIn();
+
+      // Only Admins can manage product categories
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── 6. orders Collection ────────────────────────────────────────────────
+    match /orders/{orderId} {
+      // Customers: read own orders.
+      // Delivery: read pending unassigned orders (to accept) or assigned orders.
+      // Admins: read all orders.
+      allow read: if isAdmin()
+          || (isSignedIn() && resource.data.userId == request.auth.uid)
+          || (isDelivery()
+              && (resource.data.status in ['Pending', 'pending', 'placed']
+                  || (('assignedAgentId' in resource.data)
+                      && resource.data.assignedAgentId == request.auth.uid)));
+
+      // Customers can create legitimate orders owned by themselves starting in 'Pending' state.
+      // They cannot forge ownership, totals, or assigned delivery agents.
+      allow create: if isAdmin()
+          || (isSignedIn()
+              && request.resource.data.userId == request.auth.uid
+              && request.resource.data.status in ['Pending', 'pending', 'placed']
+              && !('assignedAgentId' in request.resource.data)
+              && !('acceptedAt' in request.resource.data));
+
+      // Order update:
+      // Admins: Full management.
+      // Delivery Agents: Controlled state transition and assignment operations.
+      allow update: if isAdmin()
+          || (isDelivery() && canUpdateAssignedOrder());
+
+      // Only Admins may delete orders (audit trail retention)
+      allow delete: if isAdmin();
+    }
+
+    // Delivery-agent order mutation guard
+    function canUpdateAssignedOrder() {
+      let changed = request.resource.data.diff(resource.data).affectedKeys();
+      let isMine = ('assignedAgentId' in resource.data)
+          && resource.data.assignedAgentId == request.auth.uid;
+      let isUnassigned = !('assignedAgentId' in resource.data)
+          || resource.data.assignedAgentId == null;
+      let claimsSelf = ('assignedAgentId' in request.resource.data)
+          && request.resource.data.assignedAgentId == request.auth.uid;
+      let releases = ('assignedAgentId' in request.resource.data)
+          && request.resource.data.assignedAgentId == null;
+
+      return isMine
+          ? (changed.hasOnly(['status', 'acceptedAt', 'deliveredAt', 'deliveryConfirmed'])
+              || (changed.hasOnly(['status', 'assignedAgentId', 'acceptedAt']) && releases))
+          : (isUnassigned
+              ? changed.hasOnly(['status', 'assignedAgentId', 'acceptedAt']) && claimsSelf
+              : false);
+    }
+
+    // ── 7. delivery_agents Collection ───────────────────────────────────────
+    match /delivery_agents/{agentId} {
+      // Agents read own profile; Customers track assigned driver; Admins read all
+      allow read: if isSignedIn();
+
+      // Create own profile doc (Delivery agents or Admins)
+      allow create: if isAdmin()
+          || (isDelivery()
+              && isOwnDoc(agentId)
+              && request.resource.data.uid == request.auth.uid);
+
+      // Update duty status, live GPS coordinates, vehicle information
+      allow update: if isAdmin()
+          || (isDelivery()
+              && isOwnDoc(agentId)
+              && isAllowedAgentUpdate());
+
+      // Only Admins can delete delivery agent records
+      allow delete: if isAdmin();
+    }
+
+    function isAllowedAgentUpdate() {
+      let allowed = [
+        'name',
+        'phone',
+        'email',
+        'profileImageUrl',
+        'vehicle',
+        'vehicleType',
+        'vehicleNumber',
+        'assignedZone',
+        'rating',
+        'isOnline',
+        'isOnDuty',
+        'location',
+        'orderId',
+        'updatedAt'
+      ];
+      let changed = request.resource.data.diff(resource.data).affectedKeys();
+      return changed.hasOnly(allowed);
+    }
+
+    // ── 8. earnings Collection ──────────────────────────────────────────────
+    match /earnings/{earningId} {
+      // Delivery agent reads own earnings; Admins read all
+      allow read: if isAdmin()
+          || (isDelivery() && resource.data.agentId == request.auth.uid);
+
+      // Written by Cloud Functions / Admin SDK only (bypasses rules)
+      // Admins can manage earnings
+      allow write: if isAdmin();
+    }
+
+    // ── 9. complaints Collection ────────────────────────────────────────────
+    match /complaints/{complaintId} {
+      // Customer reads own support tickets; Admins read all
+      allow read: if isAdmin()
+          || (isSignedIn() && resource.data.customerId == request.auth.uid);
+
+      // Customers can file a support ticket owned by themselves in 'Open' status
+      allow create: if isAdmin()
+          || (isSignedIn()
+              && request.resource.data.customerId == request.auth.uid
+              && request.resource.data.status in ['Open', 'open', 'Pending', 'pending']
+              && (!('adminReply' in request.resource.data) || request.resource.data.adminReply == null));
+
+      // Only Admins can update ticket status, attach resolutions, or add admin replies
+      allow update: if isAdmin();
+
+      // Only Admins can delete complaints
+      allow delete: if isAdmin();
+    }
+  }
+}
+

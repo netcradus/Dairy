@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart' hide Order;
+import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -51,13 +52,21 @@ class OrderService {
   }
 
   /// Writes a new order to Firestore from the provided cart [items] and returns
+  /// Writes a new order to Firestore from the provided cart [items] and returns
   /// the created [Order] (with its generated id).
   Future<Order> placeOrder({
-    required String userId,
+    String? userId,
     required List<CartItem> items,
     required Address deliveryAddress,
     String paymentMethod = 'Cash on Delivery',
   }) async {
+    final currentAuthUser = FirebaseAuth.instance.currentUser;
+    if (currentAuthUser == null) {
+      throw StateError('User must be authenticated with Firebase to place an order.');
+    }
+
+    final authoritativeUid = currentAuthUser.uid;
+
     if (items.isEmpty) {
       throw ArgumentError('Cannot place an order with an empty cart.');
     }
@@ -80,7 +89,7 @@ class OrderService {
     );
 
     await docRef.set({
-      'userId': userId,
+      'userId': authoritativeUid,
       'status': 'Pending',
       'items': items
           .map((item) => {
@@ -207,14 +216,24 @@ class OrderService {
   }
 
   /// Live stream of the orders relevant to a delivery agent: any order that is
-  /// still `pending` (awaiting acceptance) OR already assigned to [agentId].
-  /// Filtering is done client-side to avoid requiring a composite index.
+  /// still `Pending` (awaiting acceptance) OR already assigned to [agentId].
+  /// Uses a Firestore query filter to ensure compliance with Security Rules.
   Stream<List<Order>> streamDeliveryOrdersForAgent(String agentId) {
-    return _firestore.collection('orders').snapshots().map((snap) => snap.docs
+    final Query<Map<String, dynamic>> query;
+    if (agentId.isEmpty) {
+      query =
+          _firestore.collection('orders').where('status', isEqualTo: 'Pending');
+    } else {
+      query = _firestore.collection('orders').where(
+            Filter.or(
+              Filter('status', isEqualTo: 'Pending'),
+              Filter('assignedAgentId', isEqualTo: agentId),
+            ),
+          );
+    }
+
+    return query.snapshots().map((snap) => snap.docs
         .map((d) => Order.fromFirestore(d.data(), d.id))
-        .where((o) =>
-            o.status == OrderStatus.placed ||
-            (o.assignedAgentId != null && o.assignedAgentId == agentId))
         .toList()
       ..sort((a, b) => b.orderDate.compareTo(a.orderDate)));
   }

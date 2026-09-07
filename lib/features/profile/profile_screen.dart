@@ -10,11 +10,7 @@ import 'edit_profile_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../subscription/subscriptions_screen.dart';
 import 'about_screen.dart';
-import 'customer_support_screen.dart';
 import '../../core/localization/app_language.dart';
-
-/// Demo delivery-partner account.
-const String _deliveryAccountPhone = '7777777777';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -22,7 +18,6 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDesktop = context.isDesktop;
-    final user = ref.watch(userProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFD),
@@ -49,26 +44,7 @@ class ProfileScreen extends ConsumerWidget {
                         _buildMyOrdersStatsCard(context, ref),
                         const SizedBox(height: 20),
 
-                        // ─── 3. Delivery Partner Panel (For Delivery boys only) ───
-                        if (user.phone == _deliveryAccountPhone) ...[
-                          Text(
-                            tr('Delivery Partner'),
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w800,
-                              color: Color(0xFF667085),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          _buildMenuTile(
-                            context,
-                            Icons.local_shipping_outlined,
-                            tr('Open Delivery Panel'),
-                            tr('Switch to delivery experience'),
-                            () => _openDeliveryPanel(context, ref),
-                          ),
-                          const SizedBox(height: 16),
-                        ],
+
 
                         // ─── 4. Account Settings Menu ───
                         Text(
@@ -545,8 +521,4 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  void _openDeliveryPanel(BuildContext context, WidgetRef ref) {
-    ref.read(userProvider.notifier).setRole('delivery');
-    context.push('/delivery');
-  }
 }

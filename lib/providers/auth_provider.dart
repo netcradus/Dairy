@@ -186,39 +186,19 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
       if (firebaseUser != null) {
         final mobile = state.mobileNumber ?? firebaseUser.phoneNumber ?? '';
+        final name = state.isSignUpFlow
+            ? (state.tempFullName ?? 'Sawariya Customer')
+            : (state.tempFullName ?? 'Sawariya Customer');
 
-        String role;
-        String name;
-        String? email;
-        if (mobile.contains('9999999999')) {
-          role = 'admin';
-          name = state.isSignUpFlow
-              ? (state.tempFullName ?? 'Sawariya Admin')
-              : 'Sawariya Admin';
-          email = 'admin@sawariyadairy.com';
-        } else if (mobile.contains('7777777777')) {
-          role = 'delivery';
-          name = state.isSignUpFlow
-              ? (state.tempFullName ?? 'Delivery Partner')
-              : 'Rajesh Kumar';
-          email = 'delivery@sawariyadairy.com';
-        } else {
-          role = 'customer';
-          name = state.isSignUpFlow
-              ? (state.tempFullName ?? 'Sawariya Customer')
-              : 'Sawariya Customer';
-          email = 'customer@sawariyadairy.com';
-        }
-
-        final user = User(
+        final initialUser = User(
           id: firebaseUser.uid,
           name: name,
           phone: mobile,
-          email: email,
-          role: role,
+          email: firebaseUser.email,
         );
 
-        await ref.read(userProvider.notifier).setSession(user);
+        // setSession queries Firestore users/{uid} for the authoritative role
+        await ref.read(userProvider.notifier).setSession(initialUser);
 
         state = AuthState(status: const AsyncData(null));
         return true;

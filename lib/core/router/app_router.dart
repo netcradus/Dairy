@@ -43,36 +43,60 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final user = ref.read(userProvider);
       final isLoggedIn = user.id.isNotEmpty;
-      final isAdmin = user.role == 'admin';
-      final isDelivery = user.role == 'delivery';
+      final isAdmin = user.isAdmin;
+      final isDelivery = user.isDelivery;
 
       final path = state.matchedLocation;
       final isAuthPath = path == '/login' ||
           path == '/register' ||
           path == '/otp' ||
           path == '/splash' ||
-          path == '/onboarding';
+          path == '/onboarding' ||
+          path == '/forgot-password' ||
+          path == '/reset-password';
 
-      if (!isLoggedIn && !isAuthPath) {
-        return '/login';
+      // 1. Unauthenticated users: redirect any protected path to /login
+      if (!isLoggedIn) {
+        return isAuthPath ? null : '/login';
       }
 
-      if (isLoggedIn) {
-        if (isAuthPath) {
-          if (isAdmin) return '/admin';
-          if (isDelivery) return '/delivery';
-          return '/home';
-        }
-        if (path == '/admin' && !isAdmin) {
-          return isDelivery ? '/delivery' : '/home';
-        }
-        if (path == '/delivery' && !isDelivery) {
-          return isAdmin ? '/admin' : '/home';
-        }
-        if (path == '/home' && (isAdmin || isDelivery)) {
-          return isAdmin ? '/admin' : '/delivery';
-        }
+      // 2. Authenticated users:
+      // If currently on an auth/onboarding screen, redirect to their role's home panel
+      if (isAuthPath) {
+        if (isAdmin) return '/admin';
+        if (isDelivery) return '/delivery';
+        return '/home';
       }
+
+      // 3. Admin-only routes: strictly enforce Admin authorization
+      final isAdminRoute = path == '/admin' || path.startsWith('/admin/');
+      if (isAdminRoute && !isAdmin) {
+        return isDelivery ? '/delivery' : '/home';
+      }
+
+      // 4. Delivery-only routes: strictly enforce Delivery Agent authorization
+      final isDeliveryRoute =
+          path == '/delivery' || path == '/delivery-map' || path.startsWith('/delivery/');
+      if (isDeliveryRoute && !isDelivery) {
+        return isAdmin ? '/admin' : '/home';
+      }
+
+      // 5. Role confinement: Admin and Delivery are routed to their respective panels
+      final isCustomerRoute = path == '/home' ||
+          path == '/shop' ||
+          path == '/product-details' ||
+          path == '/cart' ||
+          path == '/address' ||
+          path == '/add-address' ||
+          path == '/checkout' ||
+          path == '/settings' ||
+          path == '/support';
+
+      if (isCustomerRoute) {
+        if (isAdmin) return '/admin';
+        if (isDelivery) return '/delivery';
+      }
+
       return null;
     },
     routes: [

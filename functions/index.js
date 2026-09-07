@@ -10,49 +10,83 @@ const AGENT_EARNING_RATE = 0.10;
 
 /**
  * When an order transitions to "delivered", credit the assigned agent's
- * earnings by writing a document to the "earnings" collection. The document id
- * is the order id, so a redelivery cannot create duplicate records.
+ * earnings by writing an idempotent document to the "earnings" collection.
+ * The document id is the order id, so retries or duplicate status updates
+ * cannot create duplicate earning records.
  */
 exports.logEarningOnDelivered = onDocumentUpdated(
   { document: "orders/{orderId}" },
   async (event) => {
-    const before = event.data.before.data();
+    if (!event.data || !event.data.after) {
+      console.warn("No document data found in event; skipping.");
+      return;
+    }
+
+    const before = event.data.before ? event.data.before.data() : null;
     const after = event.data.after.data();
     const orderId = event.params.orderId;
 
+    if (!after) {
+      console.warn(`Order ${orderId} has no post-update data; skipping.`);
+      return;
+    }
+
+    const beforeStatus = (before && before.status ? String(before.status) : "").toLowerCase();
+    const afterStatus = (after && after.status ? String(after.status) : "").toLowerCase();
+
     // Only act on a transition INTO "delivered".
-    if (before.status === after.status || after.status !== "delivered") {
+    // Skip if status did not change, or if target status is not delivered.
+    if (beforeStatus === afterStatus || afterStatus !== "delivered") {
       return;
     }
 
     const agentId = after.assignedAgentId;
-    if (!agentId) {
+    if (!agentId || typeof agentId !== "string" || agentId.trim() === "") {
       console.log(
-        `Order ${orderId} delivered with no assignedAgentId; skipping earnings.`
+        `Order ${orderId} delivered with no valid assignedAgentId; skipping earnings.`
       );
       return;
     }
 
-    const subtotal = Number(after.subtotal) || 0;
+    const rawSubtotal = after.subtotal != null
+      ? Number(after.subtotal)
+      : (after.totalAmount != null ? Number(after.totalAmount) : 0);
+
+    if (isNaN(rawSubtotal) || rawSubtotal < 0) {
+      console.warn(`Invalid subtotal for order ${orderId}; skipping earnings.`);
+      return;
+    }
+
     const deliveryFee = Number(after.deliveryCharge) || 0;
-    const amountEarned = subtotal * AGENT_EARNING_RATE;
+    // Calculate 10% commission on subtotal with 2 decimal precision
+    const amountEarned = Math.round((rawSubtotal * AGENT_EARNING_RATE) * 100) / 100;
 
     const db = getFirestore();
-    await db
-      .collection("earnings")
-      .doc(orderId)
-      .set({
-        agentId: agentId,
-        orderId: orderId,
-        amountEarned: amountEarned,
-        tipAmount: 0,
-        deliveryFee: deliveryFee,
-        timestamp: FieldValue.serverTimestamp(),
-        status: "pending",
-      });
+    const earningRef = db.collection("earnings").doc(orderId);
+
+    // Idempotency check: Verify whether earning record already exists
+    const existingDoc = await earningRef.get();
+    if (existingDoc.exists) {
+      console.log(
+        `Earning record already exists for order ${orderId}; skipping duplicate creation.`
+      );
+      return;
+    }
+
+    await earningRef.set({
+      id: orderId,
+      orderId: orderId,
+      agentId: agentId.trim(),
+      amountEarned: amountEarned,
+      tipAmount: 0.0,
+      deliveryFee: deliveryFee,
+      status: "pending",
+      timestamp: FieldValue.serverTimestamp(),
+      createdAt: FieldValue.serverTimestamp(),
+    });
 
     console.log(
-      `Logged earning for order ${orderId} (agent ${agentId}): ${amountEarned}`
+      `Successfully logged earning for order ${orderId} (agent ${agentId.trim()}): ₹${amountEarned}`
     );
   }
 );

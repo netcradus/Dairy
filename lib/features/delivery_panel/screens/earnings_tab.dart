@@ -91,7 +91,44 @@ class EarningsTab extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 12),
-        ...earnings.map((e) => _buildDailyEarningsItem(context, e, isDesktop)),
+        if (earnings.isEmpty)
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+            decoration: BoxDecoration(
+              color: AppColors.cardBgOf(context),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.cardBorderOf(context)),
+            ),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.account_balance_wallet_outlined,
+                  size: 44,
+                  color: AppColors.textSecondaryOf(context),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'No earnings recorded yet',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Earnings will appear here automatically when you deliver orders.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 12,
+                    color: AppColors.textSecondaryOf(context),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          ...earnings.map((e) => _buildDailyEarningsItem(context, e, isDesktop)),
       ],
     );
   }
