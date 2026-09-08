@@ -294,7 +294,7 @@ class SidebarNavigation extends StatelessWidget {
                       ),
                     );
                     if (confirm == true) {
-                      container.read(cartProvider.notifier).clearCart();
+                      container.read(cartProvider.notifier).clearLocalCart();
                       container.read(userProvider.notifier).clearSession();
                     }
                   },

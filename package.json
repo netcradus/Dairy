@@ -8,9 +8,10 @@
     "test": "test"
   },
   "scripts": {
-    "test": "mocha test/firestore_rules.test.js test/earnings_persistence.test.js",
+    "test": "mocha test/firestore_rules.test.js test/earnings_persistence.test.js test/cart_sync.test.js",
     "test:rules": "mocha test/firestore_rules.test.js",
-    "test:earnings": "mocha test/earnings_persistence.test.js"
+    "test:earnings": "mocha test/earnings_persistence.test.js",
+    "test:cart": "mocha test/cart_sync.test.js"
   },
   "repository": {
     "type": "git",

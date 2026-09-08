@@ -99,7 +99,13 @@ service cloud.firestore {
       allow delete: if isAdmin() || isOwnDoc(userId);
     }
 
-    // ── 4. products Collection ──────────────────────────────────────────────
+    // ── 4. users/{userId}/cart Subcollection ─────────────────────────────────
+    match /users/{userId}/cart/{productId} {
+      // Owners can CRUD own cart items; Admins have full access
+      allow read, create, update, delete: if isAdmin() || isOwnDoc(userId);
+    }
+
+    // ── 5. products Collection ──────────────────────────────────────────────
     match /products/{productId} {
       // Any signed-in user can browse products in the shop
       allow read: if isSignedIn();

@@ -206,7 +206,9 @@ class AppDesktopSidebar extends ConsumerWidget {
                                 TextButton(
                                   onPressed: () {
                                     Navigator.pop(ctx);
-                                    ref.read(cartProvider.notifier).clearCart();
+                                    ref
+                                        .read(cartProvider.notifier)
+                                        .clearLocalCart();
                                     ref
                                         .read(userProvider.notifier)
                                         .clearSession();

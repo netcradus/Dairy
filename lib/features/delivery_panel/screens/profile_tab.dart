@@ -602,7 +602,7 @@ class ProfileTab extends ConsumerWidget {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
-              ref.read(cartProvider.notifier).clearCart();
+              ref.read(cartProvider.notifier).clearLocalCart();
               await ref.read(userProvider.notifier).clearSession();
               // Navigation will be handled by router redirect
             },

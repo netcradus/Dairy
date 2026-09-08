@@ -30,9 +30,18 @@ class CartItem {
       };
 
   factory CartItem.fromMap(Map<String, dynamic> map) {
+    Map<String, dynamic> productMap = {};
+    if (map['product'] is Map) {
+      productMap = Map<String, dynamic>.from(map['product'] as Map);
+    }
+    if (!productMap.containsKey('id') ||
+        (productMap['id'] as String?)?.isEmpty == true) {
+      if (map['productId'] != null) {
+        productMap['id'] = map['productId'];
+      }
+    }
     return CartItem(
-      product: Product.fromMap(
-          Map<String, dynamic>.from(map['product'] as Map? ?? {})),
+      product: Product.fromMap(productMap),
       quantity: (map['quantity'] as num?)?.toInt() ?? 1,
     );
   }
