@@ -160,18 +160,7 @@ class Order {
             state: '',
             pinCode: '',
           )
-        : Address(
-            id: (addr['id'] as String?) ?? '',
-            label: (addr['label'] as String?) ?? 'Home',
-            fullName: (addr['fullName'] as String?) ?? '',
-            mobileNumber: (addr['mobileNumber'] as String?) ?? '',
-            houseFlat: (addr['houseFlat'] as String?) ?? '',
-            streetArea: (addr['streetArea'] as String?) ?? '',
-            city: (addr['city'] as String?) ?? '',
-            state: (addr['state'] as String?) ?? '',
-            pinCode: (addr['pinCode'] as String?) ?? '',
-            isDefault: (addr['isDefault'] as bool?) ?? false,
-          );
+        : Address.fromMap(addr, (addr['id'] as String?) ?? '');
 
     final created = data['createdAt'];
     final orderDate = created is Timestamp ? created.toDate() : DateTime.now();

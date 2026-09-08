@@ -45,19 +45,7 @@ class AddressNotifier extends StateNotifier<List<Address>> {
           .get();
 
       final list = snapshot.docs.map((doc) {
-        final data = doc.data();
-        return Address(
-          id: doc.id,
-          label: data['label'] ?? 'Home',
-          fullName: data['fullName'] ?? '',
-          mobileNumber: data['mobileNumber'] ?? '',
-          houseFlat: data['houseFlat'] ?? '',
-          streetArea: data['streetArea'] ?? '',
-          city: data['city'] ?? '',
-          state: data['state'] ?? '',
-          pinCode: data['pinCode'] ?? '',
-          isDefault: data['isDefault'] ?? false,
-        );
+        return Address.fromMap(doc.data(), doc.id);
       }).toList();
 
       state = list;
@@ -80,6 +68,22 @@ class AddressNotifier extends StateNotifier<List<Address>> {
       final colRef =
           _firestore.collection('users').doc(activeId).collection('addresses');
 
+      final data = {
+        'label': address.label,
+        'fullName': address.fullName,
+        'mobileNumber': address.mobileNumber,
+        'houseFlat': address.houseFlat,
+        'streetArea': address.streetArea,
+        'city': address.city,
+        'state': address.state,
+        'pinCode': address.pinCode,
+        'isDefault': address.isDefault,
+        if (address.latitude != null) 'latitude': address.latitude,
+        if (address.longitude != null) 'longitude': address.longitude,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
       if (address.isDefault) {
         final batch = _firestore.batch();
         for (var a in state) {
@@ -88,30 +92,10 @@ class AddressNotifier extends StateNotifier<List<Address>> {
           }
         }
         final docRef = colRef.doc(address.id);
-        batch.set(docRef, {
-          'label': address.label,
-          'fullName': address.fullName,
-          'mobileNumber': address.mobileNumber,
-          'houseFlat': address.houseFlat,
-          'streetArea': address.streetArea,
-          'city': address.city,
-          'state': address.state,
-          'pinCode': address.pinCode,
-          'isDefault': address.isDefault,
-        });
+        batch.set(docRef, data);
         await batch.commit();
       } else {
-        await colRef.doc(address.id).set({
-          'label': address.label,
-          'fullName': address.fullName,
-          'mobileNumber': address.mobileNumber,
-          'houseFlat': address.houseFlat,
-          'streetArea': address.streetArea,
-          'city': address.city,
-          'state': address.state,
-          'pinCode': address.pinCode,
-          'isDefault': address.isDefault,
-        });
+        await colRef.doc(address.id).set(data);
       }
 
       await _loadAddresses();
@@ -125,6 +109,21 @@ class AddressNotifier extends StateNotifier<List<Address>> {
       final colRef =
           _firestore.collection('users').doc(activeId).collection('addresses');
 
+      final data = {
+        'label': address.label,
+        'fullName': address.fullName,
+        'mobileNumber': address.mobileNumber,
+        'houseFlat': address.houseFlat,
+        'streetArea': address.streetArea,
+        'city': address.city,
+        'state': address.state,
+        'pinCode': address.pinCode,
+        'isDefault': address.isDefault,
+        if (address.latitude != null) 'latitude': address.latitude,
+        if (address.longitude != null) 'longitude': address.longitude,
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
       if (address.isDefault) {
         final batch = _firestore.batch();
         for (var a in state) {
@@ -132,30 +131,10 @@ class AddressNotifier extends StateNotifier<List<Address>> {
             batch.update(colRef.doc(a.id), {'isDefault': false});
           }
         }
-        batch.update(colRef.doc(address.id), {
-          'label': address.label,
-          'fullName': address.fullName,
-          'mobileNumber': address.mobileNumber,
-          'houseFlat': address.houseFlat,
-          'streetArea': address.streetArea,
-          'city': address.city,
-          'state': address.state,
-          'pinCode': address.pinCode,
-          'isDefault': address.isDefault,
-        });
+        batch.update(colRef.doc(address.id), data);
         await batch.commit();
       } else {
-        await colRef.doc(address.id).update({
-          'label': address.label,
-          'fullName': address.fullName,
-          'mobileNumber': address.mobileNumber,
-          'houseFlat': address.houseFlat,
-          'streetArea': address.streetArea,
-          'city': address.city,
-          'state': address.state,
-          'pinCode': address.pinCode,
-          'isDefault': address.isDefault,
-        });
+        await colRef.doc(address.id).update(data);
       }
 
       await _loadAddresses();

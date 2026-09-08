@@ -398,7 +398,14 @@ class _LiveTrackingMapCardState extends ConsumerState<_LiveTrackingMapCard> {
 
   LatLng? _getCustomerLatLng() {
     try {
-      // Hardcoded test points if any (matching delivery panel map)
+      if (widget.deliveryAddress.hasCoordinates) {
+        return LatLng(
+          widget.deliveryAddress.latitude!,
+          widget.deliveryAddress.longitude!,
+        );
+      }
+
+      // Fallback test points if any (matching delivery panel map)
       const dropPoints = {
         'DO-001': LatLng(22.7180, 75.8720),
         'DO-002': LatLng(22.7410, 75.8920),

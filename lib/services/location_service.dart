@@ -1,23 +1,88 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geocoding/geocoding.dart' as geo;
 import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
 
-/// Wraps the `geolocator` plugin to provide high-accuracy device GPS access:
-/// permission handling plus a live stream of position updates.
-///
-/// Keeping this behind a small service class makes it easy to mock for tests
-/// and keeps the UI/providers free of raw platform calls.
+enum LocationResultStatus {
+  success,
+  servicesDisabled,
+  permissionDenied,
+  permissionDeniedForever,
+  timeoutOrError,
+}
+
+class LocationResult {
+  final LocationResultStatus status;
+  final Position? position;
+  final String? errorMessage;
+
+  const LocationResult({
+    required this.status,
+    this.position,
+    this.errorMessage,
+  });
+}
+
+/// Represents reverse-geocoded address fields mapped to form inputs.
+class GeocodedAddress {
+  final String? houseOrBuilding;
+  final String? streetOrArea;
+  final String? city;
+  final String? state;
+  final String? postalCode;
+  final String? country;
+
+  const GeocodedAddress({
+    this.houseOrBuilding,
+    this.streetOrArea,
+    this.city,
+    this.state,
+    this.postalCode,
+    this.country,
+  });
+
+  bool get hasAnyField =>
+      (houseOrBuilding?.trim().isNotEmpty ?? false) ||
+      (streetOrArea?.trim().isNotEmpty ?? false) ||
+      (city?.trim().isNotEmpty ?? false) ||
+      (state?.trim().isNotEmpty ?? false) ||
+      (postalCode?.trim().isNotEmpty ?? false);
+
+  /// Merges this address with another address, preferring non-empty values from this.
+  GeocodedAddress mergeWith(GeocodedAddress? other) {
+    if (other == null) return this;
+    return GeocodedAddress(
+      houseOrBuilding: (houseOrBuilding?.trim().isNotEmpty ?? false)
+          ? houseOrBuilding
+          : other.houseOrBuilding,
+      streetOrArea: (streetOrArea?.trim().isNotEmpty ?? false)
+          ? streetOrArea
+          : other.streetOrArea,
+      city: (city?.trim().isNotEmpty ?? false) ? city : other.city,
+      state: (state?.trim().isNotEmpty ?? false) ? state : other.state,
+      postalCode: (postalCode?.trim().isNotEmpty ?? false)
+          ? postalCode
+          : other.postalCode,
+      country: (country?.trim().isNotEmpty ?? false)
+          ? country
+          : other.country,
+    );
+  }
+}
+
+/// Wraps device GPS, Photon OSM, BigDataCloud, and native platform geocoding
+/// to provide high-accuracy cross-platform (Web, Android, iOS, Desktop)
+/// location & address resolution without requiring paid API keys.
 class LocationService {
   /// Whether location services are enabled on the device.
   Future<bool> isLocationServiceEnabled() =>
       Geolocator.isLocationServiceEnabled();
 
-  /// Requests location permission (if not already granted) and returns `true`
-  /// only when the app is allowed to access location ("while in use" or
-  /// "always"). Returns `false` if services are disabled or permission is
-  /// denied/permanently denied.
+  /// Requests location permission (if not already granted).
   Future<bool> requestLocationPermission() async {
     if (!await Geolocator.isLocationServiceEnabled()) return false;
 
@@ -30,28 +95,553 @@ class LocationService {
         permission == LocationPermission.always;
   }
 
-  /// A high-accuracy stream of device positions. Callers should first await
-  /// [requestLocationPermission]; if permission was denied the stream simply
-  /// emits an error, which subscribers handle gracefully.
+  /// High-accuracy stream of device positions.
   Stream<Position> getPositionStream() {
     return Geolocator.getPositionStream(locationSettings: _locationSettings);
   }
 
-  /// Returns a single fresh high-accuracy fix, or `null` if location is
-  /// unavailable.
+  /// Returns a single fresh high-accuracy fix, or `null` if location is unavailable.
   Future<Position?> getCurrentPosition() async {
-    if (!await requestLocationPermission()) return null;
+    final result = await getCurrentPositionDetailed();
+    return result.position;
+  }
+
+  /// Obtains the real device GPS position with detailed status and user-friendly error messages.
+  Future<LocationResult> getCurrentPositionDetailed() async {
     try {
-      return await Geolocator.getCurrentPosition(
+      final isServiceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!isServiceEnabled) {
+        return const LocationResult(
+          status: LocationResultStatus.servicesDisabled,
+          errorMessage:
+              'Device location services are disabled. Please turn on GPS / Location in your device settings.',
+        );
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          return const LocationResult(
+            status: LocationResultStatus.permissionDenied,
+            errorMessage:
+                'Location permission was denied. Please allow location access to use your current location.',
+          );
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        return const LocationResult(
+          status: LocationResultStatus.permissionDeniedForever,
+          errorMessage:
+              'Location permission is permanently denied in device settings. Please enable location permissions in App Settings.',
+        );
+      }
+
+      final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
+      ).timeout(const Duration(seconds: 12));
+
+      if (position.latitude != 0.0 || position.longitude != 0.0) {
+        return LocationResult(
+          status: LocationResultStatus.success,
+          position: position,
+        );
+      } else {
+        return const LocationResult(
+          status: LocationResultStatus.timeoutOrError,
+          errorMessage: 'Received invalid GPS fix (0, 0). Please try again.',
+        );
+      }
+    } on TimeoutException {
+      return const LocationResult(
+        status: LocationResultStatus.timeoutOrError,
+        errorMessage:
+            'GPS location request timed out. Please check your signal and try again.',
       );
     } catch (e) {
-      return null;
+      return LocationResult(
+        status: LocationResultStatus.timeoutOrError,
+        errorMessage: 'Unable to retrieve location: $e',
+      );
     }
   }
 
-  /// Platform-appropriate [LocationSettings]. Uses valid geolocator enums and
-  /// named parameters only.
+  /// Converts geographic coordinates (latitude and longitude) into structured
+  /// address details (House/Building, Street/Area, City, State, Postal Code).
+  ///
+  /// Uses a web-compatible, multi-tier strategy:
+  /// 1. Photon (Komoot OpenStreetMap) - CORS-enabled, free, works seamlessly on Web & Mobile.
+  /// 2. BigDataCloud Client Reverse Geocode - CORS-enabled, free fallback for city/state/locality.
+  /// 3. Native platform Geocoder (Android / iOS only, skipped on Web).
+  /// 4. Nominatim OpenStreetMap (Native only, skipped on Web due to browser CORS).
+  Future<GeocodedAddress?> reverseGeocode(double latitude, double longitude) async {
+    if (latitude == 0.0 && longitude == 0.0) return null;
+
+    GeocodedAddress? combinedResult;
+
+    // Tier 1: Photon (Komoot OSM - Web & Mobile compatible, full CORS support, 100% free)
+    final photonResult = await _reverseGeocodePhoton(latitude, longitude);
+    if (photonResult != null && photonResult.hasAnyField) {
+      combinedResult = photonResult;
+      // If we already have street, city, state, and postcode, we have complete info
+      if (combinedResult.streetOrArea != null &&
+          combinedResult.city != null &&
+          combinedResult.state != null &&
+          combinedResult.postalCode != null) {
+        return combinedResult;
+      }
+    }
+
+    // Tier 2: BigDataCloud Client Reverse Geocoder (CORS enabled, 100% free)
+    final bdcResult = await _reverseGeocodeBdc(latitude, longitude);
+    if (bdcResult != null && bdcResult.hasAnyField) {
+      combinedResult = combinedResult == null
+          ? bdcResult
+          : combinedResult.mergeWith(bdcResult);
+      if (combinedResult.city != null &&
+          combinedResult.state != null &&
+          (combinedResult.streetOrArea != null || combinedResult.postalCode != null)) {
+        return combinedResult;
+      }
+    }
+
+    // Tier 3: Native Platform Geocoder (Android / iOS only, skipped on Web)
+    if (!kIsWeb) {
+      final nativeResult = await _reverseGeocodeNative(latitude, longitude);
+      if (nativeResult != null && nativeResult.hasAnyField) {
+        combinedResult = combinedResult == null
+            ? nativeResult
+            : combinedResult.mergeWith(nativeResult);
+      }
+    }
+
+    // Tier 4: Nominatim Fallback (Native only, not subject to browser CORS on native)
+    if (!kIsWeb && (combinedResult == null || !combinedResult.hasAnyField)) {
+      final nomResult = await _reverseGeocodeNominatim(latitude, longitude);
+      if (nomResult != null && nomResult.hasAnyField) {
+        combinedResult = combinedResult == null
+            ? nomResult
+            : combinedResult.mergeWith(nomResult);
+      }
+    }
+
+    return (combinedResult != null && combinedResult.hasAnyField)
+        ? combinedResult
+        : null;
+  }
+
+  /// Photon (Komoot OSM) Reverse Geocoding — CORS supported for Web and Mobile
+  Future<GeocodedAddress?> _reverseGeocodePhoton(
+      double latitude, double longitude) async {
+    try {
+      final uri = Uri.https('photon.komoot.io', '/reverse', {
+        'lat': latitude.toString(),
+        'lon': longitude.toString(),
+      });
+
+      final response = await http
+          .get(uri, headers: {'Accept': 'application/json'})
+          .timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        if (decoded is Map<String, dynamic>) {
+          final features = decoded['features'];
+          if (features is List && features.isNotEmpty) {
+            final firstFeature = features.first;
+            if (firstFeature is Map<String, dynamic>) {
+              final props = firstFeature['properties'];
+              if (props is Map<String, dynamic>) {
+                String? house;
+                final houseNumber = props['housenumber']?.toString().trim();
+                if (houseNumber != null && houseNumber.isNotEmpty) {
+                  house = houseNumber;
+                }
+
+                final streetParts = <String>[];
+                final street = props['street']?.toString().trim();
+                final name = props['name']?.toString().trim();
+                final locality = props['locality']?.toString().trim() ??
+                    props['district']?.toString().trim();
+
+                if (street != null && street.isNotEmpty) {
+                  streetParts.add(street);
+                } else if (name != null &&
+                    name.isNotEmpty &&
+                    name != houseNumber &&
+                    name != props['city']?.toString().trim() &&
+                    name != props['state']?.toString().trim()) {
+                  streetParts.add(name);
+                }
+
+                if (locality != null &&
+                    locality.isNotEmpty &&
+                    !streetParts.contains(locality) &&
+                    locality != props['city']?.toString().trim()) {
+                  streetParts.add(locality);
+                }
+
+                final streetArea =
+                    streetParts.isNotEmpty ? streetParts.join(', ') : null;
+
+                final city = props['city']?.toString().trim() ??
+                    props['town']?.toString().trim() ??
+                    props['district']?.toString().trim();
+
+                final state = props['state']?.toString().trim();
+                final postcode = props['postcode']?.toString().trim();
+                final country = props['country']?.toString().trim();
+
+                final address = GeocodedAddress(
+                  houseOrBuilding: (house?.isNotEmpty ?? false) ? house : null,
+                  streetOrArea:
+                      (streetArea?.isNotEmpty ?? false) ? streetArea : null,
+                  city: (city?.isNotEmpty ?? false) ? city : null,
+                  state: (state?.isNotEmpty ?? false) ? state : null,
+                  postalCode: (postcode?.isNotEmpty ?? false) ? postcode : null,
+                  country: (country?.isNotEmpty ?? false) ? country : null,
+                );
+
+                if (address.hasAnyField) {
+                  return address;
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Photon reverse geocoding skipped or failed: $e');
+    }
+    return null;
+  }
+
+  /// BigDataCloud Client-side Reverse Geocoding — CORS supported for Web
+  Future<GeocodedAddress?> _reverseGeocodeBdc(
+      double latitude, double longitude) async {
+    try {
+      final uri = Uri.https('api-bdc.io', '/data/reverse-geocode-client', {
+        'latitude': latitude.toString(),
+        'longitude': longitude.toString(),
+        'localityLanguage': 'en',
+      });
+
+      final response = await http
+          .get(uri, headers: {'Accept': 'application/json'})
+          .timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        if (decoded is Map<String, dynamic>) {
+          final city = decoded['city']?.toString().trim() ??
+              decoded['locality']?.toString().trim();
+          final state = decoded['principalSubdivision']?.toString().trim();
+          final postcode = decoded['postcode']?.toString().trim();
+          final country = decoded['countryName']?.toString().trim();
+
+          String? locality;
+          final localityInfo = decoded['localityInfo'];
+          if (localityInfo is Map<String, dynamic>) {
+            final admin = localityInfo['administrative'];
+            if (admin is List) {
+              for (final item in admin.reversed) {
+                if (item is Map<String, dynamic>) {
+                  final name = item['name']?.toString().trim();
+                  if (name != null &&
+                      name.isNotEmpty &&
+                      name != city &&
+                      name != state &&
+                      name != country &&
+                      !name.toLowerCase().contains('district') &&
+                      !name.toLowerCase().contains('tehsil') &&
+                      !name.toLowerCase().contains('subdivision')) {
+                    locality = name;
+                    break;
+                  }
+                }
+              }
+            }
+          }
+
+          final address = GeocodedAddress(
+            streetOrArea: (locality?.isNotEmpty ?? false) ? locality : null,
+            city: (city?.isNotEmpty ?? false) ? city : null,
+            state: (state?.isNotEmpty ?? false) ? state : null,
+            postalCode: (postcode?.isNotEmpty ?? false) ? postcode : null,
+            country: (country?.isNotEmpty ?? false) ? country : null,
+          );
+
+          if (address.hasAnyField) {
+            return address;
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('BigDataCloud reverse geocoding skipped or failed: $e');
+    }
+    return null;
+  }
+
+  /// Native platform reverse geocoding (Android / iOS only)
+  Future<GeocodedAddress?> _reverseGeocodeNative(
+      double latitude, double longitude) async {
+    try {
+      final placemarks = await geo
+          .placemarkFromCoordinates(latitude, longitude)
+          .timeout(const Duration(seconds: 4));
+
+      if (placemarks.isNotEmpty) {
+        final p = placemarks.first;
+
+        String? house;
+        final pName = p.name?.trim();
+        if (pName != null &&
+            pName.isNotEmpty &&
+            pName != p.street &&
+            pName != p.subLocality &&
+            pName != p.locality) {
+          house = pName;
+        }
+
+        final streetParts = <String>[];
+        final pStreet = p.street?.trim();
+        final pSubLoc = p.subLocality?.trim();
+        if (pStreet != null && pStreet.isNotEmpty) {
+          streetParts.add(pStreet);
+        }
+        if (pSubLoc != null &&
+            pSubLoc.isNotEmpty &&
+            !streetParts.contains(pSubLoc)) {
+          streetParts.add(pSubLoc);
+        }
+        final street = streetParts.isNotEmpty ? streetParts.join(', ') : null;
+
+        String? city = p.locality?.trim();
+        if (city == null || city.isEmpty) {
+          city = p.subAdministrativeArea?.trim();
+        }
+
+        final state = p.administrativeArea?.trim();
+        final postalCode = p.postalCode?.trim();
+        final country = p.country?.trim();
+
+        final result = GeocodedAddress(
+          houseOrBuilding: house,
+          streetOrArea: street,
+          city: (city?.isNotEmpty ?? false) ? city : null,
+          state: (state?.isNotEmpty ?? false) ? state : null,
+          postalCode: (postalCode?.isNotEmpty ?? false) ? postalCode : null,
+          country: (country?.isNotEmpty ?? false) ? country : null,
+        );
+
+        if (result.hasAnyField) {
+          return result;
+        }
+      }
+    } catch (e) {
+      debugPrint('Native reverse geocoding skipped or failed: $e');
+    }
+    return null;
+  }
+
+  /// Nominatim reverse geocoding fallback (Native only)
+  Future<GeocodedAddress?> _reverseGeocodeNominatim(
+      double latitude, double longitude) async {
+    try {
+      final uri = Uri.https('nominatim.openstreetmap.org', '/reverse', {
+        'format': 'jsonv2',
+        'lat': latitude.toString(),
+        'lon': longitude.toString(),
+        'addressdetails': '1',
+        'zoom': '18',
+      });
+
+      final response = await http.get(uri, headers: {
+        'Accept': 'application/json',
+      }).timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        if (decoded is Map<String, dynamic>) {
+          final addr = decoded['address'];
+          if (addr is Map<String, dynamic>) {
+            final houseParts = <String>[];
+            if (addr['house_number'] != null) houseParts.add(addr['house_number'].toString().trim());
+            if (addr['building'] != null) houseParts.add(addr['building'].toString().trim());
+            if (addr['flat'] != null) houseParts.add(addr['flat'].toString().trim());
+            final house = houseParts.isNotEmpty ? houseParts.join(', ') : null;
+
+            final streetParts = <String>[];
+            if (addr['road'] != null) streetParts.add(addr['road'].toString().trim());
+            if (addr['suburb'] != null && !streetParts.contains(addr['suburb'].toString().trim())) {
+              streetParts.add(addr['suburb'].toString().trim());
+            }
+            if (addr['neighbourhood'] != null && !streetParts.contains(addr['neighbourhood'].toString().trim())) {
+              streetParts.add(addr['neighbourhood'].toString().trim());
+            }
+            final street = streetParts.isNotEmpty ? streetParts.join(', ') : null;
+
+            String? city = addr['city']?.toString().trim() ??
+                addr['town']?.toString().trim() ??
+                addr['village']?.toString().trim() ??
+                addr['municipality']?.toString().trim() ??
+                addr['county']?.toString().trim();
+
+            final state = addr['state']?.toString().trim();
+            final postalCode = addr['postcode']?.toString().trim();
+            final country = addr['country']?.toString().trim();
+
+            final result = GeocodedAddress(
+              houseOrBuilding: house,
+              streetOrArea: street,
+              city: (city?.isNotEmpty ?? false) ? city : null,
+              state: (state?.isNotEmpty ?? false) ? state : null,
+              postalCode: (postalCode?.isNotEmpty ?? false) ? postalCode : null,
+              country: (country?.isNotEmpty ?? false) ? country : null,
+            );
+
+            if (result.hasAnyField) {
+              return result;
+            }
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Nominatim reverse geocoding skipped: $e');
+    }
+    return null;
+  }
+
+  /// Converts a structured address or query string into real geographic
+  /// coordinates (latitude and longitude).
+  ///
+  /// Uses a web-compatible strategy:
+  /// 1. Photon Forward Geocoding (Komoot OSM - CORS enabled for Web & Mobile).
+  /// 2. Native Geocoding (Android / iOS only, skipped on Web).
+  /// 3. Nominatim Search (Native only).
+  Future<({double latitude, double longitude})?> geocodeAddress(
+    String fullAddress, {
+    String? fallbackQuery,
+  }) async {
+    final cleanAddress = fullAddress.trim();
+    if (cleanAddress.isEmpty) return null;
+
+    // 1. Photon Forward Search (Web & Mobile compatible, CORS enabled)
+    final photonLoc = await _forwardGeocodePhoton(cleanAddress);
+    if (photonLoc != null) return photonLoc;
+
+    // Fallback query with Photon (e.g. City, State, PIN)
+    if (fallbackQuery != null && fallbackQuery.trim().isNotEmpty) {
+      final fallbackLoc = await _forwardGeocodePhoton(fallbackQuery.trim());
+      if (fallbackLoc != null) return fallbackLoc;
+    }
+
+    // 2. Native Platform Geocoder (Android / iOS only)
+    if (!kIsWeb) {
+      try {
+        final locations = await geo
+            .locationFromAddress(cleanAddress)
+            .timeout(const Duration(seconds: 4));
+
+        if (locations.isNotEmpty) {
+          final loc = locations.first;
+          if (loc.latitude != 0.0 || loc.longitude != 0.0) {
+            return (latitude: loc.latitude, longitude: loc.longitude);
+          }
+        }
+      } catch (e) {
+        debugPrint('Native geocode skipped/failed for "$cleanAddress": $e');
+      }
+
+      // 3. Nominatim Forward Search (Native only)
+      final nomLoc = await _forwardGeocodeNominatim(cleanAddress);
+      if (nomLoc != null) return nomLoc;
+
+      if (fallbackQuery != null && fallbackQuery.trim().isNotEmpty) {
+        final nomFallback = await _forwardGeocodeNominatim(fallbackQuery.trim());
+        if (nomFallback != null) return nomFallback;
+      }
+    }
+
+    return null;
+  }
+
+  /// Photon Forward Geocoding Search
+  Future<({double latitude, double longitude})?> _forwardGeocodePhoton(
+      String query) async {
+    try {
+      final uri = Uri.https('photon.komoot.io', '/api', {
+        'q': query,
+        'limit': '1',
+      });
+
+      final response = await http
+          .get(uri, headers: {'Accept': 'application/json'})
+          .timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        if (decoded is Map<String, dynamic>) {
+          final features = decoded['features'];
+          if (features is List && features.isNotEmpty) {
+            final first = features.first;
+            if (first is Map<String, dynamic>) {
+              final geometry = first['geometry'];
+              if (geometry is Map<String, dynamic>) {
+                final coordinates = geometry['coordinates'];
+                if (coordinates is List && coordinates.length >= 2) {
+                  final lon = double.tryParse(coordinates[0].toString());
+                  final lat = double.tryParse(coordinates[1].toString());
+                  if (lat != null && lon != null && (lat != 0.0 || lon != 0.0)) {
+                    return (latitude: lat, longitude: lon);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Photon forward search skipped or failed: $e');
+    }
+    return null;
+  }
+
+  /// Nominatim Forward Geocoding Search (Native only)
+  Future<({double latitude, double longitude})?> _forwardGeocodeNominatim(
+      String query) async {
+    try {
+      final uri = Uri.https('nominatim.openstreetmap.org', '/search', {
+        'format': 'jsonv2',
+        'q': query,
+        'limit': '1',
+      });
+
+      final response = await http.get(uri, headers: {
+        'Accept': 'application/json',
+      }).timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        if (decoded is List && decoded.isNotEmpty) {
+          final item = decoded.first;
+          if (item is Map<String, dynamic>) {
+            final lat = double.tryParse(item['lat']?.toString() ?? '');
+            final lon = double.tryParse(item['lon']?.toString() ?? '');
+            if (lat != null && lon != null && (lat != 0.0 || lon != 0.0)) {
+              return (latitude: lat, longitude: lon);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Nominatim forward search skipped: $e');
+    }
+    return null;
+  }
+
+  /// Platform-appropriate [LocationSettings].
   LocationSettings get _locationSettings {
     if (defaultTargetPlatform == TargetPlatform.android) {
       return AndroidSettings(
@@ -79,3 +669,4 @@ class LocationService {
 final locationServiceProvider = Provider<LocationService>((ref) {
   return LocationService();
 });
+

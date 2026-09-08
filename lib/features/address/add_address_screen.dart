@@ -7,11 +7,17 @@ import '../../core/widgets/app_button.dart';
 import '../../core/widgets/app_text_field.dart';
 import '../../models/address.dart';
 import '../../providers/address_provider.dart';
+import '../../services/location_service.dart';
 
-/// Sawariya Dairy Phase 6 — Add New Address Screen
+/// Sawariya Dairy Phase 6 & 8 — Add / Edit Delivery Address Screen
 class AddAddressScreen extends ConsumerStatefulWidget {
   final Address? addressToEdit;
-  const AddAddressScreen({super.key, this.addressToEdit});
+  final bool autoDetectLocation;
+  const AddAddressScreen({
+    super.key,
+    this.addressToEdit,
+    this.autoDetectLocation = false,
+  });
 
   @override
   ConsumerState<AddAddressScreen> createState() => _AddAddressScreenState();
@@ -30,6 +36,11 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
   String _selectedLabel = 'Home';
   bool _isDefault = false;
 
+  double? _latitude;
+  double? _longitude;
+  bool _isLocating = false;
+  bool _isSaving = false;
+
   @override
   void initState() {
     super.initState();
@@ -45,6 +56,16 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
     if (addr != null) {
       _selectedLabel = addr.label;
       _isDefault = addr.isDefault;
+      _latitude = addr.latitude;
+      _longitude = addr.longitude;
+    }
+
+    if (widget.autoDetectLocation && widget.addressToEdit == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _onUseCurrentLocation();
+        }
+      });
     }
   }
 
@@ -60,49 +81,253 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
     super.dispose();
   }
 
-  void _onSaveAddress() {
-    if (_formKey.currentState!.validate()) {
-      final isEdit = widget.addressToEdit != null;
-      final address = Address(
-        id: isEdit
-            ? widget.addressToEdit!.id
-            : 'addr_${DateTime.now().millisecondsSinceEpoch}',
-        label: _selectedLabel,
-        fullName: _fullNameController.text.trim(),
-        mobileNumber: _mobileController.text.trim(),
-        houseFlat: _houseFlatController.text.trim(),
-        streetArea: _streetAreaController.text.trim(),
-        city: _cityController.text.trim(),
-        state: _stateController.text.trim(),
-        pinCode: _pinCodeController.text.trim(),
-        isDefault: _isDefault,
-      );
+  /// Fetches real device GPS coordinates and reverse geocodes into address fields
+  Future<void> _onUseCurrentLocation() async {
+    setState(() => _isLocating = true);
+    final locationService = ref.read(locationServiceProvider);
 
-      if (isEdit) {
-        ref.read(addressesProvider.notifier).updateAddress(address);
-      } else {
-        ref.read(addressesProvider.notifier).addAddress(address);
-        ref.read(selectedAddressIdProvider.notifier).state = address.id;
+    try {
+      final result = await locationService.getCurrentPositionDetailed();
+      if (!mounted) return;
+
+      switch (result.status) {
+        case LocationResultStatus.servicesDisabled:
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                result.errorMessage ??
+                    'Location services are turned off. Please turn on GPS / Location in your device settings.',
+              ),
+              backgroundColor: AppColors.error,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+          setState(() => _isLocating = false);
+          return;
+
+        case LocationResultStatus.permissionDenied:
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                result.errorMessage ??
+                    'Location permission was denied. Please allow location access to use your current location.',
+              ),
+              backgroundColor: AppColors.error,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+          setState(() => _isLocating = false);
+          return;
+
+        case LocationResultStatus.permissionDeniedForever:
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                result.errorMessage ??
+                    'Location permission is permanently denied in settings. Please enable location permission for this app in Settings.',
+              ),
+              backgroundColor: AppColors.error,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+          setState(() => _isLocating = false);
+          return;
+
+        case LocationResultStatus.timeoutOrError:
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                result.errorMessage ??
+                    'Could not determine GPS coordinates. Please check your signal and try again.',
+              ),
+              backgroundColor: AppColors.error,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+          setState(() => _isLocating = false);
+          return;
+
+        case LocationResultStatus.success:
+          final position = result.position;
+          if (position == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Could not obtain valid GPS coordinates.'),
+                backgroundColor: AppColors.error,
+              ),
+            );
+            setState(() => _isLocating = false);
+            return;
+          }
+
+          setState(() {
+            _latitude = position.latitude;
+            _longitude = position.longitude;
+          });
+
+          // Perform reverse geocoding to fill address fields
+          final geoAddress = await locationService.reverseGeocode(
+            position.latitude,
+            position.longitude,
+          );
+
+          if (!mounted) return;
+
+          if (geoAddress != null && geoAddress.hasAnyField) {
+            // Auto-fill available address fields without overwriting Full Name / Mobile
+            if (geoAddress.houseOrBuilding != null &&
+                geoAddress.houseOrBuilding!.trim().isNotEmpty) {
+              _houseFlatController.text = geoAddress.houseOrBuilding!.trim();
+            }
+            if (geoAddress.streetOrArea != null &&
+                geoAddress.streetOrArea!.trim().isNotEmpty) {
+              _streetAreaController.text = geoAddress.streetOrArea!.trim();
+            }
+            if (geoAddress.city != null && geoAddress.city!.trim().isNotEmpty) {
+              _cityController.text = geoAddress.city!.trim();
+            }
+            if (geoAddress.state != null && geoAddress.state!.trim().isNotEmpty) {
+              _stateController.text = geoAddress.state!.trim();
+            }
+            if (geoAddress.postalCode != null &&
+                geoAddress.postalCode!.trim().isNotEmpty) {
+              _pinCodeController.text = geoAddress.postalCode!.trim();
+            }
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Location captured and address auto-filled: ${geoAddress.city ?? "Indore"} (${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)})',
+                ),
+                backgroundColor: AppColors.freshGreen,
+                duration: const Duration(seconds: 4),
+              ),
+            );
+          } else {
+            // Coordinates retained even if reverse geocoding is unavailable
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'GPS coordinates captured (${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)}), but address details could not be auto-filled. Please enter address manually.',
+                ),
+                backgroundColor: AppColors.primaryBlue,
+                duration: const Duration(seconds: 4),
+              ),
+            );
+          }
       }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Location error: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLocating = false);
+      }
+    }
+  }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(isEdit
-              ? 'Delivery address updated successfully!'
-              : 'Delivery address saved successfully!'),
-        ),
+  Future<void> _onSaveAddress() async {
+    final formState = _formKey.currentState;
+    if (formState == null || !formState.validate()) return;
+
+    setState(() => _isSaving = true);
+    final editingAddr = widget.addressToEdit;
+    final isEdit = editingAddr != null;
+    final locationService = ref.read(locationServiceProvider);
+
+    final house = _houseFlatController.text.trim();
+    final street = _streetAreaController.text.trim();
+    final city = _cityController.text.trim();
+    final state = _stateController.text.trim();
+    final pin = _pinCodeController.text.trim();
+
+    double? resolvedLat = _latitude;
+    double? resolvedLng = _longitude;
+
+    // Determine if address text changed during edit
+    final addressTextChanged = isEdit &&
+        (editingAddr.houseFlat != house ||
+            editingAddr.streetArea != street ||
+            editingAddr.city != city ||
+            editingAddr.state != state ||
+            editingAddr.pinCode != pin);
+
+    // If coordinates are missing or address changed, perform geocoding
+    if (resolvedLat == null || resolvedLng == null || addressTextChanged) {
+      final fullQuery = [house, street, city, state, pin, 'India']
+          .where((s) => s.isNotEmpty)
+          .join(', ');
+      final fallbackQuery =
+          [city, state, pin, 'India'].where((s) => s.isNotEmpty).join(', ');
+
+      final geocoded = await locationService.geocodeAddress(
+        fullQuery,
+        fallbackQuery: fallbackQuery,
       );
 
-      Navigator.pop(context);
+      if (geocoded != null) {
+        resolvedLat = geocoded.latitude;
+        resolvedLng = geocoded.longitude;
+      } else if (isEdit && editingAddr.hasCoordinates) {
+        // Preserve existing valid coordinates if geocoding failed
+        resolvedLat = editingAddr.latitude;
+        resolvedLng = editingAddr.longitude;
+      }
     }
+
+    final address = Address(
+      id: isEdit
+          ? editingAddr.id
+          : 'addr_${DateTime.now().millisecondsSinceEpoch}',
+      label: _selectedLabel,
+      fullName: _fullNameController.text.trim(),
+      mobileNumber: _mobileController.text.trim(),
+      houseFlat: house,
+      streetArea: street,
+      city: city,
+      state: state,
+      pinCode: pin,
+      isDefault: _isDefault,
+      latitude: resolvedLat,
+      longitude: resolvedLng,
+    );
+
+    if (isEdit) {
+      await ref.read(addressesProvider.notifier).updateAddress(address);
+    } else {
+      await ref.read(addressesProvider.notifier).addAddress(address);
+      ref.read(selectedAddressIdProvider.notifier).state = address.id;
+    }
+
+    if (!mounted) return;
+    setState(() => _isSaving = false);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(isEdit
+            ? 'Delivery address updated successfully!'
+            : 'Delivery address saved successfully!'),
+      ),
+    );
+
+    Navigator.pop(context, address);
   }
 
   @override
   Widget build(BuildContext context) {
+    final isEdit = widget.addressToEdit != null;
+    final hasCoords = _latitude != null && _longitude != null;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Add Delivery Address'),
+        title: Text(isEdit ? 'Edit Delivery Address' : 'Add Delivery Address'),
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -127,13 +352,184 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Contact & Address Details',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+                  // ── PROMINENT "USE CURRENT LOCATION" ACTION BANNER ──
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: AppSizes.p16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.primaryBlue.withValues(alpha: 0.08),
+                          AppColors.lightBlue.withValues(alpha: 0.25),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppColors.primaryBlue.withValues(alpha: 0.35),
+                        width: 1.4,
+                      ),
                     ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: _isLocating ? null : _onUseCurrentLocation,
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 14),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryBlue,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: _isLocating
+                                    ? const Center(
+                                        child: SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2.2,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      )
+                                    : const Icon(
+                                        Icons.my_location_rounded,
+                                        color: Colors.white,
+                                        size: 22,
+                                      ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _isLocating
+                                          ? 'Detecting GPS Location...'
+                                          : 'Use Current Location',
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.primaryBlue,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      _isLocating
+                                          ? 'Requesting high-accuracy coordinates & address'
+                                          : 'Tap to auto-fill address using real device GPS',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                size: 14,
+                                color: AppColors.primaryBlue,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // ── GPS COORDINATES STATUS BADGE ──
+                  if (hasCoords)
+                    Container(
+                      margin: const EdgeInsets.only(bottom: AppSizes.p16),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: AppColors.freshGreen.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: AppColors.freshGreen.withValues(alpha: 0.4),
+                          width: 1.2,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.gps_fixed_rounded,
+                            size: 20,
+                            color: AppColors.freshGreen,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Real GPS Coordinates Attached',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.freshGreen,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Latitude: ${(_latitude ?? 0.0).toStringAsFixed(6)}, Longitude: ${(_longitude ?? 0.0).toStringAsFixed(6)}',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          TextButton(
+                            onPressed:
+                                _isLocating ? null : _onUseCurrentLocation,
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: const Text(
+                              'Re-detect',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primaryBlue,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  // ── SECTION DIVIDER ──
+                  Row(
+                    children: [
+                      const Expanded(child: Divider()),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          'OR ENTER DETAILS MANUALLY',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textSecondary.withValues(alpha: 0.8),
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                      const Expanded(child: Divider()),
+                    ],
                   ),
                   const SizedBox(height: AppSizes.p16),
 
@@ -262,24 +658,31 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
                   const SizedBox(height: AppSizes.p14),
 
                   // Checkbox: Set as Default Address
-                  CheckboxListTile(
-                    value: _isDefault,
-                    onChanged: (val) =>
-                        setState(() => _isDefault = val ?? false),
-                    title: const Text(
-                      'Make this my primary default delivery address',
-                      style: TextStyle(fontSize: 13),
+                  Material(
+                    color: Colors.transparent,
+                    child: CheckboxListTile(
+                      value: _isDefault,
+                      onChanged: (val) =>
+                          setState(() => _isDefault = val ?? false),
+                      title: const Text(
+                        'Make this my primary default delivery address',
+                        style: TextStyle(fontSize: 13),
+                      ),
+                      activeColor: AppColors.primaryBlue,
+                      contentPadding: EdgeInsets.zero,
+                      controlAffinity: ListTileControlAffinity.leading,
                     ),
-                    activeColor: AppColors.primaryBlue,
-                    contentPadding: EdgeInsets.zero,
-                    controlAffinity: ListTileControlAffinity.leading,
                   ),
                   const SizedBox(height: AppSizes.p20),
 
                   // Save Button
                   AppButton(
-                    text: 'Save Address & Select',
-                    onPressed: _onSaveAddress,
+                    text: _isSaving
+                        ? 'Saving Address...'
+                        : (isEdit
+                            ? 'Update Address & Select'
+                            : 'Save Address & Select'),
+                    onPressed: _isSaving ? null : _onSaveAddress,
                   ),
                 ],
               ),

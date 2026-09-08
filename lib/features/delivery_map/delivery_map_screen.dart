@@ -26,6 +26,11 @@ class _Geo {
   };
 
   static LatLng locationForOrder(DeliveryOrder order) {
+    if (order.latitude != null &&
+        order.longitude != null &&
+        (order.latitude! != 0.0 || order.longitude! != 0.0)) {
+      return LatLng(order.latitude!, order.longitude!);
+    }
     return dropPoints[order.id] ??
         LatLng(
           indoreCenter.latitude + (order.id.hashCode % 20) * 0.0008,

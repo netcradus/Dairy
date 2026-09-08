@@ -8,10 +8,11 @@
     "test": "test"
   },
   "scripts": {
-    "test": "mocha test/firestore_rules.test.js test/earnings_persistence.test.js test/cart_sync.test.js",
+    "test": "mocha test/firestore_rules.test.js test/earnings_persistence.test.js test/cart_sync.test.js test/address_geocoding.test.js",
     "test:rules": "mocha test/firestore_rules.test.js",
     "test:earnings": "mocha test/earnings_persistence.test.js",
-    "test:cart": "mocha test/cart_sync.test.js"
+    "test:cart": "mocha test/cart_sync.test.js",
+    "test:address": "mocha test/address_geocoding.test.js"
   },
   "repository": {
     "type": "git",

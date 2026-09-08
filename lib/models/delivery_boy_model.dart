@@ -140,6 +140,8 @@ class DeliveryOrder {
   final DateTime? deliveredTime;
   final String distance;
   final String estimatedTime;
+  final double? latitude;
+  final double? longitude;
 
   const DeliveryOrder({
     required this.id,
@@ -159,6 +161,8 @@ class DeliveryOrder {
     this.deliveredTime,
     required this.distance,
     required this.estimatedTime,
+    this.latitude,
+    this.longitude,
   });
 
   DeliveryOrder copyWith({
@@ -179,6 +183,8 @@ class DeliveryOrder {
     DateTime? deliveredTime,
     String? distance,
     String? estimatedTime,
+    double? latitude,
+    double? longitude,
   }) {
     return DeliveryOrder(
       id: id ?? this.id,
@@ -198,6 +204,8 @@ class DeliveryOrder {
       deliveredTime: deliveredTime ?? this.deliveredTime,
       distance: distance ?? this.distance,
       estimatedTime: estimatedTime ?? this.estimatedTime,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
     );
   }
 }

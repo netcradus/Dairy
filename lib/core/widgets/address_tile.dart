@@ -82,8 +82,39 @@ class AddressTile extends StatelessWidget {
                             color: AppColors.textPrimary,
                           ),
                         ),
+                        if (address.hasCoordinates) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppColors.freshGreen
+                                  .withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.gps_fixed_rounded,
+                                  size: 10,
+                                  color: AppColors.freshGreen,
+                                ),
+                                SizedBox(width: 3),
+                                Text(
+                                  'GPS Pin',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.freshGreen,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                         if (address.isDefault) ...[
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 3),

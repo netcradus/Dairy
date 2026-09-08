@@ -116,6 +116,10 @@ class OrderService {
         'pinCode': deliveryAddress.pinCode,
         'label': deliveryAddress.label,
         'fullAddressText': deliveryAddress.fullAddressText,
+        if (deliveryAddress.latitude != null)
+          'latitude': deliveryAddress.latitude,
+        if (deliveryAddress.longitude != null)
+          'longitude': deliveryAddress.longitude,
       },
       'paymentMethod': paymentMethod,
       'createdAt': FieldValue.serverTimestamp(),

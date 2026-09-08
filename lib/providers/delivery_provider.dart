@@ -55,6 +55,8 @@ DeliveryOrder deliveryOrderFromOrder(Order order) {
     estimatedTime: order.estimatedDeliveryTime.isNotEmpty
         ? order.estimatedDeliveryTime
         : '—',
+    latitude: order.deliveryAddress.latitude,
+    longitude: order.deliveryAddress.longitude,
   );
 }
 
