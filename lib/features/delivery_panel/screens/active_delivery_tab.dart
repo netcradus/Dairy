@@ -752,17 +752,6 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
                 }
                 return;
               }
-              // Add to history
-              ref.read(deliveryHistoryProvider.notifier).addToHistory(
-                    DeliveryHistoryItem(
-                      orderId: order.orderId,
-                      customerName: order.customerName,
-                      status: 'Delivered',
-                      earnings: order.deliveryFee,
-                      date: DateTime.now(),
-                      distance: order.distance,
-                    ),
-                  );
               // Update agent earnings
               final agent = ref.read(deliveryAgentProvider);
               ref.read(deliveryAgentProvider.notifier).updateStats(

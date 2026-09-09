@@ -398,66 +398,6 @@ final deliveryEarningsProvider =
   return DeliveryEarningsNotifier(ref);
 });
 
-class DeliveryHistoryNotifier extends StateNotifier<List<DeliveryHistoryItem>> {
-  DeliveryHistoryNotifier() : super(_getMockHistory());
-
-  static List<DeliveryHistoryItem> _getMockHistory() {
-    final now = DateTime.now();
-    return [
-      DeliveryHistoryItem(
-        orderId: 'SD-9840',
-        customerName: 'Rahul Singh',
-        status: 'Delivered',
-        earnings: 45.0,
-        date: now.subtract(const Duration(hours: 2)),
-        distance: '3.2 km',
-      ),
-      DeliveryHistoryItem(
-        orderId: 'SD-9839',
-        customerName: 'Meena Gupta',
-        status: 'Delivered',
-        earnings: 38.0,
-        date: now.subtract(const Duration(hours: 4)),
-        distance: '2.5 km',
-      ),
-      DeliveryHistoryItem(
-        orderId: 'SD-9838',
-        customerName: 'Vikash Kumar',
-        status: 'Delivered',
-        earnings: 52.0,
-        date: now.subtract(const Duration(hours: 6)),
-        distance: '4.1 km',
-      ),
-      DeliveryHistoryItem(
-        orderId: 'SD-9837',
-        customerName: 'Anita Devi',
-        status: 'Delivered',
-        earnings: 41.0,
-        date: now.subtract(const Duration(days: 1)),
-        distance: '3.8 km',
-      ),
-      DeliveryHistoryItem(
-        orderId: 'SD-9836',
-        customerName: 'Rohit Sharma',
-        status: 'Delivered',
-        earnings: 47.0,
-        date: now.subtract(const Duration(days: 1, hours: 2)),
-        distance: '2.9 km',
-      ),
-    ];
-  }
-
-  void addToHistory(DeliveryHistoryItem item) {
-    state = [item, ...state];
-  }
-}
-
-final deliveryHistoryProvider =
-    StateNotifierProvider<DeliveryHistoryNotifier, List<DeliveryHistoryItem>>(
-        (ref) {
-  return DeliveryHistoryNotifier();
-});
-
 class DeliveryPanelTabNotifier extends StateNotifier<int> {
   DeliveryPanelTabNotifier() : super(0);
 
