@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer' as developer;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -47,7 +46,6 @@ class SubscriptionService {
   Future<Subscription?> getCurrentSubscription(String uid) async {
     final authUid = FirebaseAuth.instance.currentUser?.uid;
     final effectiveUid = (authUid != null && authUid.isNotEmpty) ? authUid : uid;
-    print('[SUBSCRIPTION_DEBUG] Op: GET | Auth UID: $authUid | Target UID: $effectiveUid | Path: users/$effectiveUid/subscription/current');
 
     try {
       final subDocRef = _firestore
@@ -57,15 +55,12 @@ class SubscriptionService {
           .doc('current');
       final doc = await subDocRef.get();
       if (doc.exists) {
-        print('[SUBSCRIPTION_DEBUG] Op: GET | Found in Firestore at users/$effectiveUid/subscription/current');
         final sub = Subscription.fromFirestore(doc);
         unawaited(_saveToLocal(effectiveUid, sub));
         return sub;
       }
-      print('[SUBSCRIPTION_DEBUG] Op: GET | Doc does not exist in Firestore at users/$effectiveUid/subscription/current');
       return await _loadFromLocal(effectiveUid);
-    } catch (e) {
-      print('[SUBSCRIPTION_DEBUG] Op: GET | Error fetching from Firestore: $e');
+    } catch (_) {
       return await _loadFromLocal(effectiveUid);
     }
   }
@@ -87,13 +82,11 @@ class SubscriptionService {
           return sub;
         }
         return null;
-      }).handleError((err) async* {
-        print('[SUBSCRIPTION_DEBUG] Stream error: $err');
+      }).handleError((_) async* {
         final local = await _loadFromLocal(effectiveUid);
         yield local;
       });
-    } catch (e) {
-      print('[SUBSCRIPTION_DEBUG] streamCurrentSubscription catch: $e');
+    } catch (_) {
       return Stream.fromFuture(_loadFromLocal(effectiveUid));
     }
   }
@@ -109,8 +102,6 @@ class SubscriptionService {
       updatedAt: now,
     );
 
-    print('[SUBSCRIPTION_DEBUG] Op: CREATE | Auth UID: $authUid | Target UID: $effectiveUid | Path: users/$effectiveUid/subscription/current');
-
     try {
       final docRef = _firestore
           .collection('users')
@@ -118,11 +109,8 @@ class SubscriptionService {
           .collection('subscription')
           .doc('current');
       await docRef.set(subscriptionWithTimestamps.toFirestore());
-      print('[SUBSCRIPTION_DEBUG] Op: CREATE | SUCCESS at users/$effectiveUid/subscription/current');
       await _saveToLocal(effectiveUid, subscriptionWithTimestamps);
-    } catch (e) {
-      print('[SUBSCRIPTION_DEBUG] Op: CREATE | FAILURE at users/$effectiveUid/subscription/current: $e');
-      developer.log('[SubscriptionService] Firestore set error: $e');
+    } catch (_) {
       rethrow;
     }
 
@@ -137,8 +125,6 @@ class SubscriptionService {
     final effectiveUid = (authUid != null && authUid.isNotEmpty) ? authUid : uid;
     final updatedSubscription = subscription.copyWith(updatedAt: now);
 
-    print('[SUBSCRIPTION_DEBUG] Op: UPDATE | Auth UID: $authUid | Target UID: $effectiveUid | Path: users/$effectiveUid/subscription/current');
-
     try {
       final docRef = _firestore
           .collection('users')
@@ -146,11 +132,8 @@ class SubscriptionService {
           .collection('subscription')
           .doc('current');
       await docRef.set(updatedSubscription.toFirestore());
-      print('[SUBSCRIPTION_DEBUG] Op: UPDATE | SUCCESS at users/$effectiveUid/subscription/current');
       await _saveToLocal(effectiveUid, updatedSubscription);
-    } catch (e) {
-      print('[SUBSCRIPTION_DEBUG] Op: UPDATE | FAILURE at users/$effectiveUid/subscription/current: $e');
-      developer.log('[SubscriptionService] Firestore update error: $e');
+    } catch (_) {
       rethrow;
     }
 
@@ -163,7 +146,6 @@ class SubscriptionService {
     final authUid = FirebaseAuth.instance.currentUser?.uid;
     final effectiveUid = (authUid != null && authUid.isNotEmpty) ? authUid : uid;
 
-    print('[SUBSCRIPTION_DEBUG] Op: CANCEL | Auth UID: $authUid | Target UID: $effectiveUid | Path: users/$effectiveUid/subscription/current');
     Subscription? existing = await getCurrentSubscription(effectiveUid);
     if (existing != null) {
       final cancelledSub = existing.copyWith(
@@ -179,11 +161,8 @@ class SubscriptionService {
             .collection('subscription')
             .doc('current');
         await subDocRef.set(cancelledSub.toFirestore());
-        print('[SUBSCRIPTION_DEBUG] Op: CANCEL | SUCCESS at users/$effectiveUid/subscription/current');
         await _saveToLocal(effectiveUid, cancelledSub);
-      } catch (e) {
-        print('[SUBSCRIPTION_DEBUG] Op: CANCEL | FAILURE at users/$effectiveUid/subscription/current: $e');
-        developer.log('[SubscriptionService] Firestore cancel error: $e');
+      } catch (_) {
         rethrow;
       }
 
@@ -199,7 +178,6 @@ class SubscriptionService {
     final authUid = FirebaseAuth.instance.currentUser?.uid;
     final effectiveUid = (authUid != null && authUid.isNotEmpty) ? authUid : uid;
 
-    print('[SUBSCRIPTION_DEBUG] Op: RENEW | Auth UID: $authUid | Target UID: $effectiveUid | Path: users/$effectiveUid/subscription/current');
     Subscription? existing = await getCurrentSubscription(effectiveUid);
 
     if (existing == null) {
@@ -226,11 +204,8 @@ class SubscriptionService {
           .collection('subscription')
           .doc('current');
       await subDocRef.set(renewedSub.toFirestore());
-      print('[SUBSCRIPTION_DEBUG] Op: RENEW | SUCCESS at users/$effectiveUid/subscription/current');
       await _saveToLocal(effectiveUid, renewedSub);
-    } catch (e) {
-      print('[SUBSCRIPTION_DEBUG] Op: RENEW | FAILURE at users/$effectiveUid/subscription/current: $e');
-      developer.log('[SubscriptionService] Firestore renew error: $e');
+    } catch (_) {
       rethrow;
     }
 

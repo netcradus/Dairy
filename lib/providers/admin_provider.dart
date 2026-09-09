@@ -296,12 +296,6 @@ class AdminProvider extends ChangeNotifier {
       imageUrl: rawImageUrl.trim(),
     );
 
-    if (product.id == 'prod_1788762789345' || product.imageUrl.isNotEmpty) {
-      debugPrint('ADMIN PRODUCT ${product.id}');
-      debugPrint('Firestore imageUrl: ${product.imageUrl}');
-      debugPrint('Resolved imageUrl: ${product.resolvedImageUrl}');
-    }
-
     return product;
   }
 
