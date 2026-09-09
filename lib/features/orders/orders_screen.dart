@@ -336,8 +336,9 @@ class _OrderCard extends ConsumerWidget {
                       order.items.length.clamp(0, 2),
                       (i) {
                         final item = order.items[i];
-                        final assetImage =
-                            _getProductImage(item.product.categoryId);
+                        final imageSource = item.product.resolvedImageUrl;
+                        final isNetwork = imageSource.startsWith('http://') ||
+                            imageSource.startsWith('https://');
                         return Positioned(
                           left: i * 26.0,
                           child: Container(
@@ -351,15 +352,33 @@ class _OrderCard extends ConsumerWidget {
                             ),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(6),
-                              child: Image.asset(
-                                assetImage,
-                                fit: BoxFit.contain,
-                                errorBuilder: (_, __, ___) => const Icon(
-                                  Icons.local_drink_rounded,
-                                  size: 20,
-                                  color: Color(0xFF005F38),
-                                ),
-                              ),
+                              child: imageSource.isEmpty
+                                  ? const Icon(
+                                      Icons.local_drink_rounded,
+                                      size: 20,
+                                      color: Color(0xFF005F38),
+                                    )
+                                  : (isNetwork
+                                      ? Image.network(
+                                          imageSource,
+                                          fit: BoxFit.contain,
+                                          errorBuilder: (_, __, ___) =>
+                                              const Icon(
+                                            Icons.local_drink_rounded,
+                                            size: 20,
+                                            color: Color(0xFF005F38),
+                                          ),
+                                        )
+                                      : Image.asset(
+                                          imageSource,
+                                          fit: BoxFit.contain,
+                                          errorBuilder: (_, __, ___) =>
+                                              const Icon(
+                                            Icons.local_drink_rounded,
+                                            size: 20,
+                                            color: Color(0xFF005F38),
+                                          ),
+                                        )),
                             ),
                           ),
                         );
@@ -517,14 +536,6 @@ class _OrderCard extends ConsumerWidget {
     );
   }
 
-  String _getProductImage(String catId) {
-    if (catId == 'cat_milk') return 'assets/images/milk.png';
-    if (catId == 'cat_lassi') return 'assets/images/lassi.png';
-    if (catId == 'cat_makhan') return 'assets/images/makhana.png';
-    if (catId == 'cat_ghee') return 'assets/images/ghee.png';
-    if (catId == 'cat_paneer') return 'assets/images/paneer.png';
-    return 'assets/images/milk.png';
-  }
 
   Color _statusColor(OrderStatus status) {
     switch (status) {

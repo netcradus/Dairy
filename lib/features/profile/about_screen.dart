@@ -46,32 +46,60 @@ const List<_Stage> _stages = [
   _Stage('02', 'FRESH MILK', 'Fresh milk collected with care.',
       AppAssets.milkPlaceholder),
   _Stage('03', 'QUALITY CHECK', 'Quality-focused inspection and handling.',
-      AppAssets.a2BannerPlaceholder),
+      'assets/images/quality.jpg'),
   _Stage('04', 'HYGIENIC PROCESS', 'Careful and hygienic handling.',
-      AppAssets.curdPlaceholder),
+      'assets/images/hygien.jpg'),
   _Stage('05', 'PACKAGING', 'Packed carefully for freshness and convenience.',
-      AppAssets.paneerPlaceholder),
+      'assets/images/milk.png'),
   _Stage('06', 'HOME DELIVERY', 'Delivered to your doorstep.',
-      AppAssets.gheePlaceholder),
+      'assets/images/delivery.jpg'),
 ];
 
 const List<_Product> _products = [
-  _Product('Milk', 'Farm-fresh pure cow milk.', AppAssets.milkPlaceholder),
   _Product(
-      'Lassi', 'Creamy traditional sweet lassi.', AppAssets.curdPlaceholder),
+    'Fresh Milk',
+    'Pure fresh milk sourced daily from healthy cows.',
+    AppAssets.milkPng,
+  ),
   _Product(
-      'Makhan', 'Soft white homemade butter.', AppAssets.a2BannerPlaceholder),
-  _Product('Paneer', 'Fresh soft cottage cheese.', AppAssets.paneerPlaceholder),
-  _Product('Ghee', 'Pure traditional bilona ghee.', AppAssets.gheePlaceholder),
+    'Fresh Paneer',
+    'Ultra-soft, protein-rich fresh cottage cheese prepared daily.',
+    AppAssets.paneerPng,
+  ),
+  _Product(
+    'Pure Ghee',
+    'Traditional bilona method pure cow ghee with rich granular texture and aroma.',
+    AppAssets.gheePng,
+  ),
+  _Product(
+    'Fresh Lassi',
+    'Thick, creamy, and refreshing probiotic sweet lassi.',
+    AppAssets.lassiPng,
+  ),
+  _Product(
+    'Fresh Makhan',
+    'Freshly churned creamy unsalted table butter.',
+    AppAssets.makhanPng,
+  ),
+  _Product(
+    'Organic Uple',
+    'Premium organic cow dung cakes for pooja and rituals.',
+    AppAssets.uplePng,
+  ),
+  _Product(
+    'Water Bottle 20L',
+    'Pure and safe 20L water bottle delivered to your doorstep.',
+    AppAssets.waterPng,
+  ),
 ];
 
 const List<_Value> _values = [
-  _Value('PURITY', 'Care in every drop.', AppAssets.milkPlaceholder),
-  _Value('QUALITY', 'Quality at every stage.', AppAssets.a2BannerPlaceholder),
+  _Value('PURITY', 'Care in every drop.', 'assets/images/purity.jpg'),
+  _Value('QUALITY', 'Quality at every stage.', 'assets/images/nature quality.jpg'),
   _Value(
-      'FRESHNESS', 'Freshness for everyday life.', AppAssets.curdPlaceholder),
+      'FRESHNESS', 'Freshness for everyday life.', 'assets/images/freshness.jpg'),
   _Value('TRUST', 'Building lasting customer relationships.',
-      AppAssets.heroBannerPlaceholder),
+      'assets/images/trust.jpg'),
 ];
 
 /// Generic scroll-triggered fade + slide-up reveal.
@@ -228,7 +256,10 @@ class _FarmToHomeTimelineState extends State<_FarmToHomeTimeline>
                 boxShadow: AppColors.cardShadowMd,
                 border: Border.all(color: Colors.white, width: 3),
                 image: DecorationImage(
-                  image: NetworkImage(s.image),
+                  image: (s.image.startsWith('assets/') ||
+                          !s.image.startsWith('http'))
+                      ? AssetImage(s.image) as ImageProvider
+                      : NetworkImage(s.image) as ImageProvider,
                   fit: BoxFit.cover,
                 ),
               ),
@@ -398,22 +429,51 @@ class _ProductCardState extends State<_ProductCard> {
                     topLeft: Radius.circular(AppSizes.radiusLarge),
                     topRight: Radius.circular(AppSizes.radiusLarge),
                   ),
-                  child: Image.network(
-                    widget.product.image,
-                    height: 150,
+                  child: Container(
+                    height: context.isDesktop ? 150 : 135,
                     width: double.infinity,
-                    fit: BoxFit.cover,
+                    color: AppColors.lightBlue,
+                    padding: const EdgeInsets.all(AppSizes.p8),
+                    child: (widget.product.image.startsWith('assets/') ||
+                            !widget.product.image.startsWith('http'))
+                        ? Image.asset(
+                            widget.product.image,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Center(
+                              child: Icon(
+                                Icons.broken_image_outlined,
+                                size: 32,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          )
+                        : Image.network(
+                            widget.product.image,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Center(
+                              child: Icon(
+                                Icons.broken_image_outlined,
+                                size: 32,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(AppSizes.p14),
+                  padding: EdgeInsets.all(
+                      context.isDesktop ? AppSizes.p14 : AppSizes.p12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         widget.product.name,
-                        style: const TextStyle(
-                          fontSize: 16,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: context.isDesktop ? 16 : 14,
                           fontWeight: FontWeight.w800,
                           color: AppColors.textPrimary,
                         ),
@@ -421,9 +481,11 @@ class _ProductCardState extends State<_ProductCard> {
                       const SizedBox(height: 4),
                       Text(
                         widget.product.description,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 12,
-                          height: 1.4,
+                          height: 1.35,
                           color: AppColors.textSecondary,
                         ),
                       ),
@@ -466,7 +528,10 @@ class _ValueCardState extends State<_ValueCard> {
             borderRadius: AppSizes.borderLarge,
             boxShadow: AppColors.cardShadowSm,
             image: DecorationImage(
-              image: NetworkImage(widget.value.image),
+              image: (widget.value.image.startsWith('assets/') ||
+                      !widget.value.image.startsWith('http'))
+                  ? AssetImage(widget.value.image) as ImageProvider
+                  : NetworkImage(widget.value.image) as ImageProvider,
               fit: BoxFit.cover,
             ),
           ),
@@ -586,12 +651,20 @@ class _StorySectionState extends State<_StorySection>
                 scale: _scale.value,
                 child: child,
               ),
-              child: Image.network(
-                widget.image,
-                height: context.isDesktop ? 320 : 220,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
+              child: (widget.image.startsWith('assets/') ||
+                      !widget.image.startsWith('http'))
+                  ? Image.asset(
+                      widget.image,
+                      height: context.isDesktop ? 320 : 220,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    )
+                  : Image.network(
+                      widget.image,
+                      height: context.isDesktop ? 320 : 220,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
             ),
           ),
         ),
@@ -849,14 +922,16 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _sectionTitle('Our Dairy Products'),
+                      _sectionTitle('Our Products'),
                       GridView.count(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        crossAxisCount: isDesktop ? 5 : (isTablet ? 3 : 2),
+                        crossAxisCount: isDesktop ? 4 : (isTablet ? 3 : 2),
                         mainAxisSpacing: AppSizes.p16,
                         crossAxisSpacing: AppSizes.p16,
-                        childAspectRatio: 0.72,
+                        childAspectRatio: isDesktop
+                            ? 0.76
+                            : (isTablet ? 0.72 : 0.68),
                         children: _products
                             .map((p) => _ProductCard(product: p))
                             .toList(),
@@ -891,7 +966,7 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
                 // 6. BRAND STORY / FARM VISUAL
                 _StorySection(
                   scrollController: _scrollController,
-                  image: AppAssets.heroBannerPlaceholder,
+                  image: 'assets/images/poster.jpg',
                   title: 'Pure Dairy. From Our Farm to Your Family.',
                   paragraph: 'Every Sawariya Dairy product carries the care of '
                       'our farms — from the animals we nurture to the families '

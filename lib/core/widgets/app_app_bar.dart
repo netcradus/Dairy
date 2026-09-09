@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
 import '../localization/app_language.dart';
 import '../responsive/responsive.dart';
+import '../../providers/product_provider.dart';
+import '../../providers/navigation_provider.dart';
 
 /// Clean Production Header Bar for Mobile, Tablet & Desktop
-class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
+class AppTopAppBar extends ConsumerStatefulWidget implements PreferredSizeWidget {
   final String title;
   final VoidCallback? onSearchTap;
   final VoidCallback? onNotificationTap;
   final VoidCallback? onCartTap;
   final int cartItemCount;
+  final bool? showSearch;
 
   const AppTopAppBar({
     super.key,
@@ -19,6 +23,7 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.onNotificationTap,
     this.onCartTap,
     this.cartItemCount = 2,
+    this.showSearch,
   });
 
   @override
@@ -32,8 +37,54 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
+  ConsumerState<AppTopAppBar> createState() => _AppTopAppBarState();
+}
+
+class _AppTopAppBarState extends ConsumerState<AppTopAppBar> {
+  late final TextEditingController _searchController;
+  bool _isMobileSearchOpen = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController(
+      text: ref.read(productSearchQueryProvider),
+    );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String val) {
+    ref.read(productSearchQueryProvider.notifier).state = val;
+    if (ref.read(navigationProvider) != 1) {
+      ref.read(navigationProvider.notifier).setIndex(1);
+    }
+    setState(() {});
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+    ref.read(productSearchQueryProvider.notifier).state = '';
+    setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isDesktop = context.isDesktop;
+    final currentIndex = ref.watch(navigationProvider);
+    final showSearch =
+        widget.showSearch ?? (currentIndex != 2 && currentIndex != 3);
+
+    ref.listen<String>(productSearchQueryProvider, (prev, next) {
+      if (_searchController.text != next) {
+        _searchController.text = next;
+        setState(() {});
+      }
+    });
 
     return Container(
       decoration: const BoxDecoration(
@@ -43,7 +94,7 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
       child: SafeArea(
         bottom: false,
         child: Container(
-          height: preferredSize.height,
+          height: widget.preferredSize.height,
           padding: EdgeInsets.symmetric(
             horizontal: context.responsiveHorizontalPadding,
             vertical: 10,
@@ -51,42 +102,43 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Left: Greeting and Headline
-              Flexible(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      _greeting(),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondary,
+              // Left: Greeting and Headline (hidden on mobile if search field expanded)
+              if (!_isMobileSearchOpen || isDesktop) ...[
+                Flexible(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        AppTopAppBar._greeting(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      tr('Fresh dairy, delivered daily!'),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
-                        letterSpacing: -0.3,
+                      const SizedBox(height: 2),
+                      Text(
+                        tr('Fresh dairy, delivered daily!'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                          letterSpacing: -0.3,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
+                const SizedBox(width: 12),
+              ],
 
-              const SizedBox(width: 12),
-
-              // Location Pill (Deliver to Jaipur, 302001)
+              // Location Pill (Deliver to Gurugram, 122001)
               if (isDesktop) ...[
                 Container(
                   padding:
@@ -147,60 +199,178 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
               ],
 
               // Search Field
-              if (isDesktop)
-                ConstrainedBox(
-                  constraints:
-                      const BoxConstraints(maxWidth: 280, minWidth: 160),
-                  child: SizedBox(
-                    height: 40,
-                    child: TextField(
-                      readOnly: true,
-                      onTap: onSearchTap,
-                      decoration: InputDecoration(
-                        hintText: tr('Search milk, curd, paneer, ghee...'),
-                        hintStyle: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textMuted,
+              if (showSearch) ...[
+                if (isDesktop)
+                  ConstrainedBox(
+                    constraints:
+                        const BoxConstraints(maxWidth: 280, minWidth: 160),
+                    child: SizedBox(
+                      height: 40,
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: _onSearchChanged,
+                        textAlignVertical: TextAlignVertical.center,
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          color: AppColors.textPrimary,
                         ),
-                        prefixIcon: const Icon(
-                          Icons.search_rounded,
-                          size: 18,
-                          color: AppColors.textSecondary,
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 0,
-                          horizontal: 10,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFCBD5E1),
-                            width: 0.8,
+                        decoration: InputDecoration(
+                          hintText: tr('Search milk, curd, paneer, ghee...'),
+                          hintStyle: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textMuted,
                           ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFCBD5E1),
-                            width: 0.8,
+                          prefixIcon: const Icon(
+                            Icons.search_rounded,
+                            size: 18,
+                            color: AppColors.textSecondary,
+                          ),
+                          suffixIcon: _searchController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(
+                                    Icons.clear_rounded,
+                                    size: 16,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(
+                                    minWidth: 32,
+                                    minHeight: 32,
+                                  ),
+                                  splashRadius: 16,
+                                  onPressed: _clearSearch,
+                                )
+                              : null,
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 0,
+                            horizontal: 10,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFCBD5E1),
+                              width: 0.8,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFCBD5E1),
+                              width: 0.8,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF005F38),
+                              width: 1.2,
+                            ),
                           ),
                         ),
                       ),
                     ),
+                  )
+                else if (_isMobileSearchOpen)
+                  Expanded(
+                    child: SizedBox(
+                      height: 40,
+                      child: TextField(
+                        controller: _searchController,
+                        autofocus: true,
+                        onChanged: _onSearchChanged,
+                        textAlignVertical: TextAlignVertical.center,
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          color: AppColors.textPrimary,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: tr('Search milk, curd, paneer, ghee...'),
+                          hintStyle: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textMuted,
+                          ),
+                          prefixIcon: IconButton(
+                            icon: const Icon(
+                              Icons.arrow_back_rounded,
+                              size: 18,
+                              color: AppColors.textSecondary,
+                            ),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                              minWidth: 32,
+                              minHeight: 32,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isMobileSearchOpen = false;
+                              });
+                            },
+                          ),
+                          suffixIcon: _searchController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(
+                                    Icons.clear_rounded,
+                                    size: 16,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(
+                                    minWidth: 32,
+                                    minHeight: 32,
+                                  ),
+                                  splashRadius: 16,
+                                  onPressed: _clearSearch,
+                                )
+                              : null,
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 0,
+                            horizontal: 10,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFCBD5E1),
+                              width: 0.8,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFCBD5E1),
+                              width: 0.8,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF005F38),
+                              width: 1.2,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  IconButton(
+                    icon: const Icon(
+                      Icons.search_rounded,
+                      color: AppColors.textPrimary,
+                    ),
+                    onPressed: () {
+                      ref.read(navigationProvider.notifier).setIndex(1);
+                      setState(() {
+                        _isMobileSearchOpen = true;
+                      });
+                      widget.onSearchTap?.call();
+                    },
                   ),
-                )
-              else
-                IconButton(
-                  icon: const Icon(
-                    Icons.search_rounded,
-                    color: AppColors.textPrimary,
-                  ),
-                  onPressed: onSearchTap,
-                ),
-
-              const SizedBox(width: AppSizes.p8),
+                const SizedBox(width: AppSizes.p8),
+              ],
 
               // Notification Button
               IconButton(
@@ -209,7 +379,7 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
                   color: AppColors.textPrimary,
                   size: 23,
                 ),
-                onPressed: onNotificationTap,
+                onPressed: widget.onNotificationTap,
               ),
 
               const SizedBox(width: AppSizes.p4),
@@ -224,9 +394,9 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
                       color: AppColors.textPrimary,
                       size: 23,
                     ),
-                    onPressed: onCartTap,
+                    onPressed: widget.onCartTap,
                   ),
-                  if (cartItemCount > 0)
+                  if (widget.cartItemCount > 0)
                     Positioned(
                       top: 4,
                       right: 4,
@@ -241,7 +411,7 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
                           minHeight: 17,
                         ),
                         child: Text(
-                          '$cartItemCount',
+                          '${widget.cartItemCount}',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 9.5,

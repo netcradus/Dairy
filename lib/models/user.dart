@@ -32,12 +32,21 @@ class User {
   }
 
   factory User.fromMap(Map<String, dynamic> map) {
+    final dynamic candidateImage = map['profileImageUrl'] ??
+        map['photoUrl'] ??
+        map['photoURL'] ??
+        map['profileImage'] ??
+        map['imageUrl'] ??
+        map['avatar'];
+
     return User(
       id: map['id'] ?? '',
       name: map['name'] ?? '',
       phone: map['phone'] ?? '',
       email: map['email'],
-      profileImageUrl: map['profileImageUrl'],
+      profileImageUrl: (candidateImage is String && candidateImage.trim().isNotEmpty)
+          ? candidateImage.trim()
+          : null,
       role: map['role'] ?? 'customer',
     );
   }

@@ -73,3 +73,8 @@ final bestSellersProvider = Provider<List<Product>>((ref) {
 final selectedCategoryProvider = StateProvider<String>((ref) {
   return 'cat_all';
 });
+
+/// Global search query provider for products
+final productSearchQueryProvider = StateProvider<String>((ref) {
+  return '';
+});

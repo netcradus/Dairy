@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -18,9 +20,82 @@ const User guestUser = User(
 class UserNotifier extends StateNotifier<User> {
   static const String _sessionKey = 'user_session';
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _userSubscription;
 
   UserNotifier() : super(guestUser) {
     loadSession();
+    debugPrint('[PROFILE DEBUG T0] UserNotifier initialized, initial state.profileImageUrl: ${state.profileImageUrl}');
+  }
+
+  static String? _extractProfileImageUrl(Map<String, dynamic> data) {
+    final candidate = data['profileImageUrl'] ??
+        data['photoUrl'] ??
+        data['photoURL'] ??
+        data['profileImage'] ??
+        data['imageUrl'] ??
+        data['avatar'];
+    if (candidate is String && candidate.trim().isNotEmpty) {
+      return candidate.trim();
+    }
+    return null;
+  }
+
+  void _startUserDocListener(String uid) {
+    _userSubscription?.cancel();
+    if (uid.isEmpty) return;
+
+    _userSubscription = _firestore
+        .collection('users')
+        .doc(uid)
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.exists) {
+        final data = snapshot.data();
+        if (data != null) {
+          final imageUrl = _extractProfileImageUrl(data);
+          final currentImageUrl = state.profileImageUrl;
+          final effectiveImageUrl = (imageUrl != null && imageUrl.isNotEmpty)
+              ? imageUrl
+              : currentImageUrl;
+
+          debugPrint('[PROFILE DEBUG T4] Firestore listener fired: uid=$uid, docImageUrl=$imageUrl, currentRiverpod=$currentImageUrl, resolvedEffective=$effectiveImageUrl');
+
+          final updatedUser = User(
+            id: uid,
+            name: (data['name'] as String?)?.isNotEmpty == true
+                ? data['name']
+                : state.name,
+            phone: (data['phone'] as String?)?.isNotEmpty == true
+                ? data['phone']
+                : state.phone,
+            email: (data['email'] as String?)?.isNotEmpty == true
+                ? data['email']
+                : state.email,
+            profileImageUrl: effectiveImageUrl,
+            role: (data['role'] as String?)?.isNotEmpty == true
+                ? data['role']
+                : state.role,
+          );
+
+          if (updatedUser.profileImageUrl != currentImageUrl ||
+              updatedUser.name != state.name ||
+              updatedUser.phone != state.phone ||
+              updatedUser.email != state.email ||
+              updatedUser.role != state.role) {
+            state = updatedUser;
+            notifyAuthStateChanged();
+            SharedPreferences.getInstance().then((prefs) {
+              prefs.setString(_sessionKey, jsonEncode(updatedUser.toMap()));
+            });
+            debugPrint('[PROFILE DEBUG T4] State updated by listener: profileImageUrl=${state.profileImageUrl}');
+          } else {
+            debugPrint('[PROFILE DEBUG T4] No state change needed: profileImageUrl=${state.profileImageUrl}');
+          }
+        }
+      }
+    }, onError: (err) {
+      debugPrint('[PROFILE DEBUG T4] Firestore listener error: $err');
+    });
   }
 
   /// Load session from SharedPreferences and sync with Firestore in background
@@ -31,16 +106,19 @@ class UserNotifier extends StateNotifier<User> {
       if (sessionJson != null) {
         final Map<String, dynamic> map = jsonDecode(sessionJson);
         state = User.fromMap(map);
+        debugPrint('[PROFILE DEBUG] loadSession: restored User.fromMap profileImageUrl = ${state.profileImageUrl}');
 
-        // Sync in background from Firestore
+        // Sync in background from Firestore & start real-time listener
         if (state.id.isNotEmpty) {
           _syncFromFirestore(state.id);
+          _startUserDocListener(state.id);
         }
       }
     } catch (e) {
       // Fallback to guest user on error
       state = guestUser;
     }
+    debugPrint('[PROFILE DEBUG] loadSession: final profileImageUrl = ${state.profileImageUrl}');
     notifyAuthStateChanged();
   }
 
@@ -50,12 +128,20 @@ class UserNotifier extends StateNotifier<User> {
       if (doc.exists) {
         final data = doc.data();
         if (data != null) {
+          final imageUrl = _extractProfileImageUrl(data);
+          final currentImageUrl = state.profileImageUrl;
+          final effectiveImageUrl = (imageUrl != null && imageUrl.isNotEmpty)
+              ? imageUrl
+              : currentImageUrl;
+
+          debugPrint('[PROFILE DEBUG] _syncFromFirestore: uid=$uid, extracted imageUrl=$imageUrl, current=$currentImageUrl, resolved=$effectiveImageUrl');
+
           final updatedUser = User(
             id: uid,
             name: data['name'] ?? state.name,
             phone: data['phone'] ?? state.phone,
             email: data['email'] ?? state.email,
-            profileImageUrl: data['profileImageUrl'] ?? state.profileImageUrl,
+            profileImageUrl: effectiveImageUrl,
             role: data['role'] ?? state.role,
           );
 
@@ -68,12 +154,13 @@ class UserNotifier extends StateNotifier<User> {
             final prefs = await SharedPreferences.getInstance();
             final sessionJson = jsonEncode(state.toMap());
             await prefs.setString(_sessionKey, sessionJson);
+            debugPrint('[PROFILE DEBUG] _syncFromFirestore: state updated, profileImageUrl=${state.profileImageUrl}');
             notifyAuthStateChanged();
           }
         }
       }
-    } catch (_) {
-      // Ignore background sync errors to preserve offline capability
+    } catch (err) {
+      debugPrint('[PROFILE DEBUG] _syncFromFirestore error: $err');
     }
   }
 
@@ -86,7 +173,7 @@ class UserNotifier extends StateNotifier<User> {
         if (doc.exists) {
           final data = doc.data();
           if (data != null) {
-            // Do NOT overwrite valid existing profile data unnecessarily
+            final imageUrl = _extractProfileImageUrl(data);
             user = User(
               id: user.id,
               name: (data['name'] as String?)?.isNotEmpty == true
@@ -98,18 +185,17 @@ class UserNotifier extends StateNotifier<User> {
               email: (data['email'] as String?)?.isNotEmpty == true
                   ? data['email']
                   : user.email,
-              profileImageUrl:
-                  (data['profileImageUrl'] as String?)?.isNotEmpty == true
-                      ? data['profileImageUrl']
-                      : user.profileImageUrl,
+              profileImageUrl: (imageUrl != null && imageUrl.isNotEmpty)
+                  ? imageUrl
+                  : user.profileImageUrl,
               role: (data['role'] as String?)?.isNotEmpty == true
                   ? data['role']
                   : user.role,
             );
           }
-          await docRef.update({
+          await docRef.set({
             'updatedAt': FieldValue.serverTimestamp(),
-          });
+          }, SetOptions(merge: true));
         } else {
           // Create user profile document in Firestore
           await docRef.set({
@@ -118,18 +204,22 @@ class UserNotifier extends StateNotifier<User> {
             'phone': user.phone,
             'email': user.email,
             'profileImageUrl': user.profileImageUrl,
+            'photoUrl': user.profileImageUrl,
             'role': user.role,
             'createdAt': FieldValue.serverTimestamp(),
             'updatedAt': FieldValue.serverTimestamp(),
-          });
+          }, SetOptions(merge: true));
         }
       } catch (e) {
-        // Fallback for offline - don't block login
+        debugPrint('[PROFILE DEBUG] setSession Firestore sync error: $e');
       }
     }
 
     state = user;
     notifyAuthStateChanged();
+    if (user.id.isNotEmpty) {
+      _startUserDocListener(user.id);
+    }
     try {
       final prefs = await SharedPreferences.getInstance();
       final sessionJson = jsonEncode(user.toMap());
@@ -139,6 +229,8 @@ class UserNotifier extends StateNotifier<User> {
 
   /// Clear session on Logout
   Future<void> clearSession() async {
+    _userSubscription?.cancel();
+    _userSubscription = null;
     state = guestUser;
     notifyAuthStateChanged();
     try {
@@ -172,6 +264,8 @@ class UserNotifier extends StateNotifier<User> {
       throw Exception('No authenticated user session found.');
     }
 
+    debugPrint('[PROFILE DEBUG T2] updateProfile: starting, state.profileImageUrl before=${state.profileImageUrl}, incoming profileImageUrl=$profileImageUrl');
+
     final updatedUser = User(
       id: state.id,
       name: name ?? state.name,
@@ -181,22 +275,37 @@ class UserNotifier extends StateNotifier<User> {
       role: state.role,
     );
 
-    // Update in Firestore first (will throw exception on failure)
+    // Update in Firestore first using set with merge so it succeeds whether the document exists or not
     final docRef = _firestore.collection('users').doc(state.id);
-    await docRef.update({
+    await docRef.set({
+      'uid': state.id,
+      'role': state.role.isNotEmpty ? state.role : 'customer',
       if (name != null) 'name': name,
       if (phone != null) 'phone': phone,
       if (email != null) 'email': email,
-      if (profileImageUrl != null) 'profileImageUrl': profileImageUrl,
+      if (profileImageUrl != null) ...{
+        'profileImageUrl': profileImageUrl,
+        'photoUrl': profileImageUrl,
+      },
       'updatedAt': FieldValue.serverTimestamp(),
-    });
+    }, SetOptions(merge: true));
 
-    // If Firestore update succeeded, update local state
+    debugPrint('[PROFILE DEBUG T2] updateProfile: Firestore write succeeded on users/${state.id}');
+
+    // Update local state
     state = updatedUser;
+    debugPrint('[PROFILE DEBUG T3] updateProfile: Riverpod local state updated, profileImageUrl=${state.profileImageUrl}');
     notifyAuthStateChanged();
     final prefs = await SharedPreferences.getInstance();
     final sessionJson = jsonEncode(updatedUser.toMap());
     await prefs.setString(_sessionKey, sessionJson);
+    debugPrint('[PROFILE DEBUG T3] updateProfile: session saved to SharedPreferences, profileImageUrl=${updatedUser.profileImageUrl}');
+  }
+
+  @override
+  void dispose() {
+    _userSubscription?.cancel();
+    super.dispose();
   }
 }
 

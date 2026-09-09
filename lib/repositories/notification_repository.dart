@@ -5,11 +5,9 @@ import '../models/notification_item.dart';
 /// Repository for reading and writing user notifications stored in Firestore
 /// under the path: `users/{userId}/notifications/{notifId}`.
 ///
-/// This path is covered by the existing Firestore security rules:
-///   - Admins can read/write any user's notifications (isAdmin() check on /users/{userId}).
-///   - Customers can read/write only their own notifications (isOwnDoc(userId)).
-///
-/// No modification to firestore.rules is required.
+/// This path is secured by the dedicated subcollection rule in firestore.rules:
+///   - Admins can read/create/update/delete any user's notifications (e.g. broadcasts).
+///   - Customers can read/create/update/delete only their own notifications (isOwnDoc(userId)).
 class NotificationRepository {
   final FirebaseFirestore _firestore;
 

@@ -42,7 +42,13 @@ class Product {
   /// The image source to render: a valid network/asset URL is returned
   /// untouched, otherwise this falls back to the product's category default.
   String get resolvedImageUrl =>
-      AppAssets.productImage(imageUrl: imageUrl, categoryKey: categoryId) ?? '';
+      AppAssets.productImage(
+        imageUrl: imageUrl,
+        categoryKey: categoryId,
+        productId: id,
+        productTitle: title,
+      ) ??
+      '';
 
   int get discountPercentage {
     if (!hasDiscount) return 0;

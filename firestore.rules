@@ -39,7 +39,7 @@ service cloud.firestore {
     }
 
     function currentRole() {
-      return isSignedIn()
+      return (isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)))
           ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
           : null;
     }
@@ -54,7 +54,7 @@ service cloud.firestore {
 
     // ── users ───────────────────────────────────────────────────────────────
     match /users/{userId} {
-      allow read: if isAdmin() || isOwnDoc(userId);
+      allow read: if isOwnDoc(userId) || isAdmin();
 
       // Self-registration creates a customer or delivery profile only; a user
       // can never self-assign an admin/superadmin role.
@@ -66,8 +66,8 @@ service cloud.firestore {
       // or any privilege-related field. Admins may manage any user.
       allow update: if isAdmin()
           || (isOwnDoc(userId)
-              && request.resource.data.uid == resource.data.uid
-              && request.resource.data.role == resource.data.role);
+              && (!('uid' in resource.data) || request.resource.data.uid == resource.data.uid)
+              && (!('role' in resource.data) || request.resource.data.role == resource.data.role));
 
       allow delete: if isAdmin();
     }
@@ -81,7 +81,14 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
     match /users/{userId}/addresses/{addressId} {
-      allow read, create, update, delete: if isAdmin() || isOwnDoc(userId);
+      allow read, create, update, delete: if isOwnDoc(userId) || isAdmin();
+    }
+
+    // ── users/{userId}/notifications ──────────────────────────────────────────
+    // Customers may read, create, update, and delete only their own notifications.
+    // Admins may read, create, update, and delete any user's notifications (broadcasts).
+    match /users/{userId}/notifications/{notificationId} {
+      allow read, create, update, delete: if isOwnDoc(userId) || isAdmin();
     }
 
     // ── orders ──────────────────────────────────────────────────────────────

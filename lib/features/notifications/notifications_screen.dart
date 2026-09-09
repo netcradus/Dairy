@@ -110,55 +110,63 @@ class NotificationsScreen extends ConsumerWidget {
             const [],
       ),
       body: asyncNotifications.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(
-            color: AppColors.primaryBlue,
-          ),
-        ),
-        error: (error, _) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSizes.p24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.cloud_off_rounded,
-                  size: 56,
-                  color: AppColors.textSecondary,
-                ),
-                const SizedBox(height: AppSizes.p16),
-                const Text(
-                  'Could not load notifications',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: AppSizes.p8),
-                Text(
-                  error.toString(),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 12,
+        loading: () {
+          debugPrint('[NOTIF DEBUG] NotificationsScreen: state = LOADING');
+          return const Center(
+            child: CircularProgressIndicator(
+              color: AppColors.primaryBlue,
+            ),
+          );
+        },
+        error: (error, stack) {
+          debugPrint('[NOTIF DEBUG] NotificationsScreen: state = ERROR: $error');
+          debugPrint('[NOTIF DEBUG] NotificationsScreen stack: $stack');
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSizes.p24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.cloud_off_rounded,
+                    size: 56,
                     color: AppColors.textSecondary,
                   ),
-                ),
-                const SizedBox(height: AppSizes.p16),
-                ElevatedButton.icon(
-                  onPressed: () => ref.invalidate(userNotificationsStreamProvider),
-                  icon: const Icon(Icons.refresh_rounded),
-                  label: const Text('Retry'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
-                    foregroundColor: Colors.white,
+                  const SizedBox(height: AppSizes.p16),
+                  const Text(
+                    'Could not load notifications',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: AppSizes.p8),
+                  Text(
+                    error.toString(),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: AppSizes.p16),
+                  ElevatedButton.icon(
+                    onPressed: () => ref.invalidate(userNotificationsStreamProvider),
+                    icon: const Icon(Icons.refresh_rounded),
+                    label: const Text('Retry'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryBlue,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
         data: (notifications) {
+          debugPrint('[NOTIF DEBUG] NotificationsScreen: state = DATA, received ${notifications.length} notification(s)');
           if (notifications.isEmpty) {
             return _buildEmptyState(context, ref);
           }

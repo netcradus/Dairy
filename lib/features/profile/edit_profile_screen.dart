@@ -1,7 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/widgets/app_network_image.dart';
 import '../../providers/user_provider.dart';
 import '../../services/firebase_storage_service.dart';
 
@@ -24,6 +26,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   void initState() {
     super.initState();
     final user = ref.read(userProvider);
+    debugPrint('EditProfileScreen initState: user.profileImageUrl = ${user.profileImageUrl}');
     _nameController = TextEditingController(text: user.name);
     _emailController = TextEditingController(text: user.email ?? '');
     _phoneController = TextEditingController(text: user.phone);
@@ -81,7 +84,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Future<void> _uploadPhoto(String uid) async {
-    if (uid.trim().isEmpty) return;
+    final authUid = FirebaseAuth.instance.currentUser?.uid;
+    final effectiveUid = (uid.trim().isNotEmpty) ? uid.trim() : (authUid ?? '');
+
+    debugPrint('[PROFILE DEBUG T0] 1. Firebase Auth UID: $authUid (effective: $effectiveUid)');
+    debugPrint('[PROFILE DEBUG T0] profileImageUrl before upload: ${ref.read(userProvider).profileImageUrl}');
+
+    if (effectiveUid.isEmpty) {
+      debugPrint('[PROFILE DEBUG] Upload aborted: no authenticated user found');
+      return;
+    }
 
     try {
       final picker = ImagePicker();
@@ -91,17 +103,34 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         maxHeight: 800,
         imageQuality: 85,
       );
-      if (picked == null) return;
+      if (picked == null) {
+        debugPrint('[PROFILE DEBUG] Image picker cancelled');
+        return;
+      }
 
       setState(() => _isUploadingPhoto = true);
 
       final bytes = await picked.readAsBytes();
-      final downloadUrl = await FirebaseStorageService.instance
-          .uploadProfileImage(uid: uid, bytes: bytes);
+      final storagePath = 'profiles/$effectiveUid/image';
+      debugPrint('[PROFILE DEBUG] 2. Storage upload path: $storagePath');
 
+      final downloadUrl = await FirebaseStorageService.instance
+          .uploadProfileImage(uid: effectiveUid, bytes: bytes);
+
+      final uri = Uri.tryParse(downloadUrl);
+      final safeUrlSummary = uri != null ? '${uri.scheme}://${uri.host}${uri.path}' : '[unparseable]';
+      debugPrint('[PROFILE DEBUG T1] 3. Storage upload succeeded: true');
+      debugPrint('[PROFILE DEBUG T1] 4. downloadUrl exists: ${downloadUrl.isNotEmpty}');
+      debugPrint('[PROFILE DEBUG T1] 5. Download URL host/path: $safeUrlSummary');
+
+      debugPrint('[PROFILE DEBUG T2] 6. Firestore document path: users/$effectiveUid');
       await ref
           .read(userProvider.notifier)
           .updateProfile(profileImageUrl: downloadUrl);
+
+      final userAfter = ref.read(userProvider);
+      debugPrint('[PROFILE DEBUG T3] 7. Firestore profileImageUrl after write: $safeUrlSummary');
+      debugPrint('[PROFILE DEBUG T3] 8. userProvider.profileImageUrl immediately after updateProfile(): ${userAfter.profileImageUrl}');
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -112,6 +141,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         );
       }
     } catch (e) {
+      debugPrint('[PROFILE DEBUG] Failed to upload photo: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -155,18 +185,56 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     CircleAvatar(
                       radius: 46,
                       backgroundColor: const Color(0xFFE2EFE7),
-                      backgroundImage: (user.profileImageUrl != null &&
-                              user.profileImageUrl!.startsWith('http'))
-                          ? NetworkImage(user.profileImageUrl!)
-                          : null,
-                      child: (user.profileImageUrl == null ||
-                              user.profileImageUrl!.isEmpty)
-                          ? const Icon(
-                              Icons.person_rounded,
-                              size: 55,
-                              color: Color(0xFF005F38),
-                            )
-                          : null,
+                      child: ClipOval(
+                        child: SizedBox(
+                          width: 92,
+                          height: 92,
+                          child: (user.profileImageUrl != null &&
+                                  user.profileImageUrl!.trim().isNotEmpty &&
+                                  user.profileImageUrl!.trim().startsWith('http'))
+                              ? Builder(
+                                  builder: (context) {
+                                    debugPrint('[PROFILE DEBUG] 10. EditProfileScreen rendering: AppNetworkImage');
+                                    return AppNetworkImage(
+                                      imageUrl: user.profileImageUrl!.trim(),
+                                      width: 92,
+                                      height: 92,
+                                      fit: BoxFit.cover,
+                                      loadingBuilder: (context, child, loadingProgress) {
+                                        if (loadingProgress == null) return child;
+                                        return const Center(
+                                          child: SizedBox(
+                                            width: 28,
+                                            height: 28,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2.5,
+                                              color: Color(0xFF005F38),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      errorBuilder: (context, error, stackTrace) {
+                                        debugPrint('[PROFILE DEBUG] 12. EditProfileScreen image error: $error');
+                                        return const Center(
+                                          child: Icon(
+                                            Icons.person_rounded,
+                                            size: 55,
+                                            color: Color(0xFF005F38),
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  },
+                                )
+                              : const Center(
+                                  child: Icon(
+                                    Icons.person_rounded,
+                                    size: 55,
+                                    color: Color(0xFF005F38),
+                                  ),
+                                ),
+                        ),
+                      ),
                     ),
                     Positioned(
                       right: 0,

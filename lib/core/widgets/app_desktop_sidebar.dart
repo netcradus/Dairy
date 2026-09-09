@@ -18,6 +18,7 @@ class AppDesktopSidebar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(userProvider);
     return Container(
       width: AppSizes.desktopSidebarWidth,
       height: double.infinity,
@@ -159,11 +160,35 @@ class AppDesktopSidebar extends ConsumerWidget {
                   ),
                   child: Row(
                     children: [
-                      const CircleAvatar(
-                        backgroundColor: Color(0xFF005F38),
+                      CircleAvatar(
+                        backgroundColor: const Color(0xFF005F38),
                         radius: 18,
-                        child:
-                            Icon(Icons.person, color: Colors.white, size: 20),
+                        child: ClipOval(
+                          child: SizedBox(
+                            width: 36,
+                            height: 36,
+                            child: (user.profileImageUrl != null &&
+                                    user.profileImageUrl!.trim().isNotEmpty &&
+                                    user.profileImageUrl!.trim().startsWith('http'))
+                                ? Image.network(
+                                    user.profileImageUrl!.trim(),
+                                    width: 36,
+                                    height: 36,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) =>
+                                        const Icon(
+                                      Icons.person,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.person,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                          ),
+                        ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
@@ -171,7 +196,9 @@ class AppDesktopSidebar extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              tr('Sawariya Customer'),
+                              user.name.isNotEmpty
+                                  ? user.name
+                                  : tr('Sawariya Customer'),
                               style: const TextStyle(
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.w700,
