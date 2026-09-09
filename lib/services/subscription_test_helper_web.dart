@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'dart:js' as js;
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import '../models/product.dart';
 import '../models/subscription.dart';
 import 'subscription_service.dart';
 
 void setupSubscriptionWebBridge() {
+  if (!kDebugMode) return;
+
   final service = SubscriptionService();
 
   js.context['subscriptionBridge'] = js.JsObject.jsify({
