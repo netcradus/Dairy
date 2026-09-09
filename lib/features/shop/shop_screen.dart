@@ -21,9 +21,6 @@ class ShopScreen extends ConsumerStatefulWidget {
 }
 
 class _ShopScreenState extends ConsumerState<ShopScreen> {
-  final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
-
   late VideoPlayerController _videoController;
   bool _isVideoInitialized = false;
 
@@ -57,17 +54,13 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
 
   @override
   void dispose() {
-    _searchController.dispose();
     _videoController.dispose();
     super.dispose();
   }
 
   void _resetFilters() {
-    _searchController.clear();
+    ref.read(productSearchQueryProvider.notifier).state = '';
     ref.read(selectedCategoryProvider.notifier).state = 'cat_all';
-    setState(() {
-      _searchQuery = '';
-    });
   }
 
   @override
@@ -75,6 +68,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     final allProducts = ref.watch(allProductsProvider);
     final cartQuantities = ref.watch(cartQuantitiesProvider);
     final selectedCategoryId = ref.watch(selectedCategoryProvider);
+    final searchQuery = ref.watch(productSearchQueryProvider);
 
     // Filter products by category and search query
     final filteredProducts = allProducts.where((product) {
@@ -110,11 +104,11 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         matchesCategory = product.categoryId == selectedCategoryId;
       }
 
-      final matchesSearch = _searchQuery.isEmpty ||
-          product.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+      final matchesSearch = searchQuery.isEmpty ||
+          product.title.toLowerCase().contains(searchQuery.toLowerCase()) ||
           product.categoryName
               .toLowerCase()
-              .contains(_searchQuery.toLowerCase());
+              .contains(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     }).toList();
 
@@ -255,57 +249,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                     ),
                 ],
               ),
-              const SizedBox(height: 10),
-
-              // ── Outlined Search Bar ──
-              Container(
-                height: 46,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  border:
-                      Border.all(color: const Color(0xFFE2E8F0), width: 1.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.015),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.search_rounded,
-                        color: Color(0xFF667085), size: 20),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextField(
-                        controller: _searchController,
-                        onChanged: (val) => setState(() => _searchQuery = val),
-                        style: const TextStyle(
-                            fontSize: 13.5, color: Color(0xFF172033)),
-                        decoration: const InputDecoration(
-                          hintText: 'Search for milk, paneer, ghee...',
-                          hintStyle: TextStyle(
-                              color: Color(0xFF98A2B3), fontSize: 13.5),
-                          border: InputBorder.none,
-                          isDense: true,
-                        ),
-                      ),
-                    ),
-                    if (_searchQuery.isNotEmpty)
-                      IconButton(
-                        icon: const Icon(Icons.clear_rounded, size: 18),
-                        color: const Color(0xFF667085),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() => _searchQuery = '');
-                        },
-                      ),
-                  ],
-                ),
-              ),
+              const SizedBox(height: 16),
               // ── Promotional Banner ──
               _buildPromoBanner(),
               const SizedBox(height: 16),

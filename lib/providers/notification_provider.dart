@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/notification_item.dart';
@@ -14,14 +16,27 @@ final notificationRepositoryProvider = Provider<NotificationRepository>(
 
 /// Streams all notifications for the currently authenticated user from Firestore.
 /// Uses the `users/{uid}/notifications` subcollection (rules-compliant).
-/// Returns an empty list for guest users.
+
 final userNotificationsStreamProvider =
     StreamProvider.autoDispose<List<NotificationItem>>((ref) {
   final user = ref.watch(userProvider);
-  if (user.id.isEmpty) return const Stream.empty();
+  final authUid = FirebaseAuth.instance.currentUser?.uid;
+  final effectiveUid = (authUid != null && authUid.isNotEmpty)
+      ? authUid
+      : user.id;
+
+  debugPrint('[NOTIF DEBUG] 1. FirebaseAuth.currentUser.uid: $authUid');
+  debugPrint('[NOTIF DEBUG] 2. userProvider.id: ${user.id}');
+  debugPrint('[NOTIF DEBUG] 3. effectiveUid used: $effectiveUid');
+  debugPrint('[NOTIF DEBUG] 4. Exact Firestore collection path being queried: users/$effectiveUid/notifications');
+
+  if (effectiveUid.isEmpty) {
+    debugPrint('[NOTIF DEBUG] effectiveUid is empty (guest user), returning empty stream');
+    return const Stream.empty();
+  }
   return ref
       .watch(notificationRepositoryProvider)
-      .streamUserNotifications(user.id);
+      .streamUserNotifications(effectiveUid);
 });
 
 /// Streams notifications for a specific [userId] — used by admin panel.

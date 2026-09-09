@@ -1,9 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../core/responsive/responsive.dart';
+import '../../core/widgets/app_network_image.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/navigation_provider.dart';
@@ -186,6 +188,7 @@ class ProfileScreen extends ConsumerWidget {
 
   Widget _buildProfileHeaderCard(BuildContext context, WidgetRef ref) {
     final user = ref.watch(userProvider);
+    debugPrint('[PROFILE DEBUG T5] ProfileScreen: profileImageUrl received: ${user.profileImageUrl}');
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -218,18 +221,65 @@ class ProfileScreen extends ConsumerWidget {
                         child: CircleAvatar(
                           radius: 46,
                           backgroundColor: const Color(0xFFE2EFE7),
-                          backgroundImage: (user.profileImageUrl != null &&
-                                  user.profileImageUrl!.startsWith('http'))
-                              ? NetworkImage(user.profileImageUrl!)
-                              : null,
-                          child: (user.profileImageUrl == null ||
-                                  user.profileImageUrl!.isEmpty)
-                              ? const Icon(
-                                  Icons.person_rounded,
-                                  size: 55,
-                                  color: Color(0xFF005F38),
-                                )
-                              : null,
+                          child: ClipOval(
+                            child: SizedBox(
+                              width: 92,
+                              height: 92,
+                              child: (user.profileImageUrl != null &&
+                                      user.profileImageUrl!.trim().isNotEmpty &&
+                                      user.profileImageUrl!.trim().startsWith('http'))
+                                  ? Builder(
+                                      builder: (context) {
+                                        debugPrint('[PROFILE DEBUG] 10. Rendering avatar widget: AppNetworkImage');
+                                        return AppNetworkImage(
+                                          imageUrl: user.profileImageUrl!.trim(),
+                                          width: 92,
+                                          height: 92,
+                                          fit: BoxFit.cover,
+                                          loadingBuilder: (context, child, loadingProgress) {
+                                            if (loadingProgress == null) {
+                                              debugPrint('[PROFILE DEBUG] 11. Image loading state: LOADED');
+                                              return child;
+                                            }
+                                            debugPrint('[PROFILE DEBUG] 11. Image loading state: IN PROGRESS');
+                                            return const Center(
+                                              child: SizedBox(
+                                                width: 28,
+                                                height: 28,
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2.5,
+                                                  color: Color(0xFF005F38),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          errorBuilder: (context, error, stackTrace) {
+                                            debugPrint('[PROFILE DEBUG] 12. Image error: $error');
+                                            return const Center(
+                                              child: Icon(
+                                                Icons.person_rounded,
+                                                size: 55,
+                                                color: Color(0xFF005F38),
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      },
+                                    )
+                                  : Builder(
+                                      builder: (context) {
+                                        debugPrint('[PROFILE DEBUG] 10. Rendering avatar widget: Fallback Person Icon (profileImageUrl is null/empty)');
+                                        return const Center(
+                                          child: Icon(
+                                            Icons.person_rounded,
+                                            size: 55,
+                                            color: Color(0xFF005F38),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                            ),
+                          ),
                         ),
                       ),
                       Positioned(
@@ -536,13 +586,22 @@ class ProfileScreen extends ConsumerWidget {
 
   Future<void> _uploadProfilePhoto(
       BuildContext context, WidgetRef ref, String uid) async {
-    if (uid.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please log in to update your profile photo.'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+    final authUid = FirebaseAuth.instance.currentUser?.uid;
+    final effectiveUid = (uid.trim().isNotEmpty) ? uid.trim() : (authUid ?? '');
+
+    debugPrint('[PROFILE DEBUG T0] 1. Firebase Auth UID: $authUid (effective: $effectiveUid)');
+    debugPrint('[PROFILE DEBUG T0] profileImageUrl before upload: ${ref.read(userProvider).profileImageUrl}');
+
+    if (effectiveUid.isEmpty) {
+      debugPrint('[PROFILE DEBUG] Upload aborted: no authenticated user found');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please log in to update your profile photo.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
       return;
     }
 
@@ -554,7 +613,10 @@ class ProfileScreen extends ConsumerWidget {
         maxHeight: 800,
         imageQuality: 85,
       );
-      if (picked == null) return;
+      if (picked == null) {
+        debugPrint('[PROFILE DEBUG] Image picker cancelled by user');
+        return;
+      }
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -566,12 +628,26 @@ class ProfileScreen extends ConsumerWidget {
       }
 
       final bytes = await picked.readAsBytes();
-      final downloadUrl = await FirebaseStorageService.instance
-          .uploadProfileImage(uid: uid, bytes: bytes);
+      final storagePath = 'profiles/$effectiveUid/image';
+      debugPrint('[PROFILE DEBUG] 2. Storage upload path: $storagePath');
 
+      final downloadUrl = await FirebaseStorageService.instance
+          .uploadProfileImage(uid: effectiveUid, bytes: bytes);
+
+      final uri = Uri.tryParse(downloadUrl);
+      final safeUrlSummary = uri != null ? '${uri.scheme}://${uri.host}${uri.path}' : '[unparseable]';
+      debugPrint('[PROFILE DEBUG T1] 3. Storage upload succeeded: true');
+      debugPrint('[PROFILE DEBUG T1] 4. downloadUrl exists: ${downloadUrl.isNotEmpty}');
+      debugPrint('[PROFILE DEBUG T1] 5. Download URL host/path: $safeUrlSummary');
+
+      debugPrint('[PROFILE DEBUG T2] 6. Firestore document path: users/$effectiveUid');
       await ref
           .read(userProvider.notifier)
           .updateProfile(profileImageUrl: downloadUrl);
+
+      final userAfter = ref.read(userProvider);
+      debugPrint('[PROFILE DEBUG T3] 7. Firestore profileImageUrl after write: $safeUrlSummary');
+      debugPrint('[PROFILE DEBUG T3] 8. userProvider.profileImageUrl immediately after updateProfile(): ${userAfter.profileImageUrl}');
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -582,6 +658,7 @@ class ProfileScreen extends ConsumerWidget {
         );
       }
     } catch (e) {
+      debugPrint('[PROFILE DEBUG] Failed to upload photo error: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

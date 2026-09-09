@@ -144,9 +144,20 @@ abstract class AppAssets {
   /// A valid network URL (http/https) is ALWAYS returned unchanged.
   /// A valid local asset path is returned unchanged.
   /// Only invalid, empty, or obsolete paths fall back to the product default.
-  static String? productImage({String? imageUrl, String? categoryKey}) {
+  static String? productImage({
+    String? imageUrl,
+    String? categoryKey,
+    String? productId,
+    String? productTitle,
+  }) {
     if (_isNetwork(imageUrl)) return imageUrl!.trim();
     if (_isAsset(imageUrl)) return imageUrl!.trim();
-    return _fallbackDefault(_productDefaultByKey, categoryKey);
+    final fromCategory = _fallbackDefault(_productDefaultByKey, categoryKey);
+    if (fromCategory != null) return fromCategory;
+    final fromId = _fallbackDefault(_productDefaultByKey, productId);
+    if (fromId != null) return fromId;
+    final fromTitle = _fallbackDefault(_productDefaultByKey, productTitle);
+    if (fromTitle != null) return fromTitle;
+    return null;
   }
 }
