@@ -9,10 +9,12 @@ import 'core/theme/app_theme.dart';
 import 'firebase_options.dart';
 import 'providers/settings_provider.dart';
 import 'services/notification_service.dart';
+import 'services/subscription_test_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  setupSubscriptionWebBridge();
 
   // Register the background message handler as early as possible. It must not
   // depend on the Riverpod container.

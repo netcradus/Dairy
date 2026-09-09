@@ -154,7 +154,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         },
                       ),
                     ),
-                    const SizedBox(width: 8),
                     const Expanded(
                       child: Text(
                         'I agree to the Terms & Conditions and Privacy Policy of Sawariya Dairy.',
@@ -170,7 +169,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                 const SizedBox(height: AppSizes.p20),
 
-                // Submit Button
+                // Send OTP Button
                 LoadingButton(
                   text: 'Send OTP',
                   isLoading: isLoading,

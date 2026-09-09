@@ -28,6 +28,8 @@ import '../../features/profile/customer_support_screen.dart';
 import '../../screens/settings/settings_screen.dart';
 import '../../models/product.dart';
 import '../../providers/user_provider.dart';
+import '../../features/subscription/subscriptions_screen.dart';
+import '../../features/subscription/edit_subscription_screen.dart';
 import 'auth_refresh.dart';
 
 /// Central GoRouter configuration provider for Sawariya Dairy.
@@ -158,6 +160,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/support',
         builder: (context, state) => const CustomerSupportScreen(),
+      ),
+      GoRoute(
+        path: '/subscriptions',
+        builder: (context, state) => const SubscriptionsScreen(),
+      ),
+      GoRoute(
+        path: '/edit-subscription',
+        builder: (context, state) => const EditSubscriptionScreen(),
       ),
       GoRoute(
         path: '/admin',
