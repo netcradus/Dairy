@@ -7,6 +7,8 @@ import '../responsive/responsive.dart';
 /// Clean Production Header Bar for Mobile, Tablet & Desktop
 class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
+  final String deliveryLocation;
+  final VoidCallback? onLocationTap;
   final VoidCallback? onSearchTap;
   final VoidCallback? onNotificationTap;
   final VoidCallback? onCartTap;
@@ -15,6 +17,8 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
   const AppTopAppBar({
     super.key,
     this.title = 'Sawariya Dairy',
+    this.deliveryLocation = 'Select location',
+    this.onLocationTap,
     this.onSearchTap,
     this.onNotificationTap,
     this.onCartTap,
@@ -86,61 +90,70 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
 
               const SizedBox(width: 12),
 
-              // Location Pill (Deliver to Jaipur, 302001)
+              // Dynamic Delivery Location Pill
               if (isDesktop) ...[
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: onLocationTap,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.border, width: 1.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.03),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.location_on_outlined,
-                        size: 16,
-                        color: AppColors.primaryBlue,
-                      ),
-                      const SizedBox(width: 6),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            tr('Deliver to'),
-                            style: const TextStyle(
-                              fontSize: 9.5,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          const Text(
-                            'Gurugram, 122001',
-                            style: TextStyle(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
-                            ),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.border, width: 1.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
                           ),
                         ],
                       ),
-                      const SizedBox(width: 6),
-                      const Icon(
-                        Icons.keyboard_arrow_down_rounded,
-                        size: 16,
-                        color: AppColors.textSecondary,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.location_on_outlined,
+                            size: 16,
+                            color: AppColors.primaryBlue,
+                          ),
+                          const SizedBox(width: 6),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                tr('Deliver to'),
+                                style: const TextStyle(
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              Text(
+                                deliveryLocation,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 6),
+                          const Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            size: 16,
+                            color: AppColors.textSecondary,
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),

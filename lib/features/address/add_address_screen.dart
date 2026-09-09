@@ -34,7 +34,6 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
   late final TextEditingController _stateController;
   late final TextEditingController _pinCodeController;
   String _selectedLabel = 'Home';
-  bool _isDefault = false;
 
   double? _latitude;
   double? _longitude;
@@ -49,13 +48,11 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
     _mobileController = TextEditingController(text: addr?.mobileNumber ?? '');
     _houseFlatController = TextEditingController(text: addr?.houseFlat ?? '');
     _streetAreaController = TextEditingController(text: addr?.streetArea ?? '');
-    _cityController = TextEditingController(text: addr?.city ?? 'Indore');
-    _stateController =
-        TextEditingController(text: addr?.state ?? 'Madhya Pradesh');
+    _cityController = TextEditingController(text: addr?.city ?? '');
+    _stateController = TextEditingController(text: addr?.state ?? '');
     _pinCodeController = TextEditingController(text: addr?.pinCode ?? '');
     if (addr != null) {
       _selectedLabel = addr.label;
-      _isDefault = addr.isDefault;
       _latitude = addr.latitude;
       _longitude = addr.longitude;
     }
@@ -194,10 +191,15 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
               _pinCodeController.text = geoAddress.postalCode!.trim();
             }
 
+            final capturedCity =
+                geoAddress.city?.trim().isNotEmpty == true
+                    ? geoAddress.city!.trim()
+                    : 'Current location';
+
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  'Location captured and address auto-filled: ${geoAddress.city ?? "Indore"} (${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)})',
+                  'Location captured and address auto-filled: $capturedCity (${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)})',
                 ),
                 backgroundColor: AppColors.freshGreen,
                 duration: const Duration(seconds: 4),
@@ -281,6 +283,9 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
       }
     }
 
+    final existingAddresses = ref.read(addressesProvider);
+    final isDefault = editingAddr?.isDefault ?? existingAddresses.isEmpty;
+
     final address = Address(
       id: isEdit
           ? editingAddr.id
@@ -293,7 +298,7 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
       city: city,
       state: state,
       pinCode: pin,
-      isDefault: _isDefault,
+      isDefault: isDefault,
       latitude: resolvedLat,
       longitude: resolvedLng,
     );
@@ -654,24 +659,6 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
                         color: AppColors.primaryBlue),
                     validator: (v) =>
                         v == null || v.isEmpty ? 'Enter state' : null,
-                  ),
-                  const SizedBox(height: AppSizes.p14),
-
-                  // Checkbox: Set as Default Address
-                  Material(
-                    color: Colors.transparent,
-                    child: CheckboxListTile(
-                      value: _isDefault,
-                      onChanged: (val) =>
-                          setState(() => _isDefault = val ?? false),
-                      title: const Text(
-                        'Make this my primary default delivery address',
-                        style: TextStyle(fontSize: 13),
-                      ),
-                      activeColor: AppColors.primaryBlue,
-                      contentPadding: EdgeInsets.zero,
-                      controlAffinity: ListTileControlAffinity.leading,
-                    ),
                   ),
                   const SizedBox(height: AppSizes.p20),
 
