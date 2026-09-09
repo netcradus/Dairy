@@ -568,7 +568,7 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
                   // Full Name
                   AppTextField(
                     label: 'Full Name',
-                    hint: 'e.g. Rahul Sharma',
+                    hint: 'Enter full name',
                     controller: _fullNameController,
                     prefixIcon: const Icon(Icons.person_outline_rounded,
                         color: AppColors.primaryBlue),
@@ -581,7 +581,7 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
                   // Mobile Number
                   AppTextField(
                     label: 'Mobile Number',
-                    hint: 'e.g. 9876543210',
+                    hint: 'Enter 10-digit mobile number',
                     controller: _mobileController,
                     prefixIcon: const Icon(Icons.phone_android_rounded,
                         color: AppColors.primaryBlue),
@@ -595,7 +595,7 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
                   // House / Flat / Building
                   AppTextField(
                     label: 'House / Flat / Building Name',
-                    hint: 'e.g. Flat 402, Sunshine Heights',
+                    hint: 'House / Flat / Building name',
                     controller: _houseFlatController,
                     prefixIcon: const Icon(Icons.home_outlined,
                         color: AppColors.primaryBlue),
@@ -608,7 +608,7 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
                   // Street / Area / Locality
                   AppTextField(
                     label: 'Street / Area / Locality',
-                    hint: 'e.g. MG Road, Vijay Nagar',
+                    hint: 'Street / Area / Locality',
                     controller: _streetAreaController,
                     prefixIcon: const Icon(Icons.location_on_outlined,
                         color: AppColors.primaryBlue),
@@ -624,7 +624,7 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
                       Expanded(
                         child: AppTextField(
                           label: 'City',
-                          hint: 'e.g. Indore',
+                          hint: 'Enter city',
                           controller: _cityController,
                           prefixIcon: const Icon(Icons.location_city_rounded,
                               color: AppColors.primaryBlue),
@@ -636,7 +636,7 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
                       Expanded(
                         child: AppTextField(
                           label: 'PIN Code',
-                          hint: 'e.g. 452010',
+                          hint: 'Enter 6-digit PIN',
                           controller: _pinCodeController,
                           prefixIcon: const Icon(Icons.pin_drop_outlined,
                               color: AppColors.primaryBlue),
@@ -653,7 +653,7 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
                   // State
                   AppTextField(
                     label: 'State',
-                    hint: 'e.g. Madhya Pradesh',
+                    hint: 'Enter state',
                     controller: _stateController,
                     prefixIcon: const Icon(Icons.map_outlined,
                         color: AppColors.primaryBlue),

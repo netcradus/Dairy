@@ -222,22 +222,12 @@ final addressesProvider =
 });
 
 /// Currently selected address ID for checkout
-final selectedAddressIdProvider = StateProvider<String>((ref) {
+final selectedAddressIdProvider = StateProvider<String?>((ref) {
   final addresses = ref.watch(addressesProvider);
+  if (addresses.isEmpty) return null;
   final defaultAddress = addresses.firstWhere(
     (a) => a.isDefault,
-    orElse: () => addresses.isNotEmpty
-        ? addresses.first
-        : const Address(
-            id: 'addr_temp',
-            fullName: 'Customer Name',
-            mobileNumber: '9876543210',
-            houseFlat: '123 Dairy Lane',
-            streetArea: 'Main Street',
-            city: 'Indore',
-            state: 'Madhya Pradesh',
-            pinCode: '452001',
-          ),
+    orElse: () => addresses.first,
   );
   return defaultAddress.id;
 });
@@ -246,7 +236,7 @@ final selectedAddressIdProvider = StateProvider<String>((ref) {
 final selectedAddressProvider = Provider<Address?>((ref) {
   final addresses = ref.watch(addressesProvider);
   final selectedId = ref.watch(selectedAddressIdProvider);
-  if (addresses.isEmpty) return null;
+  if (addresses.isEmpty || selectedId == null) return null;
   return addresses.firstWhere(
     (a) => a.id == selectedId,
     orElse: () => addresses.first,
