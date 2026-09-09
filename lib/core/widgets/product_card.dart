@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
+import '../constants/app_assets.dart';
 import '../../models/product.dart';
 import 'price_text.dart';
 import 'quantity_selector.dart';
+import 'app_network_image.dart';
 
 /// Production Responsive Product Card with Hover States & Quantity Controls
 class ProductCard extends StatefulWidget {
@@ -74,7 +76,7 @@ class _ProductCardState extends State<ProductCard> {
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Builder(builder: (context) {
-                              final image = p.resolvedImageUrl;
+                              final image = p.resolvedImageUrl.trim();
                               if (image.isEmpty) {
                                 return Container(
                                   color: AppColors.lightBlue,
@@ -86,16 +88,62 @@ class _ProductCardState extends State<ProductCard> {
                                 );
                               }
                               Widget img;
-                              if (image.startsWith('http')) {
-                                img = Image.network(
-                                  image,
+                              if (image.startsWith('http://') ||
+                                  image.startsWith('https://')) {
+                                img = AppNetworkImage(
+                                  imageUrl: image,
                                   fit: BoxFit.contain,
+                                  loadingBuilder:
+                                      (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return const Center(
+                                      child: SizedBox(
+                                        width: 24,
+                                        height: 24,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: AppColors.primaryBlue,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    debugPrint(
+                                        'ProductCard: Image failed for "$image": $error');
+                                    return const Center(
+                                      child: Icon(
+                                        Icons.broken_image_outlined,
+                                        size: 32,
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    );
+                                  },
                                 );
-                              } else {
+                              } else if (image.startsWith('assets/')) {
                                 img = Image.asset(
                                   image,
                                   fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    debugPrint(
+                                        'ProductCard: Image.asset failed for "$image": $error');
+                                    return const Icon(
+                                      Icons.broken_image_outlined,
+                                      size: 32,
+                                      color: AppColors.textSecondary,
+                                    );
+                                  },
                                 );
+                              } else {
+                                final fallback = AppAssets.productImage(
+                                    categoryKey: p.categoryId);
+                                img = (fallback != null &&
+                                        fallback.startsWith('assets/'))
+                                    ? Image.asset(fallback, fit: BoxFit.contain)
+                                    : const Icon(
+                                        Icons.image_not_supported_outlined,
+                                        size: 32,
+                                        color: AppColors.textSecondary,
+                                      );
                               }
                               return Container(
                                 color: AppColors.lightBlue,

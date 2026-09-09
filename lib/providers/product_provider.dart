@@ -43,30 +43,30 @@ final allProductsProvider = Provider<List<Product>>((ref) {
 /// Products flagged as fresh deals in Firestore.
 final freshDealsProvider = Provider<List<Product>>((ref) {
   return ref
-      .watch(allProductsStreamProvider)
-      .valueOrNull
-      ?.where((p) => p.isFreshDeal)
-      .toList() ??
+          .watch(allProductsStreamProvider)
+          .valueOrNull
+          ?.where((p) => p.isFreshDeal)
+          .toList() ??
       [];
 });
 
 /// Products flagged as A2 cow milk in Firestore.
 final a2ProductsProvider = Provider<List<Product>>((ref) {
   return ref
-      .watch(allProductsStreamProvider)
-      .valueOrNull
-      ?.where((p) => p.isA2CowMilk)
-      .toList() ??
+          .watch(allProductsStreamProvider)
+          .valueOrNull
+          ?.where((p) => p.isA2CowMilk)
+          .toList() ??
       [];
 });
 
 /// Products flagged as best sellers in Firestore.
 final bestSellersProvider = Provider<List<Product>>((ref) {
   return ref
-      .watch(allProductsStreamProvider)
-      .valueOrNull
-      ?.where((p) => p.isBestSeller)
-      .toList() ??
+          .watch(allProductsStreamProvider)
+          .valueOrNull
+          ?.where((p) => p.isBestSeller)
+          .toList() ??
       [];
 });
 

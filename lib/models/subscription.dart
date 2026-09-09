@@ -1,4 +1,5 @@
 import '../models/product.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Subscription delivery frequency for Sawariya Dairy
 enum SubscriptionFrequency {
@@ -48,9 +49,10 @@ extension SubscriptionStatusExtension on SubscriptionStatus {
   }
 }
 
-/// Subscription Model for Sawariya Dairy (Phase 7)
+/// Subscription Model for Sawariya Dairy (Phase 7+)
 ///
-/// Represents a recurring dairy product delivery tied to a base product.
+/// Represents a recurring dairy product delivery tied to a base product,
+/// with Firestore persistence support via fromFirestore/toFirestore.
 class Subscription {
   final String id;
   final Product product;
@@ -64,7 +66,14 @@ class Subscription {
   final bool includeIcePack;
   final double discountRate;
 
-  const Subscription({
+  /// Firestore-backed subscription plan fields
+  final String? planId;
+  final String? planName;
+  final bool? autoRenew;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  Subscription({
     required this.id,
     required this.product,
     this.quantity = 1,
@@ -76,6 +85,11 @@ class Subscription {
     this.deliveryTimeSlot = 'Morning (6:00 AM - 9:00 AM)',
     this.includeIcePack = true,
     this.discountRate = 0.10,
+    this.planId,
+    this.planName,
+    this.autoRenew,
+    this.createdAt,
+    this.updatedAt,
   });
 
   bool get isActive => status == SubscriptionStatus.active;
@@ -96,6 +110,189 @@ class Subscription {
   double get monthlyCost =>
       priceAfterDiscountPerDelivery * frequency.deliveriesPerMonth;
 
+  /// Check if subscription is active (status active AND endDate in future)
+  bool get isActiveAndValid =>
+      (isActive && endDate == null) ||
+      (endDate != null && endDate!.isAfter(DateTime.now()));
+
+  factory Subscription.fromFirestore(DocumentSnapshot snapshot) {
+    final data = snapshot.data() as Map<String, dynamic>;
+    return Subscription.fromMap(data, id: snapshot.id);
+  }
+
+  factory Subscription.fromMap(Map<String, dynamic> data, {String? id}) {
+    final String freqLabel = (data['frequency'] as String?) ?? 'Daily';
+    final SubscriptionFrequency freq = SubscriptionFrequency.values.firstWhere(
+      (f) =>
+          f.label.toLowerCase() == freqLabel.toLowerCase() ||
+          (freqLabel.toLowerCase().startsWith('alternate') &&
+              f == SubscriptionFrequency.alternateDay),
+      orElse: () => SubscriptionFrequency.daily,
+    );
+    final String statusLabel = (data['status'] as String?) ?? 'Active';
+    final SubscriptionStatus status = SubscriptionStatus.values.firstWhere(
+      (s) => s.label.toLowerCase() == statusLabel.toLowerCase(),
+      orElse: () => SubscriptionStatus.active,
+    );
+
+    DateTime? parseDate(dynamic val) {
+      if (val == null) return null;
+      if (val is Timestamp) return val.toDate();
+      if (val is DateTime) return val;
+      try {
+        return DateTime.parse(val.toString());
+      } catch (_) {
+        return null;
+      }
+    }
+
+    final productMap = data['product'] as Map<String, dynamic>?;
+    final Product product = productMap != null
+        ? Product(
+            id: productMap['id'] ?? data['productId'] ?? '',
+            title: productMap['title'] ?? data['productTitle'] ?? '',
+            categoryId:
+                productMap['categoryId'] ?? data['productCategoryId'] ?? '',
+            categoryName:
+                productMap['categoryName'] ?? data['productCategoryName'] ?? '',
+            price: ((productMap['price'] ?? data['productPrice']) ?? 0.0)
+                .toDouble(),
+            originalPrice: ((productMap['originalPrice'] ??
+                        data['productOriginalPrice']) ??
+                    0.0)
+                .toDouble(),
+            unit: productMap['unit'] ?? data['productUnit'] ?? '500 ml',
+            imageUrl: productMap['imageUrl'] ?? data['productImageUrl'] ?? '',
+            description:
+                productMap['description'] ?? data['productDescription'] ?? '',
+            rating: ((productMap['rating'] ?? data['productRating']) ?? 5.0)
+                .toDouble(),
+            reviewCount:
+                productMap['reviewCount'] ?? data['productReviewCount'] ?? 0,
+            isA2CowMilk:
+                productMap['isA2CowMilk'] ?? data['isA2CowMilk'] ?? false,
+            isBestSeller:
+                productMap['isBestSeller'] ?? data['isBestSeller'] ?? false,
+            isFreshDeal:
+                productMap['isFreshDeal'] ?? data['isFreshDeal'] ?? false,
+          )
+        : Product(
+            id: data['productId'] ?? '',
+            title: data['productTitle'] ?? '',
+            categoryId: data['productCategoryId'] ?? '',
+            categoryName: data['productCategoryName'] ?? '',
+            price: (data['productPrice'] ?? 0.0).toDouble(),
+            originalPrice: (data['productOriginalPrice'] ?? 0.0).toDouble(),
+            unit: data['productUnit'] ?? '500 ml',
+            imageUrl: data['productImageUrl'] ?? '',
+            description: data['productDescription'] ?? '',
+            rating: (data['productRating'] ?? 5.0).toDouble(),
+            reviewCount: data['productReviewCount'] ?? 0,
+            isA2CowMilk: data['isA2CowMilk'] ?? false,
+            isBestSeller: data['isBestSeller'] ?? false,
+            isFreshDeal: data['isFreshDeal'] ?? false,
+          );
+
+    return Subscription(
+      id: id ?? data['id'] ?? '',
+      product: product,
+      quantity: data['quantity'] ?? 1,
+      frequency: freq,
+      status: status,
+      startDate: parseDate(data['startDate']) ??
+          parseDate(data['createdAt']) ??
+          DateTime.now(),
+      nextDeliveryDate: parseDate(data['nextDeliveryDate']),
+      endDate: parseDate(data['endDate']),
+      deliveryTimeSlot:
+          data['deliveryTimeSlot'] ?? 'Morning (6:00 AM - 9:00 AM)',
+      includeIcePack: data['includeIcePack'] ?? true,
+      discountRate: (data['discountRate'] ?? 0.10).toDouble(),
+      planId: data['planId'],
+      planName: data['planName'],
+      autoRenew: data['autoRenew'] ?? false,
+      createdAt: parseDate(data['createdAt']),
+      updatedAt: parseDate(data['updatedAt']),
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    final map = <String, dynamic>{
+      'id': id,
+      'product': product.toMap(),
+      'productId': product.id,
+      'productTitle': product.title,
+      'productCategoryId': product.categoryId,
+      'productCategoryName': product.categoryName,
+      'productPrice': product.price,
+      'productOriginalPrice': product.originalPrice,
+      'productUnit': product.unit,
+      'productImageUrl': product.imageUrl,
+      'productDescription': product.description,
+      'productRating': product.rating,
+      'productReviewCount': product.reviewCount,
+      'isA2CowMilk': product.isA2CowMilk,
+      'isBestSeller': product.isBestSeller,
+      'isFreshDeal': product.isFreshDeal,
+      'quantity': quantity,
+      'frequency': frequency.label,
+      'status': status.label,
+      'startDate': Timestamp.fromDate(startDate),
+      'deliveryTimeSlot': deliveryTimeSlot,
+      'includeIcePack': includeIcePack,
+      'discountRate': discountRate,
+      'planId': planId ?? 'plan_${product.id}',
+      'planName': planName ?? '${product.title} Monthly Plan',
+      'autoRenew': autoRenew ?? true,
+    };
+    if (nextDeliveryDate != null) {
+      map['nextDeliveryDate'] = Timestamp.fromDate(nextDeliveryDate!);
+    }
+    if (endDate != null) {
+      map['endDate'] = Timestamp.fromDate(endDate!);
+    }
+    if (createdAt != null) {
+      map['createdAt'] = Timestamp.fromDate(createdAt!);
+    }
+    if (updatedAt != null) {
+      map['updatedAt'] = Timestamp.fromDate(updatedAt!);
+    }
+    return map;
+  }
+
+  Map<String, dynamic> toMap() {
+    final map = <String, dynamic>{
+      'id': id,
+      'product': product.toMap(),
+      'productId': product.id,
+      'productTitle': product.title,
+      'productPrice': product.price,
+      'quantity': quantity,
+      'frequency': frequency.label,
+      'status': status.label,
+      'startDate': startDate.toIso8601String(),
+      'deliveryTimeSlot': deliveryTimeSlot,
+      'includeIcePack': includeIcePack,
+      'discountRate': discountRate,
+      'planId': planId ?? 'plan_${product.id}',
+      'planName': planName ?? '${product.title} Monthly Plan',
+      'autoRenew': autoRenew ?? true,
+    };
+    if (nextDeliveryDate != null) {
+      map['nextDeliveryDate'] = nextDeliveryDate!.toIso8601String();
+    }
+    if (endDate != null) {
+      map['endDate'] = endDate!.toIso8601String();
+    }
+    if (createdAt != null) {
+      map['createdAt'] = createdAt!.toIso8601String();
+    }
+    if (updatedAt != null) {
+      map['updatedAt'] = updatedAt!.toIso8601String();
+    }
+    return map;
+  }
+
   Subscription copyWith({
     String? id,
     Product? product,
@@ -108,6 +305,11 @@ class Subscription {
     String? deliveryTimeSlot,
     bool? includeIcePack,
     double? discountRate,
+    String? planId,
+    String? planName,
+    bool? autoRenew,
+    DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return Subscription(
       id: id ?? this.id,
@@ -121,6 +323,11 @@ class Subscription {
       deliveryTimeSlot: deliveryTimeSlot ?? this.deliveryTimeSlot,
       includeIcePack: includeIcePack ?? this.includeIcePack,
       discountRate: discountRate ?? this.discountRate,
+      planId: planId ?? this.planId,
+      planName: planName ?? this.planName,
+      autoRenew: autoRenew ?? this.autoRenew,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 }

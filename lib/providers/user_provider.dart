@@ -189,7 +189,10 @@ class UserNotifier extends StateNotifier<User> {
   /// Updates profile in Firestore first, then keeps local state synchronized.
   /// Strictly prevents updating the 'role' field.
   Future<void> updateProfile(
-      {String? name, String? phone, String? email}) async {
+      {String? name,
+      String? phone,
+      String? email,
+      String? profileImageUrl}) async {
     if (state.id.isEmpty) {
       throw Exception('No authenticated user session found.');
     }
@@ -199,7 +202,7 @@ class UserNotifier extends StateNotifier<User> {
       name: name ?? state.name,
       phone: phone ?? state.phone,
       email: email ?? state.email,
-      profileImageUrl: state.profileImageUrl,
+      profileImageUrl: profileImageUrl ?? state.profileImageUrl,
       role: state.role, // role is strictly preserved and never mutated here
     );
 
@@ -209,6 +212,7 @@ class UserNotifier extends StateNotifier<User> {
       if (name != null) 'name': name,
       if (phone != null) 'phone': phone,
       if (email != null) 'email': email,
+      if (profileImageUrl != null) 'profileImageUrl': profileImageUrl,
       'updatedAt': FieldValue.serverTimestamp(),
     });
 

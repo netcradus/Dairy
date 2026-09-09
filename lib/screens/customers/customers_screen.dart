@@ -678,7 +678,8 @@ class CustomersScreen extends StatelessWidget {
                           : milkCtrl.text.trim(),
                       walletBalance: double.tryParse(walletCtrl.text) ?? 500.0,
                       status: 'Active',
-                      joinedDate: DateFormat('dd MMM yyyy').format(DateTime.now()),
+                      joinedDate:
+                          DateFormat('dd MMM yyyy').format(DateTime.now()),
                     ),
                   );
                   if (context.mounted) {

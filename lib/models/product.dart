@@ -1,4 +1,5 @@
 import '../core/constants/app_assets.dart';
+import 'product_model.dart';
 
 /// Product Model for Sawariya Dairy
 class Product {
@@ -87,16 +88,28 @@ class Product {
   /// Creates a [Product] from a Firestore document map.
   factory Product.fromFirestore(Map<String, dynamic> data, String id) {
     final original = data['originalPrice'];
+    final rawImageUrl = (data['imageUrl'] as String?) ??
+        (data['image'] as String?) ??
+        (data['image_url'] as String?) ??
+        (data['imageURL'] as String?) ??
+        (data['photoUrl'] as String?) ??
+        '';
     return Product(
       id: id,
-      title: (data['title'] as String?) ?? '',
-      categoryId: (data['categoryId'] as String?) ?? '',
-      categoryName: (data['categoryName'] as String?) ?? '',
+      title: (data['title'] as String?) ?? (data['name'] as String?) ?? '',
+      categoryId: (data['categoryId'] as String?) ??
+          (data['category'] as String?) ??
+          '',
+      categoryName: (data['categoryName'] as String?) ??
+          (data['category'] as String?) ??
+          '',
       price: (data['price'] as num?)?.toDouble() ?? 0.0,
       originalPrice: original == null ? null : (original as num).toDouble(),
       unit: (data['unit'] as String?) ?? '',
-      imageUrl: (data['imageUrl'] as String?) ?? '',
-      description: (data['description'] as String?) ?? '',
+      imageUrl: rawImageUrl.trim(),
+      description: (data['description'] as String?) ??
+          (data['subtitle'] as String?) ??
+          '',
       rating: (data['rating'] as num?)?.toDouble() ?? 4.8,
       reviewCount: (data['reviewCount'] as num?)?.toInt() ?? 0,
       isFreshDeal: (data['isFreshDeal'] as bool?) ?? false,
@@ -129,16 +142,26 @@ class Product {
   /// Restores a [Product] from a map produced by [toMap].
   factory Product.fromMap(Map<String, dynamic> map) {
     final original = map['originalPrice'];
+    final rawImageUrl = (map['imageUrl'] as String?) ??
+        (map['image'] as String?) ??
+        (map['image_url'] as String?) ??
+        (map['imageURL'] as String?) ??
+        (map['photoUrl'] as String?) ??
+        '';
     return Product(
       id: (map['id'] as String?) ?? '',
-      title: (map['title'] as String?) ?? '',
-      categoryId: (map['categoryId'] as String?) ?? '',
-      categoryName: (map['categoryName'] as String?) ?? '',
+      title: (map['title'] as String?) ?? (map['name'] as String?) ?? '',
+      categoryId:
+          (map['categoryId'] as String?) ?? (map['category'] as String?) ?? '',
+      categoryName: (map['categoryName'] as String?) ??
+          (map['category'] as String?) ??
+          '',
       price: (map['price'] as num?)?.toDouble() ?? 0.0,
       originalPrice: original == null ? null : (original as num).toDouble(),
       unit: (map['unit'] as String?) ?? '',
-      imageUrl: (map['imageUrl'] as String?) ?? '',
-      description: (map['description'] as String?) ?? '',
+      imageUrl: rawImageUrl.trim(),
+      description:
+          (map['description'] as String?) ?? (map['subtitle'] as String?) ?? '',
       rating: (map['rating'] as num?)?.toDouble() ?? 4.8,
       reviewCount: (map['reviewCount'] as num?)?.toInt() ?? 0,
       isFreshDeal: (map['isFreshDeal'] as bool?) ?? false,
@@ -165,4 +188,29 @@ class Product {
         'isA2CowMilk': isA2CowMilk,
         'inStock': inStock,
       };
+
+  DairyProduct toDairyProduct() => DairyProduct(
+        id: id,
+        name: title,
+        subtitle: description,
+        category: categoryName.isNotEmpty ? categoryName : categoryId,
+        unit: unit,
+        price: price,
+        inStock: inStock,
+        isBestSeller: isBestSeller,
+        imageUrl: imageUrl,
+      );
+
+  factory Product.fromDairyProduct(DairyProduct dp) => Product(
+        id: dp.id,
+        title: dp.name,
+        categoryId: dp.category,
+        categoryName: dp.category,
+        price: dp.price,
+        unit: dp.unit,
+        imageUrl: dp.imageUrl,
+        description: dp.subtitle,
+        inStock: dp.inStock,
+        isBestSeller: dp.isBestSeller,
+      );
 }

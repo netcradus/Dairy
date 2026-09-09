@@ -40,7 +40,8 @@ class AuthCard extends StatelessWidget {
                 : width * 0.85)
             : 960;
 
-    final double cardHeight = isHorizontal ? 520 : (height * 0.85).clamp(500.0, 680.0);
+    final double cardHeight =
+        isHorizontal ? 520 : (height * 0.85).clamp(500.0, 680.0);
 
     return Scaffold(
       resizeToAvoidBottomInset: true,

@@ -164,7 +164,8 @@ const Map<String, String> appStringsEn = {
   'My Subscriptions': 'My Subscriptions',
   'Manage milk & product subscriptions': 'Manage milk & product subscriptions',
   'Notifications': 'Notifications',
-  'Manage your notification preferences': 'Manage your notification preferences',
+  'Manage your notification preferences':
+      'Manage your notification preferences',
   'About Sawariya Dairy': 'About Sawariya Dairy',
   'Know more about us': 'Know more about us',
   'Language': 'Language',

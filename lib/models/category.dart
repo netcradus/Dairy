@@ -9,6 +9,8 @@ class Category {
     'ghee': Icons.opacity_rounded,
     'paneer': Icons.lunch_dining_rounded,
     'curd': Icons.icecream_rounded,
+    'uple': Icons.eco_rounded,
+    'water': Icons.water_drop_rounded,
   };
 
   final String id;

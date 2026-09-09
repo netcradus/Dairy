@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import '../core/constants/app_colors.dart';
 import '../models/category_model.dart';
+import '../models/complaint_model.dart' as complaint_model;
 import '../models/customer_model.dart';
 import '../models/delivery_model.dart';
 import '../models/delivery_staff_model.dart';
@@ -22,7 +23,7 @@ class AdminProvider extends ChangeNotifier {
   final OrderService _orderService;
   final ComplaintService _complaintService;
 
-  int _selectedNavIndex = 0;
+  int _selectedNavIndex = 2;
   String _searchQuery = '';
   String _orderStatusTimeFilter = 'Today';
   int _unreadNotifications = 5;
@@ -37,7 +38,7 @@ class AdminProvider extends ChangeNotifier {
   bool _ordersLoading = true;
   String? _ordersError;
 
-  List<CustomerComplaint> _complaints = [];
+  List<complaint_model.CustomerComplaint> _complaints = [];
   bool _complaintsLoading = true;
   String? _complaintsError;
 
@@ -49,7 +50,7 @@ class AdminProvider extends ChangeNotifier {
   StreamSubscription<List<Map<String, dynamic>>>? _productsSub;
   StreamSubscription<List<Map<String, dynamic>>>? _categoriesSub;
   StreamSubscription<List<order.Order>>? _ordersSub;
-  StreamSubscription<List<CustomerComplaint>>? _complaintsSub;
+  StreamSubscription<List<complaint_model.CustomerComplaint>>? _complaintsSub;
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _usersSub;
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _deliveryAgentsSub;
 
@@ -66,7 +67,7 @@ class AdminProvider extends ChangeNotifier {
   bool get ordersLoading => _ordersLoading;
   String? get ordersError => _ordersError;
 
-  List<CustomerComplaint> get complaints => _complaints;
+  List<complaint_model.CustomerComplaint> get complaints => _complaints;
   bool get complaintsLoading => _complaintsLoading;
   String? get complaintsError => _complaintsError;
 
@@ -97,14 +98,14 @@ class AdminProvider extends ChangeNotifier {
 
   double get totalRevenue => _orders
       .where((o) => o.status == OrderStatus.delivered)
-      .fold(0.0, (sum, o) => sum + o.amount);
+      .fold(0.0, (total, o) => total + o.amount);
 
   double get totalOrderValue => _orders
       .where((o) => o.status != OrderStatus.cancelled)
-      .fold(0.0, (sum, o) => sum + o.amount);
+      .fold(0.0, (total, o) => total + o.amount);
 
   List<DairyProduct> get topSellingProducts =>
-      _products.where((p) => p.isBestSeller).toList().take(5).toList();
+      _products.where((p) => p.isBestSeller).toList();
 
   AdminProvider({
     FirestoreProductRepository? repo,
@@ -237,12 +238,25 @@ class AdminProvider extends ChangeNotifier {
   // ─── Mapping helpers ──────────────────────────────────────────────────
 
   static const Map<String, String> _categoryNameToId = {
+    'Milk': 'cat_milk',
     'Milk & Creams': 'cat_milk',
+    'Paneer': 'cat_paneer',
     'Paneer & Curd': 'cat_paneer',
+    'Paneer & Butter': 'cat_paneer',
+    'Ghee': 'cat_ghee',
+    'Pure Ghee': 'cat_ghee',
     'Ghee & Butter': 'cat_ghee',
     'Beverages': 'cat_lassi',
     'Lassi': 'cat_lassi',
+    'Curd & Lassi': 'cat_lassi',
     'Makhan': 'cat_makhan',
+    'Uple': 'cat_uple',
+    'Cow Dung Cake': 'cat_uple',
+    'Organic Uple': 'cat_uple',
+    'Pooja Essentials': 'cat_uple',
+    'Water': 'cat_water',
+    'Water Bottle': 'cat_water',
+    'Water Bottle 20L': 'cat_water',
   };
 
   static String _categoryIdForName(String name) {
@@ -251,11 +265,24 @@ class AdminProvider extends ChangeNotifier {
   }
 
   DairyProduct _rawToDairyProduct(Map<String, dynamic> raw) {
-    return DairyProduct(
-      id: raw['id'] as String? ?? '',
-      name: (raw['title'] as String?) ?? '',
-      subtitle: (raw['description'] as String?) ?? '',
-      category: (raw['categoryName'] as String?) ?? '',
+    final id = (raw['id'] as String?) ?? (raw['productId'] as String?) ?? '';
+    final rawImageUrl = (raw['imageUrl'] as String?) ??
+        (raw['image'] as String?) ??
+        (raw['image_url'] as String?) ??
+        (raw['imageURL'] as String?) ??
+        (raw['photoUrl'] as String?) ??
+        '';
+    final name = (raw['title'] as String?) ?? (raw['name'] as String?) ?? '';
+    final subtitle =
+        (raw['description'] as String?) ?? (raw['subtitle'] as String?) ?? '';
+    final category =
+        (raw['categoryName'] as String?) ?? (raw['category'] as String?) ?? '';
+
+    final product = DairyProduct(
+      id: id,
+      name: name,
+      subtitle: subtitle,
+      category: category,
       unit: (raw['unit'] as String?) ?? '',
       price: (raw['price'] as num?)?.toDouble() ?? 0.0,
       ordersCount: (raw['ordersCount'] as num?)?.toInt() ?? 0,
@@ -266,8 +293,16 @@ class AdminProvider extends ChangeNotifier {
       inStock: (raw['inStock'] as bool?) ?? true,
       emoji: (raw['emoji'] as String?) ?? '🥛',
       isBestSeller: (raw['isBestSeller'] as bool?) ?? false,
-      imageUrl: (raw['imageUrl'] as String?) ?? '',
+      imageUrl: rawImageUrl.trim(),
     );
+
+    if (product.id == 'prod_1788762789345' || product.imageUrl.isNotEmpty) {
+      debugPrint('ADMIN PRODUCT ${product.id}');
+      debugPrint('Firestore imageUrl: ${product.imageUrl}');
+      debugPrint('Resolved imageUrl: ${product.resolvedImageUrl}');
+    }
+
+    return product;
   }
 
   Map<String, dynamic> _dairyProductToFirestore(DairyProduct p) {
@@ -308,6 +343,7 @@ class AdminProvider extends ChangeNotifier {
       icon: Icons.category_rounded,
       color: colorValue != null ? Color(colorValue) : AppColors.primary,
       emoji: (raw['emoji'] as String?) ?? '🥛',
+      imageUrl: (raw['imageUrl'] as String?) ?? '',
     );
   }
 
@@ -315,9 +351,9 @@ class AdminProvider extends ChangeNotifier {
     return {
       'title': c.name,
       'subtitle': c.description,
-      'imageUrl': '',
+      'imageUrl': c.imageUrl,
       'iconName': null,
-      'colorValue': c.color.value,
+      'colorValue': c.color.toARGB32(),
       'itemCount': c.productCount,
       'name': c.name,
       'description': c.description,
@@ -731,10 +767,7 @@ class AdminProvider extends ChangeNotifier {
   /// Registers a new delivery staff member in Firestore `users` and `delivery_agents`.
   Future<void> addRider(DeliveryRider rider) async {
     try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(rider.id)
-          .set({
+      await FirebaseFirestore.instance.collection('users').doc(rider.id).set({
         'id': rider.id,
         'name': rider.name,
         'phone': rider.phone,
@@ -755,7 +788,8 @@ class AdminProvider extends ChangeNotifier {
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
     } catch (e) {
-      debugPrint('AdminProvider: Failed to add delivery staff to Firestore: $e');
+      debugPrint(
+          'AdminProvider: Failed to add delivery staff to Firestore: $e');
       _usersError = 'Failed to add delivery staff: $e';
       notifyListeners();
     }
@@ -764,10 +798,7 @@ class AdminProvider extends ChangeNotifier {
   /// Updates a delivery staff member in Firestore `users` and `delivery_agents`.
   Future<void> updateRider(DeliveryRider rider) async {
     try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(rider.id)
-          .set({
+      await FirebaseFirestore.instance.collection('users').doc(rider.id).set({
         'name': rider.name,
         'phone': rider.phone,
         'email': rider.email,
@@ -786,7 +817,8 @@ class AdminProvider extends ChangeNotifier {
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
     } catch (e) {
-      debugPrint('AdminProvider: Failed to update delivery staff in Firestore: $e');
+      debugPrint(
+          'AdminProvider: Failed to update delivery staff in Firestore: $e');
       _usersError = 'Failed to update delivery staff: $e';
       notifyListeners();
     }
@@ -941,14 +973,12 @@ class AdminProvider extends ChangeNotifier {
                 ? email
                 : '${doc.id.toLowerCase()}@sawariyadairy.com',
             address: (data['address'] as String? ?? 'Noida, Uttar Pradesh'),
-            deliveryZone:
-                (data['deliveryZone'] as String? ?? 'Standard Zone'),
+            deliveryZone: (data['deliveryZone'] as String? ?? 'Standard Zone'),
             subscriptionPlan: (data['subscriptionPlan'] as String? ??
                 'Daily Morning (2 Litres)'),
             milkPreference:
                 (data['milkPreference'] as String? ?? 'Standard Cow Milk'),
-            walletBalance:
-                (data['walletBalance'] as num?)?.toDouble() ?? 0.0,
+            walletBalance: (data['walletBalance'] as num?)?.toDouble() ?? 0.0,
             status: (data['status'] as String? ?? 'Active'),
             joinedDate: data['createdAt'] != null
                 ? (data['createdAt'] is Timestamp
@@ -1005,11 +1035,11 @@ class AdminProvider extends ChangeNotifier {
 
       final totalDeliveriesToday =
           (data['totalDeliveriesToday'] as num?)?.toInt() ??
-          (data['completedDeliveries'] as num?)?.toInt() ??
-          (data['totalDeliveries'] as num?)?.toInt() ?? 0;
+              (data['completedDeliveries'] as num?)?.toInt() ??
+              (data['totalDeliveries'] as num?)?.toInt() ??
+              0;
 
-      final pendingDeliveries =
-          (data['pendingDeliveries'] as num?)?.toInt() ??
+      final pendingDeliveries = (data['pendingDeliveries'] as num?)?.toInt() ??
           ((data['orderId'] != null &&
                   (data['orderId'] as String).trim().isNotEmpty)
               ? 1
@@ -1047,10 +1077,8 @@ class AdminProvider extends ChangeNotifier {
   }
 
   void _listenToUsers() {
-    _usersSub = FirebaseFirestore.instance
-        .collection('users')
-        .snapshots()
-        .listen(
+    _usersSub =
+        FirebaseFirestore.instance.collection('users').snapshots().listen(
       (snap) {
         _lastUserDocs = snap.docs;
         _rebuildCustomers();

@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
+import '../../core/constants/app_assets.dart';
 import '../../core/responsive/responsive.dart';
 import '../../core/responsive/responsive_layout.dart';
 import '../../core/widgets/price_text.dart';
 import '../../core/widgets/quantity_selector.dart';
+import '../../core/widgets/app_network_image.dart';
 import '../../models/product.dart';
 import '../../providers/cart_provider.dart';
 import '../cart/cart_screen.dart';
@@ -146,7 +148,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                   child: AspectRatio(
                     aspectRatio: 4 / 5,
                     child: Builder(builder: (context) {
-                      final image = product.resolvedImageUrl;
+                      final image = product.resolvedImageUrl.trim();
                       if (image.isEmpty) {
                         return Container(
                           color: AppColors.lightBlue,
@@ -159,37 +161,76 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                           ),
                         );
                       }
-                      Widget img = image.startsWith('http')
-                          ? Image.network(
-                              image,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Container(
-                                color: AppColors.lightBlue,
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.image_not_supported_rounded,
-                                    size: 48,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                              ),
-                            )
-                          : Image.asset(
-                              image,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Container(
-                                color: AppColors.lightBlue,
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.image_not_supported_rounded,
-                                    size: 48,
-                                    color: AppColors.textSecondary,
-                                  ),
+                      Widget img;
+                      if (image.startsWith('http://') ||
+                          image.startsWith('https://')) {
+                        img = AppNetworkImage(
+                          imageUrl: image,
+                          fit: BoxFit.contain,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return const Center(
+                              child: SizedBox(
+                                width: 32,
+                                height: 32,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColors.primaryBlue,
                                 ),
                               ),
                             );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            debugPrint(
+                                'ProductDetailsScreen: Image failed for "$image": $error');
+                            return Container(
+                              color: AppColors.lightBlue,
+                              child: const Center(
+                                child: Icon(
+                                  Icons.broken_image_outlined,
+                                  size: 48,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      } else if (image.startsWith('assets/')) {
+                        img = Image.asset(
+                          image,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            debugPrint(
+                                'ProductDetailsScreen: Image.asset failed for "$image": $error');
+                            return Container(
+                              color: AppColors.lightBlue,
+                              child: const Center(
+                                child: Icon(
+                                  Icons.image_not_supported_rounded,
+                                  size: 48,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      } else {
+                        final fallback = AppAssets.productImage(
+                            categoryKey: product.categoryId);
+                        img =
+                            (fallback != null && fallback.startsWith('assets/'))
+                                ? Image.asset(fallback, fit: BoxFit.contain)
+                                : Container(
+                                    color: AppColors.lightBlue,
+                                    child: const Center(
+                                      child: Icon(
+                                        Icons.image_not_supported_rounded,
+                                        size: 48,
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                  );
+                      }
                       return img;
                     }),
                   ),

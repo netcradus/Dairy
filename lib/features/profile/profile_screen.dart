@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../core/responsive/responsive.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/navigation_provider.dart';
+import '../../services/firebase_storage_service.dart';
 import 'edit_profile_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../subscription/subscriptions_screen.dart';
@@ -216,33 +218,44 @@ class ProfileScreen extends ConsumerWidget {
                         child: CircleAvatar(
                           radius: 46,
                           backgroundColor: const Color(0xFFE2EFE7),
-                          child: const Icon(
-                            Icons.person_rounded,
-                            size: 55,
-                            color: Color(0xFF005F38),
-                          ),
+                          backgroundImage: (user.profileImageUrl != null &&
+                                  user.profileImageUrl!.startsWith('http'))
+                              ? NetworkImage(user.profileImageUrl!)
+                              : null,
+                          child: (user.profileImageUrl == null ||
+                                  user.profileImageUrl!.isEmpty)
+                              ? const Icon(
+                                  Icons.person_rounded,
+                                  size: 55,
+                                  color: Color(0xFF005F38),
+                                )
+                              : null,
                         ),
                       ),
                       Positioned(
                         right: 2,
                         bottom: 2,
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black12,
-                                blurRadius: 4,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.camera_alt_outlined,
-                            size: 14,
-                            color: Color(0xFF005F38),
+                        child: GestureDetector(
+                          onTap: () =>
+                              _uploadProfilePhoto(context, ref, user.id),
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 4,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt_outlined,
+                              size: 14,
+                              color: Color(0xFF005F38),
+                            ),
                           ),
                         ),
                       ),
@@ -521,4 +534,64 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
+  Future<void> _uploadProfilePhoto(
+      BuildContext context, WidgetRef ref, String uid) async {
+    if (uid.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please log in to update your profile photo.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 800,
+        maxHeight: 800,
+        imageQuality: 85,
+      );
+      if (picked == null) return;
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Uploading profile photo...'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+
+      final bytes = await picked.readAsBytes();
+      final downloadUrl = await FirebaseStorageService.instance
+          .uploadProfileImage(uid: uid, bytes: bytes);
+
+      await ref
+          .read(userProvider.notifier)
+          .updateProfile(profileImageUrl: downloadUrl);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Profile photo updated successfully!'),
+            backgroundColor: Color(0xFF005F38),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to update profile photo: ${e.toString().replaceAll("Exception: ", "")}',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 }

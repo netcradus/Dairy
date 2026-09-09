@@ -124,7 +124,8 @@ const Map<String, String> appStringsHi = {
   'Payment Method': 'भुगतान का तरीका',
   'Cash on Delivery': 'कैश ऑन डिलीवरी',
   'Order Summary': 'ऑर्डर सारांश',
-  'Free delivery on orders above ₹500': '₹500 से ऊपर के ऑर्डर पर मुफ़्त डिलीवरी',
+  'Free delivery on orders above ₹500':
+      '₹500 से ऊपर के ऑर्डर पर मुफ़्त डिलीवरी',
   'Clear Cart': 'कार्ट खाली करें',
   'Start Shopping': 'खरीदारी शुरू करें',
 
@@ -163,7 +164,8 @@ const Map<String, String> appStringsHi = {
   'My Subscriptions': 'मेरी सदस्यताएँ',
   'Manage milk & product subscriptions': 'दूध और उत्पाद सदस्यता प्रबंधित करें',
   'Notifications': 'सूचनाएँ',
-  'Manage your notification preferences': 'अपनी सूचना प्राथमिकताएँ प्रबंधित करें',
+  'Manage your notification preferences':
+      'अपनी सूचना प्राथमिकताएँ प्रबंधित करें',
   'About Sawariya Dairy': 'सावरिया डेयरी के बारे में',
   'Know more about us': 'हमारे बारे में और जानें',
   'Language': 'भाषा',

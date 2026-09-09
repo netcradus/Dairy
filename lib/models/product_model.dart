@@ -1,4 +1,5 @@
 import '../core/constants/app_assets.dart';
+import 'product.dart';
 
 class DairyProduct {
   final String id;
@@ -75,4 +76,29 @@ class DairyProduct {
       imageUrl: imageUrl ?? this.imageUrl,
     );
   }
+
+  Product toProduct() => Product(
+        id: id,
+        title: name,
+        categoryId: category,
+        categoryName: category,
+        price: price,
+        unit: unit,
+        imageUrl: imageUrl,
+        description: subtitle,
+        inStock: inStock,
+        isBestSeller: isBestSeller,
+      );
+
+  factory DairyProduct.fromProduct(Product p) => DairyProduct(
+        id: p.id,
+        name: p.title,
+        subtitle: p.description,
+        category: p.categoryName.isNotEmpty ? p.categoryName : p.categoryId,
+        unit: p.unit,
+        price: p.price,
+        imageUrl: p.imageUrl,
+        inStock: p.inStock,
+        isBestSeller: p.isBestSeller,
+      );
 }

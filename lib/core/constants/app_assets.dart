@@ -98,13 +98,17 @@ abstract class AppAssets {
     waterPng,
   };
 
-  static bool _isNetwork(String? url) =>
-      url != null && (url.startsWith('http://') || url.startsWith('https://'));
+  static bool _isNetwork(String? url) {
+    if (url == null) return false;
+    final trimmed = url.trim();
+    return trimmed.startsWith('http://') || trimmed.startsWith('https://');
+  }
 
-  static bool _isAsset(String? url) =>
-      url != null &&
-      url.startsWith('assets/') &&
-      _validAssetPaths.contains(url);
+  static bool _isAsset(String? url) {
+    if (url == null) return false;
+    final trimmed = url.trim();
+    return trimmed.startsWith('assets/') && _validAssetPaths.contains(trimmed);
+  }
 
   static String? _fallbackDefault(
       Map<String, String> defaults, String? categoryKey) {
@@ -127,14 +131,22 @@ abstract class AppAssets {
   }
 
   /// Resolves which image source to use for a category thumbnail.
+  /// A valid network URL (http/https) is ALWAYS returned unchanged.
+  /// A valid local asset path is returned unchanged.
+  /// Only invalid, empty, or obsolete paths fall back to the category default.
   static String? categoryImage({String? imageUrl, String? categoryKey}) {
-    if (_isNetwork(imageUrl) || _isAsset(imageUrl)) return imageUrl;
+    if (_isNetwork(imageUrl)) return imageUrl!.trim();
+    if (_isAsset(imageUrl)) return imageUrl!.trim();
     return _fallbackDefault(_categoryDefaultByKey, categoryKey);
   }
 
   /// Resolves which image source to use for a product thumbnail.
+  /// A valid network URL (http/https) is ALWAYS returned unchanged.
+  /// A valid local asset path is returned unchanged.
+  /// Only invalid, empty, or obsolete paths fall back to the product default.
   static String? productImage({String? imageUrl, String? categoryKey}) {
-    if (_isNetwork(imageUrl) || _isAsset(imageUrl)) return imageUrl;
+    if (_isNetwork(imageUrl)) return imageUrl!.trim();
+    if (_isAsset(imageUrl)) return imageUrl!.trim();
     return _fallbackDefault(_productDefaultByKey, categoryKey);
   }
 }
