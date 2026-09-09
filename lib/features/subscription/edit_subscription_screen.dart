@@ -27,6 +27,7 @@ class _EditSubscriptionScreenState
     extends ConsumerState<EditSubscriptionScreen> {
   final _formKey = GlobalKey<FormState>();
   final _quantityController = TextEditingController();
+  final _deliverySlotController = TextEditingController();
   late SubscriptionFrequency _selectedFrequency;
   late String _deliveryTimeSlot;
   late bool _includeIcePack;
@@ -52,6 +53,7 @@ class _EditSubscriptionScreenState
       _baseProduct = s.product;
       _chosenProduct = s.product;
       _quantityController.text = s.quantity.toString();
+      _deliverySlotController.text = s.deliveryTimeSlot;
     } else {
       _isNew = true;
       _selectedFrequency = SubscriptionFrequency.daily;
@@ -60,6 +62,7 @@ class _EditSubscriptionScreenState
       _baseProduct = _availableProducts.first;
       _chosenProduct = _availableProducts.first;
       _quantityController.text = '1';
+      _deliverySlotController.text = 'Morning (6:00 AM - 9:00 AM)';
     }
   }
 
@@ -75,6 +78,7 @@ class _EditSubscriptionScreenState
   @override
   void dispose() {
     _quantityController.dispose();
+    _deliverySlotController.dispose();
     super.dispose();
   }
 
@@ -91,12 +95,15 @@ class _EditSubscriptionScreenState
     }
   }
 
-  void _onSave() {
+  Future<void> _onSave() async {
     if (!_formKey.currentState!.validate()) return;
 
     final quantity = int.tryParse(_quantityController.text) ?? 1;
     if (quantity < 1) return;
 
+    _deliveryTimeSlot = _deliverySlotController.text.trim().isNotEmpty
+        ? _deliverySlotController.text.trim()
+        : _deliveryTimeSlot;
     final Product product = _chosenProduct ?? _baseProduct;
     final now = DateTime.now();
 
@@ -108,9 +115,15 @@ class _EditSubscriptionScreenState
             frequency: _selectedFrequency,
             status: SubscriptionStatus.active,
             startDate: now,
+            endDate: now.add(const Duration(days: 30)),
             nextDeliveryDate: _computeNextDelivery(_selectedFrequency),
             deliveryTimeSlot: _deliveryTimeSlot,
             includeIcePack: _includeIcePack,
+            planId: 'plan_${product.id}',
+            planName: '${product.title} Monthly Plan',
+            autoRenew: true,
+            createdAt: now,
+            updatedAt: now,
           )
         : widget.subscription!.copyWith(
             product: product,
@@ -118,25 +131,38 @@ class _EditSubscriptionScreenState
             frequency: _selectedFrequency,
             deliveryTimeSlot: _deliveryTimeSlot,
             includeIcePack: _includeIcePack,
+            updatedAt: now,
           );
 
-    final notifier = ref.read(subscriptionsProvider.notifier);
-    if (_isNew) {
-      notifier.addSubscription(subscription);
-    } else {
-      notifier.updateQuantity(widget.subscription!.id, quantity);
-      notifier.updateFrequency(widget.subscription!.id, _selectedFrequency);
-    }
+    final notifier = ref.read(subscriptionProvider.notifier);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(_isNew
-            ? 'New subscription created successfully!'
-            : 'Subscription updated successfully!'),
-        backgroundColor: AppColors.freshGreen,
-      ),
-    );
-    Navigator.pop(context);
+    try {
+      if (_isNew) {
+        await notifier.createSubscription(subscription);
+      } else {
+        await notifier.updateSubscription(subscription);
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_isNew
+              ? 'New subscription created successfully!'
+              : 'Subscription updated successfully!'),
+          backgroundColor: AppColors.freshGreen,
+        ),
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to save subscription: $e'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
   }
 
   @override
@@ -189,7 +215,7 @@ class _EditSubscriptionScreenState
                   AppTextField(
                     label: 'Delivery Time Slot',
                     hint: 'e.g. Morning (6:00 AM - 9:00 AM)',
-                    controller: TextEditingController(text: _deliveryTimeSlot),
+                    controller: _deliverySlotController,
                     prefixIcon: const Icon(Icons.schedule_rounded,
                         color: AppColors.primaryBlue),
                     validator: AppValidators.validateRequired,
@@ -200,7 +226,7 @@ class _EditSubscriptionScreenState
                     value: _includeIcePack,
                     onChanged: (v) => setState(() => _includeIcePack = v),
                     contentPadding: EdgeInsets.zero,
-                    activeColor: AppColors.primaryBlue,
+                    activeThumbColor: AppColors.primaryBlue,
                     title: const Text(
                       'Include ice pack for freshness',
                       style: TextStyle(
@@ -249,12 +275,14 @@ class _EditSubscriptionScreenState
             border: Border.all(color: AppColors.border, width: 1.0),
           ),
           child: DropdownButtonHideUnderline(
-            child: DropdownButton<Product>(
+            child: DropdownButton<String>(
               isExpanded: true,
-              value: product,
+              value: _availableProducts.any((p) => p.id == product.id)
+                  ? product.id
+                  : _availableProducts.first.id,
               items: _availableProducts
-                  .map((p) => DropdownMenuItem<Product>(
-                        value: p,
+                  .map((p) => DropdownMenuItem<String>(
+                        value: p.id,
                         child: Row(
                           children: [
                             CategoryImage(
@@ -283,7 +311,16 @@ class _EditSubscriptionScreenState
                         ),
                       ))
                   .toList(),
-              onChanged: (p) => setState(() => _chosenProduct = p),
+              onChanged: (id) {
+                if (id != null) {
+                  setState(() {
+                    _chosenProduct = _availableProducts.firstWhere(
+                      (p) => p.id == id,
+                      orElse: () => _baseProduct,
+                    );
+                  });
+                }
+              },
             ),
           ),
         ),

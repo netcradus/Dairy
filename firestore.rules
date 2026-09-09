@@ -72,7 +72,14 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // ── users/{userId}/addresses ────────────────────────────────────────────
+    // ── users/{userId}/subscription ────────────────────────────────────────────
+    // Customers may only read/write their own subscription document.
+    // Admins may access any user's subscription for management.
+    match /users/{userId}/subscription/current {
+      allow read: if isOwnDoc(userId);
+      allow create, update: if isOwnDoc(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
     match /users/{userId}/addresses/{addressId} {
       allow read, create, update, delete: if isAdmin() || isOwnDoc(userId);
     }

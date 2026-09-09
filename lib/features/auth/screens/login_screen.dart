@@ -203,7 +203,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             ),
 
-            const SizedBox(height: AppSizes.p24),
+            const SizedBox(height: 14),
 
             // Register Link Footer
             Row(

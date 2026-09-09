@@ -1,5 +1,6 @@
-import 'dart:async'; // Add this import for Completer
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user.dart';
 import 'user_provider.dart';
@@ -43,10 +44,51 @@ class AuthState {
 /// Auth State Notifier for managing Firebase Phone Auth
 class AuthNotifier extends StateNotifier<AuthState> {
   final fb.FirebaseAuth _auth;
+  String? _verificationId;
+  fb.ConfirmationResult? _webConfirmationResult;
 
   AuthNotifier(this._auth) : super(AuthState(status: const AsyncData(null)));
 
-  String? _verificationId;
+  static String formatE164(String input) {
+    String cleaned = input.trim().replaceAll(RegExp(r'[\s\-\(\)]'), '');
+    if (cleaned.startsWith('+')) {
+      return cleaned;
+    }
+    if (cleaned.startsWith('0') && cleaned.length == 11) {
+      cleaned = cleaned.substring(1);
+    }
+    if (cleaned.length == 10) {
+      return '+91$cleaned';
+    }
+    if (cleaned.length == 12 && cleaned.startsWith('91')) {
+      return '+$cleaned';
+    }
+    return '+$cleaned';
+  }
+
+  String _mapFirebaseAuthErrorMessage(fb.FirebaseAuthException e) {
+    switch (e.code) {
+      case 'invalid-phone-number':
+        return 'The provided phone number is not valid.';
+      case 'too-many-requests':
+        return 'Too many requests. Please wait a moment and try again.';
+      case 'quota-exceeded':
+        return 'SMS quota exceeded. Please try again later.';
+      case 'captcha-check-failed':
+        return 'reCAPTCHA verification failed. Please try again.';
+      case 'invalid-app-credential':
+        return 'The reCAPTCHA app verification failed (invalid-app-credential). Please check Firebase authorized domains or reCAPTCHA settings.';
+      case 'invalid-verification-code':
+      case 'invalid-verification-id':
+        return 'Invalid OTP entered. Please check and try again.';
+      case 'session-expired':
+        return 'Verification session has expired. Please request a new OTP.';
+      case 'operation-not-allowed':
+        return 'Phone authentication is not enabled for this project.';
+      default:
+        return e.message ?? 'Authentication error (${e.code}). Please try again.';
+    }
+  }
 
   /// Compatibility stub for forgot password flow
   Future<bool> sendOtp(String mobileNumber) async {
@@ -61,95 +103,172 @@ class AuthNotifier extends StateNotifier<AuthState> {
     return true;
   }
 
-  /// Initiates Firebase OTP sending for Sign In (Fixed with Completer)
+  /// Initiates Firebase OTP sending for Sign In
   Future<bool> startSignIn(String mobileNumber) async {
     state = state.copyWith(status: const AsyncLoading());
-    final completer = Completer<bool>();
+    final formattedPhone = formatE164(mobileNumber);
 
-    try {
-      final formattedPhone =
-          mobileNumber.startsWith('+') ? mobileNumber : '+91$mobileNumber';
-
-      await _auth.verifyPhoneNumber(
-        phoneNumber: formattedPhone,
-        verificationCompleted: (fb.PhoneAuthCredential credential) async {
-          await _auth.signInWithCredential(credential);
-          if (!completer.isCompleted) completer.complete(true);
-        },
-        verificationFailed: (fb.FirebaseAuthException e) {
-          state = state.copyWith(
-            status: AsyncError(
-              Exception(e.message ?? 'Verification failed'),
-              StackTrace.current,
-            ),
-          );
-          if (!completer.isCompleted) completer.complete(false);
-        },
-        codeSent: (String verificationId, int? resendToken) {
-          _verificationId = verificationId;
-          state = state.copyWith(
-            status: const AsyncData(null),
-            mobileNumber: mobileNumber,
-            isSignUpFlow: false,
-          );
-          if (!completer.isCompleted) completer.complete(true);
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {
-          _verificationId = verificationId;
-        },
-      );
-      return await completer.future;
-    } catch (e, st) {
-      state = state.copyWith(status: AsyncError(e, st));
-      return false;
+    if (kIsWeb) {
+      // Ensure fresh reCAPTCHA for every attempt on Web
+      _webConfirmationResult = null;
+      try {
+        final confirmationResult =
+            await _auth.signInWithPhoneNumber(formattedPhone);
+        _webConfirmationResult = confirmationResult;
+        state = state.copyWith(
+          status: const AsyncData(null),
+          mobileNumber: mobileNumber,
+          isSignUpFlow: false,
+        );
+        return true;
+      } on fb.FirebaseAuthException catch (e, st) {
+        _webConfirmationResult = null;
+        state = state.copyWith(
+          status: AsyncError(Exception(_mapFirebaseAuthErrorMessage(e)), st),
+        );
+        return false;
+      } catch (e, st) {
+        _webConfirmationResult = null;
+        state = state.copyWith(status: AsyncError(e, st));
+        return false;
+      }
+    } else {
+      // Native Android / iOS flow
+      _verificationId = null;
+      final completer = Completer<bool>();
+      try {
+        await _auth.verifyPhoneNumber(
+          phoneNumber: formattedPhone,
+          verificationCompleted: (fb.PhoneAuthCredential credential) async {
+            try {
+              await _auth.signInWithCredential(credential);
+              if (!completer.isCompleted) completer.complete(true);
+            } catch (e) {
+              if (!completer.isCompleted) completer.complete(false);
+            }
+          },
+          verificationFailed: (fb.FirebaseAuthException e) {
+            _verificationId = null;
+            state = state.copyWith(
+              status: AsyncError(
+                Exception(_mapFirebaseAuthErrorMessage(e)),
+                StackTrace.current,
+              ),
+            );
+            if (!completer.isCompleted) completer.complete(false);
+          },
+          codeSent: (String verificationId, int? resendToken) {
+            _verificationId = verificationId;
+            state = state.copyWith(
+              status: const AsyncData(null),
+              mobileNumber: mobileNumber,
+              isSignUpFlow: false,
+            );
+            if (!completer.isCompleted) completer.complete(true);
+          },
+          codeAutoRetrievalTimeout: (String verificationId) {
+            _verificationId = verificationId;
+          },
+        );
+        return await completer.future;
+      } on fb.FirebaseAuthException catch (e, st) {
+        _verificationId = null;
+        state = state.copyWith(
+          status: AsyncError(Exception(_mapFirebaseAuthErrorMessage(e)), st),
+        );
+        return false;
+      } catch (e, st) {
+        _verificationId = null;
+        state = state.copyWith(status: AsyncError(e, st));
+        return false;
+      }
     }
   }
 
-  /// Initiates Firebase OTP sending for Sign Up (Fixed with Completer)
+  /// Initiates Firebase OTP sending for Sign Up
   Future<bool> startSignUp({
     required String fullName,
     required String mobileNumber,
   }) async {
     state = state.copyWith(status: const AsyncLoading());
-    final completer = Completer<bool>();
+    final formattedPhone = formatE164(mobileNumber);
 
-    try {
-      final formattedPhone =
-          mobileNumber.startsWith('+') ? mobileNumber : '+91$mobileNumber';
-
-      await _auth.verifyPhoneNumber(
-        phoneNumber: formattedPhone,
-        verificationCompleted: (fb.PhoneAuthCredential credential) async {
-          await _auth.signInWithCredential(credential);
-          if (!completer.isCompleted) completer.complete(true);
-        },
-        verificationFailed: (fb.FirebaseAuthException e) {
-          state = state.copyWith(
-            status: AsyncError(
-              Exception(e.message ?? 'Verification failed'),
-              StackTrace.current,
-            ),
-          );
-          if (!completer.isCompleted) completer.complete(false);
-        },
-        codeSent: (String verificationId, int? resendToken) {
-          _verificationId = verificationId;
-          state = state.copyWith(
-            status: const AsyncData(null),
-            mobileNumber: mobileNumber,
-            tempFullName: fullName,
-            isSignUpFlow: true,
-          );
-          if (!completer.isCompleted) completer.complete(true);
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {
-          _verificationId = verificationId;
-        },
-      );
-      return await completer.future;
-    } catch (e, st) {
-      state = state.copyWith(status: AsyncError(e, st));
-      return false;
+    if (kIsWeb) {
+      // Ensure fresh reCAPTCHA for every attempt on Web
+      _webConfirmationResult = null;
+      try {
+        final confirmationResult =
+            await _auth.signInWithPhoneNumber(formattedPhone);
+        _webConfirmationResult = confirmationResult;
+        state = state.copyWith(
+          status: const AsyncData(null),
+          mobileNumber: mobileNumber,
+          tempFullName: fullName,
+          isSignUpFlow: true,
+        );
+        return true;
+      } on fb.FirebaseAuthException catch (e, st) {
+        _webConfirmationResult = null;
+        state = state.copyWith(
+          status: AsyncError(Exception(_mapFirebaseAuthErrorMessage(e)), st),
+        );
+        return false;
+      } catch (e, st) {
+        _webConfirmationResult = null;
+        state = state.copyWith(status: AsyncError(e, st));
+        return false;
+      }
+    } else {
+      // Native Android / iOS flow
+      _verificationId = null;
+      final completer = Completer<bool>();
+      try {
+        await _auth.verifyPhoneNumber(
+          phoneNumber: formattedPhone,
+          verificationCompleted: (fb.PhoneAuthCredential credential) async {
+            try {
+              await _auth.signInWithCredential(credential);
+              if (!completer.isCompleted) completer.complete(true);
+            } catch (e) {
+              if (!completer.isCompleted) completer.complete(false);
+            }
+          },
+          verificationFailed: (fb.FirebaseAuthException e) {
+            _verificationId = null;
+            state = state.copyWith(
+              status: AsyncError(
+                Exception(_mapFirebaseAuthErrorMessage(e)),
+                StackTrace.current,
+              ),
+            );
+            if (!completer.isCompleted) completer.complete(false);
+          },
+          codeSent: (String verificationId, int? resendToken) {
+            _verificationId = verificationId;
+            state = state.copyWith(
+              status: const AsyncData(null),
+              mobileNumber: mobileNumber,
+              tempFullName: fullName,
+              isSignUpFlow: true,
+            );
+            if (!completer.isCompleted) completer.complete(true);
+          },
+          codeAutoRetrievalTimeout: (String verificationId) {
+            _verificationId = verificationId;
+          },
+        );
+        return await completer.future;
+      } on fb.FirebaseAuthException catch (e, st) {
+        _verificationId = null;
+        state = state.copyWith(
+          status: AsyncError(Exception(_mapFirebaseAuthErrorMessage(e)), st),
+        );
+        return false;
+      } catch (e, st) {
+        _verificationId = null;
+        state = state.copyWith(status: AsyncError(e, st));
+        return false;
+      }
     }
   }
 
@@ -157,73 +276,81 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> resendOtp() async {
     final mobile = state.mobileNumber;
     if (mobile == null) return false;
+    _verificationId = null;
+    _webConfirmationResult = null;
+    if (state.isSignUpFlow && state.tempFullName != null) {
+      return startSignUp(fullName: state.tempFullName!, mobileNumber: mobile);
+    }
     return startSignIn(mobile);
   }
 
   /// Verifies the OTP via Firebase and completes the session
   Future<bool> verifyOtp(String otp, WidgetRef ref) async {
-    if (_verificationId == null) {
-      state = state.copyWith(
-        status: AsyncError(
-          Exception('Verification ID not found. Please request OTP again.'),
-          StackTrace.current,
-        ),
-      );
-      return false;
-    }
-
     state = state.copyWith(status: const AsyncLoading());
+
     try {
-      fb.PhoneAuthCredential credential = fb.PhoneAuthProvider.credential(
-        verificationId: _verificationId!,
-        smsCode: otp,
-      );
+      fb.UserCredential userCredential;
 
-      fb.UserCredential userCredential = await _auth.signInWithCredential(
-        credential,
-      );
+      if (kIsWeb) {
+        if (_webConfirmationResult == null) {
+          throw fb.FirebaseAuthException(
+            code: 'session-expired',
+            message: 'Verification session has expired. Please request a new OTP.',
+          );
+        }
+        userCredential = await _webConfirmationResult!.confirm(otp);
+      } else {
+        if (_verificationId == null) {
+          throw fb.FirebaseAuthException(
+            code: 'session-expired',
+            message: 'Verification session has expired. Please request a new OTP.',
+          );
+        }
+        final credential = fb.PhoneAuthProvider.credential(
+          verificationId: _verificationId!,
+          smsCode: otp,
+        );
+        userCredential = await _auth.signInWithCredential(credential);
+      }
+
       final firebaseUser = userCredential.user;
-
       if (firebaseUser != null) {
         final mobile = state.mobileNumber ?? firebaseUser.phoneNumber ?? '';
+        final fullName = (state.tempFullName != null &&
+                state.tempFullName!.trim().isNotEmpty)
+            ? state.tempFullName!.trim()
+            : 'Sawariya Customer';
 
-        String role;
-        String name;
-        String? email;
-        if (mobile.contains('9999999999')) {
-          role = 'admin';
-          name = state.isSignUpFlow
-              ? (state.tempFullName ?? 'Sawariya Admin')
-              : 'Sawariya Admin';
-          email = 'admin@sawariyadairy.com';
-        } else if (mobile.contains('7777777777')) {
-          role = 'delivery';
-          name = state.isSignUpFlow
-              ? (state.tempFullName ?? 'Delivery Partner')
-              : 'Rajesh Kumar';
-          email = 'delivery@sawariyadairy.com';
-        } else {
-          role = 'customer';
-          name = state.isSignUpFlow
-              ? (state.tempFullName ?? 'Sawariya Customer')
-              : 'Sawariya Customer';
-          email = 'customer@sawariyadairy.com';
-        }
-
+        // Determine role: preserve existing if user document exists, otherwise default to 'customer'
+        // Never grant admin/delivery privileges based on phone number;
+        // existing roles are preserved by setSession below.
         final user = User(
           id: firebaseUser.uid,
-          name: name,
+          name: fullName,
           phone: mobile,
-          email: email,
-          role: role,
+          email: 'customer@sawariyadairy.com',
+          role: 'customer',
         );
 
         await ref.read(userProvider.notifier).setSession(user);
 
+        // Reset verification tokens upon successful confirmation
+        _verificationId = null;
+        _webConfirmationResult = null;
+
         state = AuthState(status: const AsyncData(null));
         return true;
       }
-      throw Exception('Failed to sign in with Firebase.');
+      throw Exception('Failed to sign in with Firebase: user was null.');
+    } on fb.FirebaseAuthException catch (e, st) {
+      if (e.code == 'session-expired') {
+        _webConfirmationResult = null;
+        _verificationId = null;
+      }
+      state = state.copyWith(
+        status: AsyncError(Exception(_mapFirebaseAuthErrorMessage(e)), st),
+      );
+      return false;
     } catch (e, st) {
       state = state.copyWith(status: AsyncError(e, st));
       return false;
