@@ -563,9 +563,14 @@ describe('Sawariya Dairy — Firestore Security Rules Unit Tests', function () {
       });
     });
 
-    it('Allows signed-in customer to read delivery agent public profile', async () => {
-      const db = customer1Db();
+    it('Allows delivery agent to read own agent profile', async () => {
+      const db = deliveryDb();
       await assertSucceeds(getDoc(doc(db, 'delivery_agents', 'delivery_uid')));
+    });
+
+    it('Denies customer from accessing unrelated delivery agent profile', async () => {
+      const db = customer1Db();
+      await assertFails(getDoc(doc(db, 'delivery_agents', 'delivery_uid')));
     });
 
     it('Allows delivery agent to update own duty status and coordinates', async () => {

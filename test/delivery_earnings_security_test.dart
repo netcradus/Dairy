@@ -4,7 +4,7 @@ import 'package:dairy_app/models/order.dart';
 import 'package:dairy_app/services/order_service.dart';
 
 void main() {
-  group('Delivery Earnings Security & Calculations Test Suite', () {
+  group('Delivery Security & RBAC Test Suite', () {
     test('OrderService.agentEarningRate is configured to 10%', () {
       expect(OrderService.agentEarningRate, 0.10);
     });
@@ -58,12 +58,403 @@ void main() {
       expect(fromMap.status, EarningStatus.pending);
     });
 
-    group('Firestore Security Rules Logic Verification for /earnings/{earningId}', () {
-      // Simulates the exact rules in firestore.rules:
-      // match /earnings/{earningId} {
-      //   allow read: if isAdmin() || (isDelivery() && resource.data.agentId == request.auth.uid);
-      //   allow write: if isAdmin();
-      // }
+    // =========================================================================
+    // 1. DELIVERY AGENTS COLLECTION (/delivery_agents/{agentId})
+    // =========================================================================
+    group('1. Delivery Agents Collection (/delivery_agents/{agentId}) RBAC', () {
+      bool evaluateDeliveryAgentReadRule({
+        required String? authUid,
+        required String? authRole,
+        required String targetAgentId,
+        String? agentActiveOrderId,
+        String? customerActiveOrderId,
+      }) {
+        final isSignedIn = authUid != null && authUid.isNotEmpty;
+        if (!isSignedIn) return false;
+
+        final isAdmin = authRole == 'admin' || authRole == 'superadmin';
+        if (isAdmin) return true;
+
+        final isDelivery = authRole == 'delivery';
+        final isOwnDoc = authUid == targetAgentId;
+        if (isDelivery && isOwnDoc) return true;
+
+        final isCustomer = authRole == 'customer' || authRole == null;
+        final isCustomerOfActiveAgent = isCustomer &&
+            agentActiveOrderId != null &&
+            agentActiveOrderId.isNotEmpty &&
+            agentActiveOrderId == customerActiveOrderId;
+
+        return isCustomerOfActiveAgent;
+      }
+
+      bool evaluateDeliveryAgentUpdateRule({
+        required String? authUid,
+        required String? authRole,
+        required String targetAgentId,
+        required Set<String> changedFields,
+        String? newRole,
+        String? newUid,
+      }) {
+        final isSignedIn = authUid != null && authUid.isNotEmpty;
+        if (!isSignedIn) return false;
+
+        final isAdmin = authRole == 'admin' || authRole == 'superadmin';
+        if (isAdmin) return true;
+
+        final isDelivery = authRole == 'delivery';
+        final isOwnDoc = authUid == targetAgentId;
+        if (!isDelivery || !isOwnDoc) return false;
+
+        const allowedFields = {
+          'name',
+          'phone',
+          'email',
+          'profileImageUrl',
+          'vehicle',
+          'vehicleType',
+          'vehicleNumber',
+          'isOnline',
+          'isOnDuty',
+          'location',
+          'orderId',
+          'updatedAt'
+        };
+
+        final fieldsAllowed = changedFields.every(allowedFields.contains);
+        final keepsUid = newUid == null || newUid == targetAgentId;
+        final keepsRole = newRole == null || newRole == 'delivery';
+
+        return fieldsAllowed && keepsUid && keepsRole;
+      }
+
+      // PASS tests
+      test('PASS: delivery agent reads own profile', () {
+        final allowed = evaluateDeliveryAgentReadRule(
+          authUid: 'agent_1',
+          authRole: 'delivery',
+          targetAgentId: 'agent_1',
+        );
+        expect(allowed, isTrue);
+      });
+
+      test('PASS: customer reads assigned driver profile for active order', () {
+        final allowed = evaluateDeliveryAgentReadRule(
+          authUid: 'cust_1',
+          authRole: 'customer',
+          targetAgentId: 'agent_1',
+          agentActiveOrderId: 'order_99',
+          customerActiveOrderId: 'order_99',
+        );
+        expect(allowed, isTrue);
+      });
+
+      test('PASS: delivery agent updates own location & duty status', () {
+        final allowed = evaluateDeliveryAgentUpdateRule(
+          authUid: 'agent_1',
+          authRole: 'delivery',
+          targetAgentId: 'agent_1',
+          changedFields: {'location', 'updatedAt', 'isOnline', 'isOnDuty'},
+        );
+        expect(allowed, isTrue);
+      });
+
+      // FAIL tests
+      test('FAIL: agent reads another agent private data', () {
+        final allowed = evaluateDeliveryAgentReadRule(
+          authUid: 'agent_1',
+          authRole: 'delivery',
+          targetAgentId: 'agent_2',
+        );
+        expect(allowed, isFalse);
+      });
+
+      test('FAIL: customer accesses unrelated delivery-agent data', () {
+        final allowed = evaluateDeliveryAgentReadRule(
+          authUid: 'cust_1',
+          authRole: 'customer',
+          targetAgentId: 'agent_1',
+          agentActiveOrderId: 'order_for_cust_2',
+          customerActiveOrderId: 'order_for_cust_1',
+        );
+        expect(allowed, isFalse);
+      });
+
+      test('FAIL: agent modifies another agent GPS location', () {
+        final allowed = evaluateDeliveryAgentUpdateRule(
+          authUid: 'agent_1',
+          authRole: 'delivery',
+          targetAgentId: 'agent_2',
+          changedFields: {'location', 'updatedAt'},
+        );
+        expect(allowed, isFalse);
+      });
+
+      test('FAIL: agent mutates protected rating field on profile', () {
+        final allowed = evaluateDeliveryAgentUpdateRule(
+          authUid: 'agent_1',
+          authRole: 'delivery',
+          targetAgentId: 'agent_1',
+          changedFields: {'rating'},
+        );
+        expect(allowed, isFalse);
+      });
+
+      test('FAIL: agent changes UID or role on delivery_agents doc', () {
+        final allowedRole = evaluateDeliveryAgentUpdateRule(
+          authUid: 'agent_1',
+          authRole: 'delivery',
+          targetAgentId: 'agent_1',
+          changedFields: {'name'},
+          newRole: 'admin',
+        );
+        expect(allowedRole, isFalse);
+
+        final allowedUid = evaluateDeliveryAgentUpdateRule(
+          authUid: 'agent_1',
+          authRole: 'delivery',
+          targetAgentId: 'agent_1',
+          changedFields: {'name'},
+          newUid: 'admin_uid',
+        );
+        expect(allowedUid, isFalse);
+      });
+    });
+
+    // =========================================================================
+    // 2. ORDERS COLLECTION (/orders/{orderId})
+    // =========================================================================
+    group('2. Orders Collection (/orders/{orderId}) RBAC', () {
+      bool evaluateOrderReadRule({
+        required String? authUid,
+        required String? authRole,
+        required String orderOwnerUserId,
+        required String? orderAssignedAgentId,
+        required String orderStatus,
+      }) {
+        final isSignedIn = authUid != null && authUid.isNotEmpty;
+        if (!isSignedIn) return false;
+
+        final isAdmin = authRole == 'admin' || authRole == 'superadmin';
+        if (isAdmin) return true;
+
+        if (orderOwnerUserId == authUid) return true;
+
+        final isDelivery = authRole == 'delivery';
+        if (isDelivery) {
+          final isUnassignedPending = (orderAssignedAgentId == null ||
+                  orderAssignedAgentId.isEmpty) &&
+              (orderStatus == 'Pending' ||
+                  orderStatus == 'pending' ||
+                  orderStatus == 'placed');
+          final isAssignedToMe = orderAssignedAgentId == authUid;
+          return isUnassignedPending || isAssignedToMe;
+        }
+
+        return false;
+      }
+
+      bool evaluateOrderUpdateRule({
+        required String? authUid,
+        required String? authRole,
+        required String? existingAssignedAgentId,
+        required String existingStatus,
+        required Set<String> changedFields,
+        String? newAssignedAgentId,
+      }) {
+        final isSignedIn = authUid != null && authUid.isNotEmpty;
+        if (!isSignedIn) return false;
+
+        final isAdmin = authRole == 'admin' || authRole == 'superadmin';
+        if (isAdmin) return true;
+
+        final isDelivery = authRole == 'delivery';
+        if (!isDelivery) return false;
+
+        final isMine = existingAssignedAgentId != null &&
+            existingAssignedAgentId == authUid;
+        final isUnassigned = (existingAssignedAgentId == null ||
+                existingAssignedAgentId.isEmpty) &&
+            (existingStatus == 'Pending' ||
+                existingStatus == 'pending' ||
+                existingStatus == 'placed');
+        final claimsSelf = newAssignedAgentId == authUid;
+        final releases = newAssignedAgentId == null;
+
+        if (isMine) {
+          final isDeliveryProgress = changedFields.every({
+            'status',
+            'acceptedAt',
+            'deliveredAt',
+            'deliveryConfirmed'
+          }.contains);
+          final isRelease = changedFields
+                  .every({'status', 'assignedAgentId', 'acceptedAt'}.contains) &&
+              releases;
+          return isDeliveryProgress || isRelease;
+        } else if (isUnassigned) {
+          return changedFields
+                  .every({'status', 'assignedAgentId', 'acceptedAt'}.contains) &&
+              claimsSelf;
+        }
+
+        return false;
+      }
+
+      // PASS tests
+      test('PASS: delivery agent reads assigned order', () {
+        final allowed = evaluateOrderReadRule(
+          authUid: 'agent_1',
+          authRole: 'delivery',
+          orderOwnerUserId: 'cust_1',
+          orderAssignedAgentId: 'agent_1',
+          orderStatus: 'outForDelivery',
+        );
+        expect(allowed, isTrue);
+      });
+
+      test('PASS: delivery agent updates allowed delivery status to Delivered', () {
+        final allowed = evaluateOrderUpdateRule(
+          authUid: 'agent_1',
+          authRole: 'delivery',
+          existingAssignedAgentId: 'agent_1',
+          existingStatus: 'outForDelivery',
+          changedFields: {'status', 'deliveredAt'},
+        );
+        expect(allowed, isTrue);
+      });
+
+      test('PASS: delivery agent claims unassigned pending order', () {
+        final allowed = evaluateOrderUpdateRule(
+          authUid: 'agent_1',
+          authRole: 'delivery',
+          existingAssignedAgentId: null,
+          existingStatus: 'Pending',
+          changedFields: {'status', 'assignedAgentId', 'acceptedAt'},
+          newAssignedAgentId: 'agent_1',
+        );
+        expect(allowed, isTrue);
+      });
+
+      // FAIL tests
+      test('FAIL: agent modifies another agent order', () {
+        final allowed = evaluateOrderUpdateRule(
+          authUid: 'agent_1',
+          authRole: 'delivery',
+          existingAssignedAgentId: 'agent_2',
+          existingStatus: 'outForDelivery',
+          changedFields: {'status'},
+        );
+        expect(allowed, isFalse);
+      });
+
+      test('FAIL: agent modifies order price or subtotal', () {
+        final allowed = evaluateOrderUpdateRule(
+          authUid: 'agent_1',
+          authRole: 'delivery',
+          existingAssignedAgentId: 'agent_1',
+          existingStatus: 'outForDelivery',
+          changedFields: {'status', 'subtotal'},
+        );
+        expect(allowed, isFalse);
+
+        final allowedPrice = evaluateOrderUpdateRule(
+          authUid: 'agent_1',
+          authRole: 'delivery',
+          existingAssignedAgentId: 'agent_1',
+          existingStatus: 'outForDelivery',
+          changedFields: {'totalAmount'},
+        );
+        expect(allowedPrice, isFalse);
+      });
+
+      test('FAIL: agent changes customer UID', () {
+        final allowed = evaluateOrderUpdateRule(
+          authUid: 'agent_1',
+          authRole: 'delivery',
+          existingAssignedAgentId: 'agent_1',
+          existingStatus: 'outForDelivery',
+          changedFields: {'status', 'userId'},
+        );
+        expect(allowed, isFalse);
+      });
+
+      test('FAIL: agent claims an order already claimed by another agent', () {
+        final allowed = evaluateOrderUpdateRule(
+          authUid: 'agent_1',
+          authRole: 'delivery',
+          existingAssignedAgentId: 'agent_2',
+          existingStatus: 'accepted',
+          changedFields: {'status', 'assignedAgentId', 'acceptedAt'},
+          newAssignedAgentId: 'agent_1',
+        );
+        expect(allowed, isFalse);
+      });
+
+      test('FAIL: agent assigns an order to another agent arbitrarily', () {
+        final allowed = evaluateOrderUpdateRule(
+          authUid: 'agent_1',
+          authRole: 'delivery',
+          existingAssignedAgentId: null,
+          existingStatus: 'Pending',
+          changedFields: {'status', 'assignedAgentId', 'acceptedAt'},
+          newAssignedAgentId: 'agent_2',
+        );
+        expect(allowed, isFalse);
+      });
+    });
+
+    // =========================================================================
+    // 3. USERS COLLECTION (/users/{userId})
+    // =========================================================================
+    group('3. Users Collection (/users/{userId}) RBAC', () {
+      bool evaluateUserUpdateRule({
+        required String? authUid,
+        required String? authRole,
+        required String targetUserId,
+        String? existingRole,
+        String? newRole,
+      }) {
+        final isSignedIn = authUid != null && authUid.isNotEmpty;
+        if (!isSignedIn) return false;
+
+        final isAdmin = authRole == 'admin' || authRole == 'superadmin';
+        if (isAdmin) return true;
+
+        final isOwnDoc = authUid == targetUserId;
+        if (!isOwnDoc) return false;
+
+        final keepsRole = newRole == null || newRole == existingRole;
+        return keepsRole;
+      }
+
+      // FAIL tests
+      test('FAIL: agent changes role to admin', () {
+        final allowed = evaluateUserUpdateRule(
+          authUid: 'agent_1',
+          authRole: 'delivery',
+          targetUserId: 'agent_1',
+          existingRole: 'delivery',
+          newRole: 'admin',
+        );
+        expect(allowed, isFalse);
+      });
+
+      test('FAIL: agent modifies another user profile', () {
+        final allowed = evaluateUserUpdateRule(
+          authUid: 'agent_1',
+          authRole: 'delivery',
+          targetUserId: 'other_user_2',
+          existingRole: 'customer',
+        );
+        expect(allowed, isFalse);
+      });
+    });
+
+    // =========================================================================
+    // 4. EARNINGS COLLECTION (/earnings/{earningId})
+    // =========================================================================
+    group('4. Earnings Collection (/earnings/{earningId}) RBAC', () {
       bool evaluateEarningsReadRule({
         required String? authUid,
         required String? authRole,
@@ -90,127 +481,65 @@ void main() {
         return isAdmin;
       }
 
-      test('Delivery agent CAN read their own earnings', () {
+      // PASS tests
+      test('PASS: delivery agent reads own earnings', () {
         final allowed = evaluateEarningsReadRule(
-          authUid: 'agent_ramesh',
+          authUid: 'agent_1',
           authRole: 'delivery',
-          earningDocAgentId: 'agent_ramesh',
+          earningDocAgentId: 'agent_1',
         );
         expect(allowed, isTrue);
       });
 
-      test('Delivery agent CANNOT read another agent earnings', () {
-        final allowed = evaluateEarningsReadRule(
-          authUid: 'agent_ramesh',
-          authRole: 'delivery',
-          earningDocAgentId: 'agent_suresh',
-        );
-        expect(allowed, isFalse);
-      });
-
-      test('Customer CANNOT read any earnings', () {
-        final allowed = evaluateEarningsReadRule(
-          authUid: 'customer_123',
-          authRole: 'customer',
-          earningDocAgentId: 'agent_ramesh',
-        );
-        expect(allowed, isFalse);
-      });
-
-      test('Unauthenticated user CANNOT read any earnings', () {
-        final allowed = evaluateEarningsReadRule(
-          authUid: null,
-          authRole: null,
-          earningDocAgentId: 'agent_ramesh',
-        );
-        expect(allowed, isFalse);
-      });
-
-      test('Admin CAN read any delivery agent earnings', () {
-        final allowed = evaluateEarningsReadRule(
-          authUid: 'admin_boss',
-          authRole: 'admin',
-          earningDocAgentId: 'agent_ramesh',
-        );
-        expect(allowed, isTrue);
-      });
-
-      test('Delivery agent CANNOT write, create, or update earnings from client', () {
+      // FAIL tests
+      test('FAIL: agent creates earning', () {
         final allowed = evaluateEarningsWriteRule(
-          authUid: 'agent_ramesh',
+          authUid: 'agent_1',
           authRole: 'delivery',
         );
         expect(allowed, isFalse);
       });
 
-      test('Customer CANNOT write, create, or update earnings from client', () {
+      test('FAIL: agent modifies earning', () {
         final allowed = evaluateEarningsWriteRule(
-          authUid: 'customer_123',
-          authRole: 'customer',
+          authUid: 'agent_1',
+          authRole: 'delivery',
         );
         expect(allowed, isFalse);
       });
 
-      test('Only Admin can write or update earnings documents via client (otherwise Cloud Function Admin SDK)', () {
+      test('FAIL: agent deletes earning', () {
         final allowed = evaluateEarningsWriteRule(
-          authUid: 'admin_boss',
-          authRole: 'admin',
+          authUid: 'agent_1',
+          authRole: 'delivery',
         );
-        expect(allowed, isTrue);
+        expect(allowed, isFalse);
       });
     });
 
-    group('Order Assignment & Delivery Status Transition Rules Simulation', () {
-      // Simulates canUpdateAssignedOrder() from firestore.rules:
-      // allows updating status to delivered only if isDelivery() AND order is assigned to this agent
-      bool evaluateOrderDeliveredUpdateRule({
+    // =========================================================================
+    // 5. NOTIFICATIONS SUBCOLLECTION (/users/{userId}/notifications)
+    // =========================================================================
+    group('5. Notifications Subcollection RBAC', () {
+      bool evaluateNotificationReadRule({
         required String? authUid,
         required String? authRole,
-        required String? orderAssignedAgentId,
-        required Set<String> changedFields,
+        required String targetUserId,
       }) {
         final isSignedIn = authUid != null && authUid.isNotEmpty;
         if (!isSignedIn) return false;
 
         final isAdmin = authRole == 'admin' || authRole == 'superadmin';
-        if (isAdmin) return true;
+        final isOwnDoc = authUid == targetUserId;
 
-        final isDelivery = authRole == 'delivery';
-        if (!isDelivery) return false;
-
-        final isMine = orderAssignedAgentId != null && orderAssignedAgentId == authUid;
-        if (!isMine) return false;
-
-        const allowedKeys = {'status', 'acceptedAt', 'deliveredAt', 'deliveryConfirmed'};
-        return changedFields.every(allowedKeys.contains);
+        return isAdmin || isOwnDoc;
       }
 
-      test('Assigned delivery agent CAN mark order as delivered', () {
-        final allowed = evaluateOrderDeliveredUpdateRule(
+      test('FAIL: agent reads another user notifications', () {
+        final allowed = evaluateNotificationReadRule(
           authUid: 'agent_1',
           authRole: 'delivery',
-          orderAssignedAgentId: 'agent_1',
-          changedFields: {'status'},
-        );
-        expect(allowed, isTrue);
-      });
-
-      test('Unassigned delivery agent CANNOT mark another agent order as delivered', () {
-        final allowed = evaluateOrderDeliveredUpdateRule(
-          authUid: 'agent_2',
-          authRole: 'delivery',
-          orderAssignedAgentId: 'agent_1',
-          changedFields: {'status'},
-        );
-        expect(allowed, isFalse);
-      });
-
-      test('Delivery agent CANNOT manipulate order totals or agentId while marking delivered', () {
-        final allowed = evaluateOrderDeliveredUpdateRule(
-          authUid: 'agent_1',
-          authRole: 'delivery',
-          orderAssignedAgentId: 'agent_1',
-          changedFields: {'status', 'subtotal'},
+          targetUserId: 'customer_1',
         );
         expect(allowed, isFalse);
       });

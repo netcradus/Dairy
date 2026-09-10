@@ -69,8 +69,8 @@ service cloud.firestore {
       // Admins can update any user profile.
       allow update: if isAdmin()
           || (isOwnDoc(userId)
-              && (!('uid' in resource.data) || request.resource.data.uid == resource.data.uid)
-              && (!('role' in resource.data) || request.resource.data.role == resource.data.role));
+              && (!('uid' in request.resource.data) || request.resource.data.uid == request.auth.uid)
+              && (!('role' in request.resource.data) || (('role' in resource.data) && request.resource.data.role == resource.data.role)));
 
       // User deletion: Admin only
       allow delete: if isAdmin();
@@ -133,11 +133,12 @@ service cloud.firestore {
     match /orders/{orderId} {
       // Customers: read own orders.
       // Delivery: read pending unassigned orders (to accept) or assigned orders.
+      // Delivery agents CANNOT read orders assigned to other agents.
       // Admins: read all orders.
       allow read: if isAdmin()
           || (isSignedIn() && resource.data.userId == request.auth.uid)
           || (isDelivery()
-              && (resource.data.status in ['Pending', 'pending', 'placed']
+              && (isUnassignedPendingOrder()
                   || (('assignedAgentId' in resource.data)
                       && resource.data.assignedAgentId == request.auth.uid)));
 
@@ -162,6 +163,14 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Guard for checking pending unassigned orders that agents may browse
+    function isUnassignedPendingOrder() {
+      return resource.data.status in ['Pending', 'pending', 'placed']
+          && (!('assignedAgentId' in resource.data)
+              || resource.data.assignedAgentId == null
+              || resource.data.assignedAgentId == '');
+    }
+
     // Customer cancellation guard
     function canCustomerCancelOrder() {
       let isMine = resource.data.userId == request.auth.uid;
@@ -180,8 +189,10 @@ service cloud.firestore {
       let changed = request.resource.data.diff(resource.data).affectedKeys();
       let isMine = ('assignedAgentId' in resource.data)
           && resource.data.assignedAgentId == request.auth.uid;
-      let isUnassigned = !('assignedAgentId' in resource.data)
-          || resource.data.assignedAgentId == null;
+      let isUnassigned = (!('assignedAgentId' in resource.data)
+          || resource.data.assignedAgentId == null
+          || resource.data.assignedAgentId == '')
+          && (resource.data.status in ['Pending', 'pending', 'placed']);
       let claimsSelf = ('assignedAgentId' in request.resource.data)
           && request.resource.data.assignedAgentId == request.auth.uid;
       let releases = ('assignedAgentId' in request.resource.data)
@@ -197,8 +208,12 @@ service cloud.firestore {
 
     // ── 9. delivery_agents Collection ───────────────────────────────────────
     match /delivery_agents/{agentId} {
-      // Agents read own profile; Customers track assigned driver; Admins read all
-      allow read: if isSignedIn();
+      // Delivery agent reads own profile; Customers track assigned driver for active order; Admins read all.
+      // Delivery agents CANNOT read another agent's private profile.
+      // Unrelated customers CANNOT read delivery agent profiles.
+      allow read: if isAdmin()
+          || (isDelivery() && isOwnDoc(agentId))
+          || isCustomerOfActiveAgent();
 
       // Create own profile doc (Delivery agents or Admins)
       allow create: if isAdmin()
@@ -206,7 +221,9 @@ service cloud.firestore {
               && isOwnDoc(agentId)
               && request.resource.data.uid == request.auth.uid);
 
-      // Update duty status, live GPS coordinates, vehicle information
+      // Update duty status, live GPS coordinates, vehicle information.
+      // Agents can ONLY update their own profile and allowed fields.
+      // Protected fields (rating, role, uid) CANNOT be mutated by agents.
       allow update: if isAdmin()
           || (isDelivery()
               && isOwnDoc(agentId)
@@ -214,6 +231,14 @@ service cloud.firestore {
 
       // Only Admins can delete delivery agent records
       allow delete: if isAdmin();
+    }
+
+    function isCustomerOfActiveAgent() {
+      return isCustomer()
+          && ('orderId' in resource.data)
+          && resource.data.orderId != null
+          && exists(/databases/$(database)/documents/orders/$(resource.data.orderId))
+          && get(/databases/$(database)/documents/orders/$(resource.data.orderId)).data.userId == request.auth.uid;
     }
 
     function isAllowedAgentUpdate() {
@@ -225,8 +250,6 @@ service cloud.firestore {
         'vehicle',
         'vehicleType',
         'vehicleNumber',
-        'assignedZone',
-        'rating',
         'isOnline',
         'isOnDuty',
         'location',
@@ -234,7 +257,13 @@ service cloud.firestore {
         'updatedAt'
       ];
       let changed = request.resource.data.diff(resource.data).affectedKeys();
-      return changed.hasOnly(allowed);
+      let keepsUid = !('uid' in request.resource.data)
+          || !('uid' in resource.data)
+          || request.resource.data.uid == resource.data.uid;
+      let keepsRole = !('role' in request.resource.data)
+          || request.resource.data.role == 'delivery';
+
+      return changed.hasOnly(allowed) && keepsUid && keepsRole;
     }
 
     // ── 10. earnings Collection ─────────────────────────────────────────────
