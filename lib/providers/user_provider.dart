@@ -20,7 +20,14 @@ const User guestUser = User(
 /// Current user profile state notifier that supports SharedPreferences persistence and Firestore sync.
 class UserNotifier extends StateNotifier<User> {
   static const String _sessionKey = 'user_session';
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  FirebaseFirestore? get _firestore {
+    try {
+      return FirebaseFirestore.instance;
+    } catch (_) {
+      return null;
+    }
+  }
+
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _userSubscription;
 
   UserNotifier() : super(guestUser) {
@@ -45,9 +52,11 @@ class UserNotifier extends StateNotifier<User> {
   void _startUserDocListener(String uid) {
     _userSubscription?.cancel();
     if (uid.isEmpty) return;
+    final firestore = _firestore;
+    if (firestore == null) return;
 
     _userSubscription =
-        _firestore.collection('users').doc(uid).snapshots().listen((snapshot) {
+        firestore.collection('users').doc(uid).snapshots().listen((snapshot) {
       if (snapshot.exists) {
         final data = snapshot.data();
         if (data != null) {
@@ -143,8 +152,10 @@ class UserNotifier extends StateNotifier<User> {
   }
 
   Future<void> _syncFromFirestore(String uid) async {
+    final firestore = _firestore;
+    if (firestore == null) return;
     try {
-      final doc = await _firestore.collection('users').doc(uid).get();
+      final doc = await firestore.collection('users').doc(uid).get();
       if (doc.exists) {
         final data = doc.data();
         if (data != null) {
@@ -207,9 +218,10 @@ class UserNotifier extends StateNotifier<User> {
   /// Save session to SharedPreferences, update state, and sync/create in Firestore.
   /// The user's authoritative role is ALWAYS determined by the Firestore document.
   Future<void> setSession(User user) async {
-    if (user.id.isNotEmpty) {
+    final firestore = _firestore;
+    if (user.id.isNotEmpty && firestore != null) {
       try {
-        final docRef = _firestore.collection('users').doc(user.id);
+        final docRef = firestore.collection('users').doc(user.id);
         final doc = await docRef.get();
         if (doc.exists) {
           final data = doc.data();
@@ -340,22 +352,25 @@ class UserNotifier extends StateNotifier<User> {
     );
 
     // Update in Firestore first using set with merge so it succeeds whether the document exists or not
-    final docRef = _firestore.collection('users').doc(state.id);
-    await docRef.set({
-      'uid': state.id,
-      'role': UserRole.sanitize(state.role),
-      if (name != null) 'name': name,
-      if (phone != null) 'phone': phone,
-      if (email != null) 'email': email,
-      if (profileImageUrl != null) ...{
-        'profileImageUrl': profileImageUrl,
-        'photoUrl': profileImageUrl,
-      },
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    final firestore = _firestore;
+    if (firestore != null) {
+      final docRef = firestore.collection('users').doc(state.id);
+      await docRef.set({
+        'uid': state.id,
+        'role': UserRole.sanitize(state.role),
+        if (name != null) 'name': name,
+        if (phone != null) 'phone': phone,
+        if (email != null) 'email': email,
+        if (profileImageUrl != null) ...{
+          'profileImageUrl': profileImageUrl,
+          'photoUrl': profileImageUrl,
+        },
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
 
-    debugPrint(
-        '[PROFILE DEBUG T2] updateProfile: Firestore write succeeded on users/${state.id}');
+      debugPrint(
+          '[PROFILE DEBUG T2] updateProfile: Firestore write succeeded on users/${state.id}');
+    }
 
     // Update local state
     state = updatedUser;

@@ -19,8 +19,8 @@ import '../models/product.dart';
 /// - Multi-device / browser-refresh persistence.
 class CartNotifier extends StateNotifier<Map<String, CartItem>> {
   static const String _storageKey = 'cart_items';
-  final FirebaseFirestore _firestore;
-  final fb.FirebaseAuth _auth;
+  final FirebaseFirestore? _firestore;
+  final fb.FirebaseAuth? _auth;
 
   StreamSubscription<fb.User?>? _authSubscription;
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _cartSubscription;
@@ -28,22 +28,41 @@ class CartNotifier extends StateNotifier<Map<String, CartItem>> {
   bool _isRestoring = true;
 
   CartNotifier([FirebaseFirestore? firestore, fb.FirebaseAuth? auth])
-      : _firestore = firestore ?? FirebaseFirestore.instance,
-        _auth = auth ?? fb.FirebaseAuth.instance,
+      : _firestore = firestore ?? _safeFirestore(),
+        _auth = auth ?? _safeAuth(),
         super({}) {
     _init();
   }
 
+  static FirebaseFirestore? _safeFirestore() {
+    try {
+      return FirebaseFirestore.instance;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static fb.FirebaseAuth? _safeAuth() {
+    try {
+      return fb.FirebaseAuth.instance;
+    } catch (_) {
+      return null;
+    }
+  }
+
   void _init() {
     unawaited(_restoreLocalCart());
-    final currentUser = _auth.currentUser;
-    if (currentUser != null && currentUser.uid.isNotEmpty) {
-      _currentUid = currentUser.uid;
-      _listenToFirestoreCart(currentUser.uid);
+    final auth = _auth;
+    if (auth != null) {
+      final currentUser = auth.currentUser;
+      if (currentUser != null && currentUser.uid.isNotEmpty) {
+        _currentUid = currentUser.uid;
+        _listenToFirestoreCart(currentUser.uid);
+      }
+      _authSubscription = auth.authStateChanges().listen((user) {
+        _handleAuthChange(user);
+      });
     }
-    _authSubscription = _auth.authStateChanges().listen((user) {
-      _handleAuthChange(user);
-    });
   }
 
   // ─── Local Restore ─────────────────────────────────────────────────────────
@@ -89,7 +108,9 @@ class CartNotifier extends StateNotifier<Map<String, CartItem>> {
   }
 
   void _listenToFirestoreCart(String uid) {
-    _cartSubscription = _firestore
+    final firestore = _firestore;
+    if (firestore == null) return;
+    _cartSubscription = firestore
         .collection('users')
         .doc(uid)
         .collection('cart')
@@ -130,6 +151,29 @@ class CartNotifier extends StateNotifier<Map<String, CartItem>> {
     final updatedItem = (existing != null)
         ? existing.copyWith(quantity: newQuantity)
         : CartItem(product: product, quantity: qty);
+
+    state = {
+      ...state,
+      product.id: updatedItem,
+    };
+    _saveToPrefs();
+
+    if (_currentUid != null && _currentUid!.isNotEmpty) {
+      _syncItemToFirestore(_currentUid!, updatedItem);
+    }
+  }
+
+  /// Set exact quantity for a product without accumulating
+  void setItemQuantity(Product product, int quantity) {
+    if (quantity <= 0) {
+      removeItem(product.id);
+      return;
+    }
+
+    final existing = state[product.id];
+    final updatedItem = (existing != null)
+        ? existing.copyWith(quantity: quantity)
+        : CartItem(product: product, quantity: quantity);
 
     state = {
       ...state,
@@ -200,8 +244,10 @@ class CartNotifier extends StateNotifier<Map<String, CartItem>> {
   // ─── Firestore Operations ────────────────────────────────────────────────
 
   Future<void> _syncItemToFirestore(String uid, CartItem item) async {
+    final firestore = _firestore;
+    if (firestore == null) return;
     try {
-      final docRef = _firestore
+      final docRef = firestore
           .collection('users')
           .doc(uid)
           .collection('cart')
@@ -214,31 +260,37 @@ class CartNotifier extends StateNotifier<Map<String, CartItem>> {
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
     } catch (e) {
-      debugPrint('Warning: Failed to sync cart item ${item.product.id} to Firestore: $e');
+      debugPrint(
+          'Warning: Failed to sync cart item ${item.product.id} to Firestore: $e');
     }
   }
 
   Future<void> _deleteItemFromFirestore(String uid, String productId) async {
+    final firestore = _firestore;
+    if (firestore == null) return;
     try {
-      await _firestore
+      await firestore
           .collection('users')
           .doc(uid)
           .collection('cart')
           .doc(productId)
           .delete();
     } catch (e) {
-      debugPrint('Warning: Failed to delete cart item $productId from Firestore: $e');
+      debugPrint(
+          'Warning: Failed to delete cart item $productId from Firestore: $e');
     }
   }
 
   Future<void> _clearFirestoreCart(String uid) async {
+    final firestore = _firestore;
+    if (firestore == null) return;
     try {
       final collectionRef =
-          _firestore.collection('users').doc(uid).collection('cart');
+          firestore.collection('users').doc(uid).collection('cart');
       final snap = await collectionRef.get();
       if (snap.docs.isEmpty) return;
 
-      final batch = _firestore.batch();
+      final batch = firestore.batch();
       for (final d in snap.docs) {
         batch.delete(d.reference);
       }
@@ -288,13 +340,13 @@ final cartQuantitiesProvider = Provider<Map<String, int>>((ref) {
 /// Total number of individual items in cart
 final cartItemCountProvider = Provider<int>((ref) {
   final cartItems = ref.watch(cartItemsProvider);
-  return cartItems.fold(0, (sum, item) => sum + item.quantity);
+  return cartItems.fold(0, (acc, item) => acc + item.quantity);
 });
 
 /// Subtotal of all items
 final cartSubtotalProvider = Provider<double>((ref) {
   final cartItems = ref.watch(cartItemsProvider);
-  return cartItems.fold(0.0, (sum, item) => sum + item.totalPrice);
+  return cartItems.fold(0.0, (acc, item) => acc + item.totalPrice);
 });
 
 /// Delivery charge (fixed ₹30, free if subtotal > ₹500 or cart empty)

@@ -66,7 +66,8 @@ class QuantitySelector extends StatelessWidget {
         children: [
           IconButton(
             padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+            visualDensity: VisualDensity.compact,
+            constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
             icon: const Icon(Icons.remove,
                 size: 16, color: AppColors.textOnPrimary),
             onPressed: onDecrement,
@@ -81,7 +82,8 @@ class QuantitySelector extends StatelessWidget {
           ),
           IconButton(
             padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+            visualDensity: VisualDensity.compact,
+            constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
             icon:
                 const Icon(Icons.add, size: 16, color: AppColors.textOnPrimary),
             onPressed: onIncrement,

@@ -30,12 +30,11 @@ class ProductDetailsScreen extends ConsumerStatefulWidget {
 
 class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
   bool _isFavorite = false;
+  int _selectedQuantity = 1;
 
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
-    final cartQuantities = ref.watch(cartQuantitiesProvider);
-    final quantity = cartQuantities[product.id] ?? 0;
     final isDesktop = context.isDesktop;
 
     return Scaffold(
@@ -93,7 +92,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                           const SizedBox(height: AppSizes.p16),
                           _buildPriceSection(product),
                           const SizedBox(height: AppSizes.p20),
-                          _buildQuantityAndCart(ref, product, quantity),
+                          _buildQuantityAndCart(ref, product),
                           const SizedBox(height: AppSizes.p24),
                           _buildFeaturesAndDescription(product),
                         ],
@@ -110,7 +109,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                     const SizedBox(height: AppSizes.p16),
                     _buildPriceSection(product),
                     const SizedBox(height: AppSizes.p20),
-                    _buildQuantityAndCart(ref, product, quantity),
+                    _buildQuantityAndCart(ref, product),
                     const SizedBox(height: AppSizes.p24),
                     _buildFeaturesAndDescription(product),
                   ],
@@ -416,20 +415,23 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Price (Inclusive of all taxes)',
-                style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 2),
-              PriceText(
-                price: product.price,
-                originalPrice: product.originalPrice,
-                priceFontSize: 22,
-              ),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Price (Inclusive of all taxes)',
+                  style:
+                      TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 2),
+                PriceText(
+                  price: product.price,
+                  originalPrice: product.originalPrice,
+                  priceFontSize: 22,
+                ),
+              ],
+            ),
           ),
           if (product.hasDiscount)
             Container(
@@ -454,7 +456,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     );
   }
 
-  Widget _buildQuantityAndCart(WidgetRef ref, Product product, int currentQty) {
+  Widget _buildQuantityAndCart(WidgetRef ref, Product product) {
     return Column(
       children: [
         Row(
@@ -469,13 +471,13 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             ),
             const SizedBox(width: AppSizes.p16),
             QuantitySelector(
-              quantity: currentQty > 0 ? currentQty : 1,
+              quantity: _selectedQuantity,
               onIncrement: () {
-                ref.read(cartProvider.notifier).increment(product);
+                setState(() => _selectedQuantity++);
               },
               onDecrement: () {
-                if (currentQty > 0) {
-                  ref.read(cartProvider.notifier).decrement(product.id);
+                if (_selectedQuantity > 1) {
+                  setState(() => _selectedQuantity--);
                 }
               },
               height: 38,
@@ -492,10 +494,15 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                 height: 48,
                 child: OutlinedButton.icon(
                   onPressed: () {
-                    ref.read(cartProvider.notifier).addItem(product, 1);
+                    final qtyToAdd = _selectedQuantity;
+                    ref.read(cartProvider.notifier).addItem(product, qtyToAdd);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Added ${product.title} to your Cart!'),
+                        content: Text(
+                          qtyToAdd == 1
+                              ? 'Added ${product.title} to your Cart!'
+                              : 'Added $qtyToAdd x ${product.title} to your Cart!',
+                        ),
                         duration: const Duration(seconds: 2),
                         action: SnackBarAction(
                           label: 'VIEW CART',
@@ -535,7 +542,10 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                 height: 48,
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    ref.read(cartProvider.notifier).addItem(product, 1);
+                    final buyNowQuantity = _selectedQuantity;
+                    ref
+                        .read(cartProvider.notifier)
+                        .setItemQuantity(product, buyNowQuantity);
                     Navigator.push(
                       context,
                       MaterialPageRoute(
