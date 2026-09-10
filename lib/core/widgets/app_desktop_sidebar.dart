@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/app_sizes.dart';
 import '../localization/app_language.dart';
+import 'app_network_image.dart';
 import '../../providers/user_provider.dart';
-import '../../providers/cart_provider.dart';
 
 /// Desktop Left Sidebar Navigation Component
 class AppDesktopSidebar extends ConsumerWidget {
@@ -161,7 +161,7 @@ class AppDesktopSidebar extends ConsumerWidget {
                   child: Row(
                     children: [
                       CircleAvatar(
-                        backgroundColor: const Color(0xFF005F38),
+                        backgroundColor: const Color(0xFFE2EFE7),
                         radius: 18,
                         child: ClipOval(
                           child: SizedBox(
@@ -169,23 +169,30 @@ class AppDesktopSidebar extends ConsumerWidget {
                             height: 36,
                             child: (user.profileImageUrl != null &&
                                     user.profileImageUrl!.trim().isNotEmpty &&
-                                    user.profileImageUrl!.trim().startsWith('http'))
-                                ? Image.network(
-                                    user.profileImageUrl!.trim(),
+                                    user.profileImageUrl!
+                                        .trim()
+                                        .startsWith('http'))
+                                ? AppNetworkImage(
+                                    imageUrl: user.profileImageUrl!.trim(),
                                     width: 36,
                                     height: 36,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) =>
-                                        const Icon(
-                                      Icons.person,
-                                      color: Colors.white,
-                                      size: 20,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const Center(
+                                      child: Icon(
+                                        Icons.person_rounded,
+                                        color: Color(0xFF005F38),
+                                        size: 20,
+                                      ),
                                     ),
                                   )
-                                : const Icon(
-                                    Icons.person,
-                                    color: Colors.white,
-                                    size: 20,
+                                : const Center(
+                                    child: Icon(
+                                      Icons.person_rounded,
+                                      color: Color(0xFF005F38),
+                                      size: 20,
+                                    ),
                                   ),
                           ),
                         ),
@@ -194,19 +201,25 @@ class AppDesktopSidebar extends ConsumerWidget {
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
                               user.name.isNotEmpty
                                   ? user.name
                                   : tr('Sawariya Customer'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.w700,
-                                color: Color(0xFF005F38),
+                                color: Color(0xFF172033),
                               ),
                             ),
+                            const SizedBox(height: 2),
                             Text(
                               tr('Fresh Member'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 11,
                                 color: Color(0xFF005F38),
@@ -216,49 +229,11 @@ class AppDesktopSidebar extends ConsumerWidget {
                           ],
                         ),
                       ),
-                      // Clickable Logout Icon Button
-                      GestureDetector(
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (ctx) => AlertDialog(
-                              title: Text(tr('Log Out')),
-                              content: Text(tr(
-                                  'Are you sure you want to log out of Sawariya Dairy?')),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx),
-                                  child: Text(tr('Cancel')),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(ctx);
-                                    ref
-                                        .read(cartProvider.notifier)
-                                        .clearLocalCart();
-                                    ref
-                                        .read(userProvider.notifier)
-                                        .clearSession();
-                                  },
-                                  child: Text(tr('Log Out'),
-                                      style: const TextStyle(
-                                          color: Colors.redAccent)),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                        child: const MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          child: Padding(
-                            padding: EdgeInsets.all(4.0),
-                            child: Icon(
-                              Icons.chevron_right_rounded,
-                              color: Color(0xFF005F38),
-                              size: 18,
-                            ),
-                          ),
-                        ),
+                      const SizedBox(width: 6),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: Color(0xFF005F38),
+                        size: 18,
                       ),
                     ],
                   ),

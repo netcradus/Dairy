@@ -43,10 +43,6 @@ class ProfileScreen extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-
-
-
-
                         // ─── 4. Account Settings Menu ───
                         Text(
                           tr('Account Settings'),
@@ -185,7 +181,9 @@ class ProfileScreen extends ConsumerWidget {
 
   Widget _buildProfileHeaderCard(BuildContext context, WidgetRef ref) {
     final user = ref.watch(userProvider);
-    debugPrint('[PROFILE DEBUG T5] ProfileScreen: profileImageUrl received: ${user.profileImageUrl}');
+    final isDesktop = context.isDesktop;
+    debugPrint(
+        '[PROFILE DEBUG T5] ProfileScreen: profileImageUrl received: ${user.profileImageUrl}');
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -196,171 +194,202 @@ class ProfileScreen extends ConsumerWidget {
         ),
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
       ),
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
-      child: Stack(
-        children: [
-          // Main User Details
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+      padding: EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: isDesktop ? 24 : 20,
+      ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // User Avatar with Camera edit button
+            SizedBox(
+              width: 104,
+              height: 104,
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
                 children: [
-                  // User Avatar with Camera edit button
-                  Stack(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
+                  Container(
+                    width: 96,
+                    height: 96,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                      border: Border.all(color: Colors.white, width: 3),
+                      boxShadow: [
+                        BoxShadow(
+                          color:
+                              const Color(0xFF005F38).withValues(alpha: 0.12),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
                         ),
-                        child: CircleAvatar(
-                          radius: 46,
-                          backgroundColor: const Color(0xFFE2EFE7),
-                          child: ClipOval(
-                            child: SizedBox(
-                              width: 92,
-                              height: 92,
-                              child: (user.profileImageUrl != null &&
-                                      user.profileImageUrl!.trim().isNotEmpty &&
-                                      user.profileImageUrl!.trim().startsWith('http'))
-                                  ? Builder(
-                                      builder: (context) {
-                                        debugPrint('[PROFILE DEBUG] 10. Rendering avatar widget: AppNetworkImage');
-                                        return AppNetworkImage(
-                                          imageUrl: user.profileImageUrl!.trim(),
-                                          width: 92,
-                                          height: 92,
-                                          fit: BoxFit.cover,
-                                          loadingBuilder: (context, child, loadingProgress) {
-                                            if (loadingProgress == null) {
-                                              debugPrint('[PROFILE DEBUG] 11. Image loading state: LOADED');
-                                              return child;
-                                            }
-                                            debugPrint('[PROFILE DEBUG] 11. Image loading state: IN PROGRESS');
-                                            return const Center(
-                                              child: SizedBox(
-                                                width: 28,
-                                                height: 28,
-                                                child: CircularProgressIndicator(
-                                                  strokeWidth: 2.5,
-                                                  color: Color(0xFF005F38),
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                          errorBuilder: (context, error, stackTrace) {
-                                            debugPrint('[PROFILE DEBUG] 12. Image error: $error');
-                                            return const Center(
-                                              child: Icon(
-                                                Icons.person_rounded,
-                                                size: 55,
-                                                color: Color(0xFF005F38),
-                                              ),
-                                            );
-                                          },
-                                        );
-                                      },
-                                    )
-                                  : Builder(
-                                      builder: (context) {
-                                        debugPrint('[PROFILE DEBUG] 10. Rendering avatar widget: Fallback Person Icon (profileImageUrl is null/empty)');
-                                        return const Center(
-                                          child: Icon(
-                                            Icons.person_rounded,
-                                            size: 55,
+                      ],
+                    ),
+                    child: ClipOval(
+                      child: Container(
+                        color: const Color(0xFFE2EFE7),
+                        child: (user.profileImageUrl != null &&
+                                user.profileImageUrl!.trim().isNotEmpty &&
+                                user.profileImageUrl!.trim().startsWith('http'))
+                            ? Builder(
+                                builder: (context) {
+                                  debugPrint(
+                                      '[PROFILE DEBUG] 10. Rendering avatar widget: AppNetworkImage');
+                                  return AppNetworkImage(
+                                    imageUrl: user.profileImageUrl!.trim(),
+                                    width: 96,
+                                    height: 96,
+                                    fit: BoxFit.cover,
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                      if (loadingProgress == null) {
+                                        debugPrint(
+                                            '[PROFILE DEBUG] 11. Image loading state: LOADED');
+                                        return child;
+                                      }
+                                      debugPrint(
+                                          '[PROFILE DEBUG] 11. Image loading state: IN PROGRESS');
+                                      return const Center(
+                                        child: SizedBox(
+                                          width: 28,
+                                          height: 28,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2.5,
                                             color: Color(0xFF005F38),
                                           ),
-                                        );
-                                      },
+                                        ),
+                                      );
+                                    },
+                                    errorBuilder: (context, error, stackTrace) {
+                                      debugPrint(
+                                          '[PROFILE DEBUG] 12. Image error: $error');
+                                      return const Center(
+                                        child: Icon(
+                                          Icons.person_rounded,
+                                          size: 52,
+                                          color: Color(0xFF005F38),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                              )
+                            : Builder(
+                                builder: (context) {
+                                  debugPrint(
+                                      '[PROFILE DEBUG] 10. Rendering avatar widget: Fallback Person Icon (profileImageUrl is null/empty)');
+                                  return const Center(
+                                    child: Icon(
+                                      Icons.person_rounded,
+                                      size: 52,
+                                      color: Color(0xFF005F38),
                                     ),
-                            ),
-                          ),
-                        ),
+                                  );
+                                },
+                              ),
                       ),
-                      Positioned(
-                        right: 2,
-                        bottom: 2,
-                        child: GestureDetector(
-                          onTap: () =>
-                              _uploadProfilePhoto(context, ref, user.id),
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black12,
-                                  blurRadius: 4,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.camera_alt_outlined,
-                              size: 14,
+                    ),
+                  ),
+                  Positioned(
+                    right: 2,
+                    bottom: 2,
+                    child: Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        onTap: () => _uploadProfilePhoto(context, ref, user.id),
+                        customBorder: const CircleBorder(),
+                        mouseCursor: SystemMouseCursors.click,
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                color: const Color(0xFFE2EFE7), width: 1.5),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x1F000000),
+                                blurRadius: 4,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.camera_alt_rounded,
+                              size: 16,
                               color: Color(0xFF005F38),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Name
-                  Text(
-                    user.name.isEmpty ? 'Sawariya Customer' : user.name,
-                    style: const TextStyle(
-                      fontSize: 19,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF172033),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-
-                  // Phone Number
-                  Text(
-                    user.phone.isEmpty ? '+91 98765 43210' : user.phone,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF667085),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Membership Badge
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                          color: const Color(0xFF005F38), width: 1.0),
-                    ),
-                    child: const Text(
-                      'Fresh Member',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF005F38),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 14),
+
+            // Name
+            Text(
+              user.name.isEmpty ? 'Sawariya Customer' : user.name,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF172033),
+                letterSpacing: -0.2,
+              ),
+            ),
+            const SizedBox(height: 4),
+
+            // Phone Number
+            Text(
+              user.phone.isEmpty ? '+91 98765 43210' : user.phone,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF667085),
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // Membership Badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFF005F38), width: 1.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF005F38).withValues(alpha: 0.04),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+              ),
+              child: const Text(
+                'Fresh Member',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF005F38),
+                  letterSpacing: 0.3,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
-
-
 
   Widget _buildMenuTile(
     BuildContext context,
@@ -484,8 +513,10 @@ class ProfileScreen extends ConsumerWidget {
     final authUid = FirebaseAuth.instance.currentUser?.uid;
     final effectiveUid = (uid.trim().isNotEmpty) ? uid.trim() : (authUid ?? '');
 
-    debugPrint('[PROFILE DEBUG T0] 1. Firebase Auth UID: $authUid (effective: $effectiveUid)');
-    debugPrint('[PROFILE DEBUG T0] profileImageUrl before upload: ${ref.read(userProvider).profileImageUrl}');
+    debugPrint(
+        '[PROFILE DEBUG T0] 1. Firebase Auth UID: $authUid (effective: $effectiveUid)');
+    debugPrint(
+        '[PROFILE DEBUG T0] profileImageUrl before upload: ${ref.read(userProvider).profileImageUrl}');
 
     if (effectiveUid.isEmpty) {
       debugPrint('[PROFILE DEBUG] Upload aborted: no authenticated user found');
@@ -516,7 +547,8 @@ class ProfileScreen extends ConsumerWidget {
       // 1. Validate file extension (case-insensitive: .jpg, .jpeg, .png)
       final fileName = picked.name.isNotEmpty ? picked.name : picked.path;
       final dotIndex = fileName.lastIndexOf('.');
-      final ext = dotIndex != -1 ? fileName.substring(dotIndex).toLowerCase() : '';
+      final ext =
+          dotIndex != -1 ? fileName.substring(dotIndex).toLowerCase() : '';
       final hasValidExt = ext == '.jpg' || ext == '.jpeg' || ext == '.png';
 
       if (!hasValidExt) {
@@ -598,27 +630,34 @@ class ProfileScreen extends ConsumerWidget {
       final storagePath = 'profiles/$effectiveUid/image';
       debugPrint('[PROFILE DEBUG] 2. Storage upload path: $storagePath');
 
-      final downloadUrl = await FirebaseStorageService.instance
-          .uploadProfileImage(
-            uid: effectiveUid,
-            bytes: bytes,
-            contentType: detectedContentType,
-          );
+      final downloadUrl =
+          await FirebaseStorageService.instance.uploadProfileImage(
+        uid: effectiveUid,
+        bytes: bytes,
+        contentType: detectedContentType,
+      );
 
       final uri = Uri.tryParse(downloadUrl);
-      final safeUrlSummary = uri != null ? '${uri.scheme}://${uri.host}${uri.path}' : '[unparseable]';
+      final safeUrlSummary = uri != null
+          ? '${uri.scheme}://${uri.host}${uri.path}'
+          : '[unparseable]';
       debugPrint('[PROFILE DEBUG T1] 3. Storage upload succeeded: true');
-      debugPrint('[PROFILE DEBUG T1] 4. downloadUrl exists: ${downloadUrl.isNotEmpty}');
-      debugPrint('[PROFILE DEBUG T1] 5. Download URL host/path: $safeUrlSummary');
+      debugPrint(
+          '[PROFILE DEBUG T1] 4. downloadUrl exists: ${downloadUrl.isNotEmpty}');
+      debugPrint(
+          '[PROFILE DEBUG T1] 5. Download URL host/path: $safeUrlSummary');
 
-      debugPrint('[PROFILE DEBUG T2] 6. Firestore document path: users/$effectiveUid');
+      debugPrint(
+          '[PROFILE DEBUG T2] 6. Firestore document path: users/$effectiveUid');
       await ref
           .read(userProvider.notifier)
           .updateProfile(profileImageUrl: downloadUrl);
 
       final userAfter = ref.read(userProvider);
-      debugPrint('[PROFILE DEBUG T3] 7. Firestore profileImageUrl after write: $safeUrlSummary');
-      debugPrint('[PROFILE DEBUG T3] 8. userProvider.profileImageUrl immediately after updateProfile(): ${userAfter.profileImageUrl}');
+      debugPrint(
+          '[PROFILE DEBUG T3] 7. Firestore profileImageUrl after write: $safeUrlSummary');
+      debugPrint(
+          '[PROFILE DEBUG T3] 8. userProvider.profileImageUrl immediately after updateProfile(): ${userAfter.profileImageUrl}');
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
