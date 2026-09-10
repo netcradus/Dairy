@@ -152,12 +152,27 @@ service cloud.firestore {
 
       // Order update:
       // Admins: Full management.
+      // Customers: Can cancel their own pending/placed/confirmed orders before dispatch.
       // Delivery Agents: Controlled state transition and assignment operations.
       allow update: if isAdmin()
+          || (isSignedIn() && canCustomerCancelOrder())
           || (isDelivery() && canUpdateAssignedOrder());
 
       // Only Admins may delete orders (audit trail retention)
       allow delete: if isAdmin();
+    }
+
+    // Customer cancellation guard
+    function canCustomerCancelOrder() {
+      let isMine = resource.data.userId == request.auth.uid;
+      let isCancellable = resource.data.status in ['Pending', 'pending', 'placed', 'Placed', 'confirmed', 'Confirmed', 'accepted', 'Accepted'];
+      let changed = request.resource.data.diff(resource.data).affectedKeys();
+      let setsCancelled = request.resource.data.status in ['cancelled', 'Cancelled'];
+
+      return isMine
+          && isCancellable
+          && changed.hasOnly(['status', 'cancelledAt', 'cancellationReason', 'updatedAt'])
+          && setsCancelled;
     }
 
     // Delivery-agent order mutation guard

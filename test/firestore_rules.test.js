@@ -489,7 +489,12 @@ describe('Sawariya Dairy — Firestore Security Rules Unit Tests', function () {
       await assertFails(getDoc(doc(db, 'orders', 'order_other_delivery')));
     });
 
-    it('Denies customer from updating or deleting orders', async () => {
+    it('Allows customer to cancel own pending/placed order', async () => {
+      const db = customer1Db();
+      await assertSucceeds(updateDoc(doc(db, 'orders', 'order_cust1_pending'), { status: 'cancelled' }));
+    });
+
+    it('Denies customer from mutating order items, prices, or deleting orders', async () => {
       const db = customer1Db();
       await assertFails(updateDoc(doc(db, 'orders', 'order_cust1_pending'), { totalAmount: 0 }));
       await assertFails(deleteDoc(doc(db, 'orders', 'order_cust1_pending')));
