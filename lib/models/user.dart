@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import '../core/auth/app_role.dart';
 
 /// User Model for Sawariya Dairy
@@ -36,51 +35,6 @@ class User {
   }
 
   factory User.fromMap(Map<String, dynamic> map) {
-    return User(
-      id: map['id'] ?? map['uid'] ?? '',
-      name: map['name'] ?? '',
-      phone: map['phone'] ?? '',
-      email: map['email'],
-      profileImageUrl: map['profileImageUrl'],
-      role: UserRole.sanitize(map['role'] as String?),
-    );
-  }
-}
-=======
-/// User Model for Sawariya Dairy
-class User {
-  final String id;
-  final String name;
-  final String phone;
-  final String? email;
-  final String? profileImageUrl;
-  final String role; // 'admin', 'customer', 'delivery'
-
-  const User({
-    required this.id,
-    required this.name,
-    required this.phone,
-    this.email,
-    this.profileImageUrl,
-    this.role = 'customer',
-  });
-
-  bool get isDelivery => role == 'delivery';
-  bool get isAdmin => role == 'admin';
-  bool get isCustomer => role == 'customer';
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'name': name,
-      'phone': phone,
-      'email': email,
-      'profileImageUrl': profileImageUrl,
-      'role': role,
-    };
-  }
-
-  factory User.fromMap(Map<String, dynamic> map) {
     final dynamic candidateImage = map['profileImageUrl'] ??
         map['photoUrl'] ??
         map['photoURL'] ??
@@ -89,15 +43,15 @@ class User {
         map['avatar'];
 
     return User(
-      id: map['id'] ?? '',
+      id: map['id'] ?? map['uid'] ?? '',
       name: map['name'] ?? '',
       phone: map['phone'] ?? '',
       email: map['email'],
-      profileImageUrl: (candidateImage is String && candidateImage.trim().isNotEmpty)
-          ? candidateImage.trim()
-          : null,
-      role: map['role'] ?? 'customer',
+      profileImageUrl:
+          (candidateImage is String && candidateImage.trim().isNotEmpty)
+              ? candidateImage.trim()
+              : null,
+      role: UserRole.sanitize(map['role'] as String?),
     );
   }
 }
->>>>>>> 74192f336731d620d80cbd622f9d701aaae5b778
