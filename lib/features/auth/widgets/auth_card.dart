@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../core/constants/app_assets.dart';
+import 'web_video_helper.dart';
 
 /// Responsive Luxury Authentication Shell Container Card for Sawariya Dairy
 class AuthCard extends StatelessWidget {
@@ -286,6 +288,10 @@ class _AuthVideoPlayerState extends State<_AuthVideoPlayer> {
   @override
   void initState() {
     super.initState();
+    _initVideoPlayer();
+  }
+
+  Future<void> _initVideoPlayer() async {
     _controller = VideoPlayerController.asset(
       widget.videoPath,
       videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
@@ -295,22 +301,39 @@ class _AuthVideoPlayerState extends State<_AuthVideoPlayer> {
         setState(() {});
       }
     });
-    _initVideo();
-  }
 
-  Future<void> _initVideo() async {
     try {
       await _controller.initialize();
+      if (!mounted) return;
+
+      // 1. ALWAYS set muted BEFORE calling play()
       await _controller.setVolume(0.0);
+
+      // 2. Set looping behavior
       await _controller.setLooping(true);
-      if (mounted) {
-        setState(() {
-          _isInitialized = true;
+
+      // 3. Configure underlying web HTML video element for muted autoplay
+      if (kIsWeb) {
+        configureWebVideoAutoplay();
+      }
+
+      setState(() {
+        _isInitialized = true;
+      });
+
+      // 4. Ensure DOM elements created after build are configured
+      if (kIsWeb) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          configureWebVideoAutoplay();
         });
       }
-      await _controller.play();
-    } catch (e) {
-      debugPrint('Video play postponed until interaction: $e');
+
+      // 5. Autoplay immediately; catch any play() error gracefully
+      await _controller.play().catchError((error) {
+        debugPrint('Auth video play() non-fatal error: $error');
+      });
+    } catch (error) {
+      debugPrint('Error initializing auth video: $error');
     }
   }
 
@@ -323,12 +346,40 @@ class _AuthVideoPlayerState extends State<_AuthVideoPlayer> {
   void _onTapPlay() {
     if (!_controller.value.isPlaying) {
       _controller.setVolume(0.0);
-      _controller.play();
+      _controller.play().catchError((error) {
+        debugPrint('Tap play error: $error');
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final errorDesc = _controller.value.errorDescription?.toLowerCase() ?? '';
+    final isAutoplayRejection = errorDesc.contains('interact') ||
+        errorDesc.contains('notallowederror') ||
+        errorDesc.contains('autoplay');
+
+    if (_controller.value.hasError && !isAutoplayRejection) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline,
+                  color: Colors.redAccent, size: 36),
+              const SizedBox(height: 8),
+              Text(
+                'Video Playback Error: ${_controller.value.errorDescription}',
+                style: const TextStyle(color: Colors.redAccent, fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     if (!_isInitialized) {
       return Container(
         color: const Color(0xFF005F38),
