@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -11,8 +13,17 @@ import '../../providers/complaint_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../widgets/status_badge.dart';
 
-const String _supportPhone = '+91 98765 43210';
-const String _supportEmail = 'support@sawariyadairy.com';
+// ── Support Contact Configuration ─────────────────────────────────────────────
+// Replace these with official contact values when available:
+// e.g. const String SUPPORT_PHONE = '+91XXXXXXXXXX';
+//      const String SUPPORT_EMAIL = 'support@yourdomain.com';
+//      const String SUPPORT_WHATSAPP = '+91XXXXXXXXXX';
+// ignore: constant_identifier_names
+const String SUPPORT_PHONE = '';
+// ignore: constant_identifier_names
+const String SUPPORT_EMAIL = '';
+// ignore: constant_identifier_names
+const String SUPPORT_WHATSAPP = '';
 
 const List<String> _complaintCategories = [
   'Late Delivery',
@@ -99,40 +110,195 @@ class _CustomerSupportScreenState extends ConsumerState<CustomerSupportScreen> {
     super.dispose();
   }
 
-  Future<void> _launch(String url, String fallbackMessage) async {
-    final uri = Uri.parse(url);
-    try {
-      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(fallbackMessage)),
-          );
-        }
-      }
-    } catch (e) {
+  Future<void> _call() async {
+    if (SUPPORT_PHONE.trim().isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(fallbackMessage)),
+          const SnackBar(
+            content: Text('Support phone number is not configured yet.'),
+            backgroundColor: AppColors.primaryBlue,
+          ),
+        );
+      }
+      return;
+    }
+
+    try {
+      await Clipboard.setData(const ClipboardData(text: SUPPORT_PHONE));
+    } catch (_) {}
+
+    final telUri =
+        Uri.parse('tel:${SUPPORT_PHONE.replaceAll(RegExp(r'[^\d+]'), '')}');
+    try {
+      if (await canLaunchUrl(telUri)) {
+        final launched =
+            await launchUrl(telUri, mode: LaunchMode.externalApplication);
+        if (!launched && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Phone number copied to clipboard: $SUPPORT_PHONE'),
+              backgroundColor: AppColors.primaryBlue,
+            ),
+          );
+        }
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Phone number copied to clipboard: $SUPPORT_PHONE'),
+            backgroundColor: AppColors.primaryBlue,
+          ),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Phone number copied to clipboard: $SUPPORT_PHONE'),
+            backgroundColor: AppColors.primaryBlue,
+          ),
         );
       }
     }
   }
 
-  void _call() => _launch(
-        'tel:${_supportPhone.replaceAll(RegExp(r'\s+'), '')}',
-        'Could not launch dialer for $_supportPhone',
-      );
+  Future<void> _email() async {
+    if (SUPPORT_EMAIL.trim().isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Support email is not configured yet.'),
+            backgroundColor: AppColors.primaryBlue,
+          ),
+        );
+      }
+      return;
+    }
 
-  void _email() => _launch(
-        'mailto:$_supportEmail',
-        'Could not open email for $_supportEmail',
-      );
+    // 1. Always copy the support email to clipboard as immediate guarantee
+    try {
+      await Clipboard.setData(const ClipboardData(text: SUPPORT_EMAIL));
+    } catch (_) {}
 
-  void _whatsapp() => _launch(
-        'https://wa.me/${_supportPhone.replaceAll(RegExp(r'\s+'), '')}'
-            '?text=${Uri.encodeComponent('Hi Sawariya Dairy, I need help with my order.')}',
-        'Could not open WhatsApp',
+    final mailtoUri = Uri(
+      scheme: 'mailto',
+      path: SUPPORT_EMAIL,
+      queryParameters: {
+        'subject': 'Sawariya Dairy Support Request',
+      },
+    );
+
+    // 2. Try launching standard system mail handler
+    try {
+      if (await canLaunchUrl(mailtoUri)) {
+        final launched = await launchUrl(
+          mailtoUri,
+          mode: LaunchMode.externalApplication,
+        );
+        if (launched) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                    'Opening email app... ($SUPPORT_EMAIL copied to clipboard)'),
+                backgroundColor: AppColors.primaryBlue,
+                duration: Duration(seconds: 3),
+              ),
+            );
+          }
+          return;
+        }
+      }
+    } catch (_) {}
+
+    // 3. Fallback on Web: Open Gmail Web Composer in new tab
+    if (kIsWeb) {
+      final gmailWebUri = Uri.parse(
+        'https://mail.google.com/mail/?view=cm&fs=1&to=$SUPPORT_EMAIL&su=${Uri.encodeComponent('Sawariya Dairy Support Request')}',
       );
+      try {
+        if (await canLaunchUrl(gmailWebUri)) {
+          final launched = await launchUrl(
+            gmailWebUri,
+            mode: LaunchMode.externalApplication,
+          );
+          if (launched && mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                    'Opening Gmail in new tab... ($SUPPORT_EMAIL copied to clipboard)'),
+                backgroundColor: AppColors.primaryBlue,
+                duration: Duration(seconds: 3),
+              ),
+            );
+            return;
+          }
+        }
+      } catch (_) {}
+    }
+
+    // 4. Final Fallback: Inform user that address is copied
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Email address copied to clipboard: $SUPPORT_EMAIL'),
+          backgroundColor: AppColors.primaryBlue,
+          duration: Duration(seconds: 4),
+        ),
+      );
+    }
+  }
+
+  Future<void> _whatsapp() async {
+    final whatsappTarget =
+        SUPPORT_WHATSAPP.isNotEmpty ? SUPPORT_WHATSAPP : SUPPORT_PHONE;
+
+    if (whatsappTarget.trim().isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('WhatsApp support is not configured yet.'),
+            backgroundColor: AppColors.primaryBlue,
+          ),
+        );
+      }
+      return;
+    }
+
+    final cleanPhone = whatsappTarget.replaceAll(RegExp(r'[^\d]'), '');
+    final waUri = Uri.parse(
+      'https://wa.me/$cleanPhone?text=${Uri.encodeComponent('Hi Sawariya Dairy, I need help with my order.')}',
+    );
+    try {
+      if (await canLaunchUrl(waUri)) {
+        final launched =
+            await launchUrl(waUri, mode: LaunchMode.externalApplication);
+        if (!launched && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Could not open WhatsApp for $whatsappTarget'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not open WhatsApp for $whatsappTarget'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not open WhatsApp: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
 
   Future<void> _submitQuery() async {
     if (_submitting) return; // Prevent duplicate submission
@@ -341,9 +507,21 @@ class _CustomerSupportScreenState extends ConsumerState<CustomerSupportScreen> {
                         ),
                         child: Column(
                           children: [
-                            _contactRow(Icons.phone_rounded, _supportPhone),
-                            const SizedBox(height: 8),
-                            _contactRow(Icons.email_rounded, _supportEmail),
+                            _contactRow(
+                              Icons.phone_rounded,
+                              SUPPORT_PHONE.isNotEmpty
+                                  ? SUPPORT_PHONE
+                                  : 'Phone: Not configured yet',
+                              onTap: _call,
+                            ),
+                            const SizedBox(height: 6),
+                            _contactRow(
+                              Icons.email_rounded,
+                              SUPPORT_EMAIL.isNotEmpty
+                                  ? SUPPORT_EMAIL
+                                  : 'Email: Not configured yet',
+                              onTap: _email,
+                            ),
                           ],
                         ),
                       ),
@@ -405,6 +583,15 @@ class _CustomerSupportScreenState extends ConsumerState<CustomerSupportScreen> {
                             }
                             return null;
                           },
+                        ),
+                        const SizedBox(height: AppSizes.p14),
+
+                        // Email Address (Optional)
+                        TextFormField(
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: _inputDecoration(
+                              'Email Address (Optional, e.g. name@example.com)'),
                         ),
                         const SizedBox(height: AppSizes.p14),
 
@@ -857,20 +1044,32 @@ class _CustomerSupportScreenState extends ConsumerState<CustomerSupportScreen> {
     );
   }
 
-  Widget _contactRow(IconData icon, String value) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.white, size: 18),
-        const SizedBox(width: AppSizes.p8),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
+  Widget _contactRow(IconData icon, String value, {VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(6),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 2),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.white, size: 18),
+            const SizedBox(width: AppSizes.p8),
+            Expanded(
+              child: Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                  decoration: TextDecoration.underline,
+                  decorationColor: Colors.white70,
+                ),
+              ),
+            ),
+            const Icon(Icons.copy_rounded, color: Colors.white70, size: 14),
+          ],
         ),
-      ],
+      ),
     );
   }
 
