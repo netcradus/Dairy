@@ -253,42 +253,104 @@ class _DeliveryPanelScreenState extends ConsumerState<DeliveryPanelScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              const Spacer(),
-              TextButton(
-                onPressed: () async {
-                  await ref.read(userProvider.notifier).clearSession();
-                  if (mounted) {
-                    context.go('/login');
-                  }
-                },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.logout_rounded,
-                      size: 18,
-                      color: AppColors.textMuted,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Logout',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 12,
-                        color: AppColors.textMuted,
-                        fontWeight: FontWeight.w500,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () => _confirmLogout(context),
+                hoverColor: AppColors.error.withValues(alpha: 0.08),
+                splashColor: AppColors.error.withValues(alpha: 0.12),
+                child: Container(
+                  height: 48,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  alignment: Alignment.centerLeft,
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.logout_rounded,
+                        size: 20,
+                        color: textSecondary,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 14),
+                      Text(
+                        'Logout',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ],
+            ),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _confirmLogout(BuildContext context) async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.cardBgOf(ctx),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Logout',
+          style: GoogleFonts.plusJakartaSans(
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimaryOf(ctx),
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to logout?',
+          style: GoogleFonts.plusJakartaSans(
+            color: AppColors.textSecondaryOf(ctx),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.plusJakartaSans(
+                color: AppColors.textSecondaryOf(ctx),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'Logout',
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout == true && context.mounted) {
+      ref.read(cartProvider.notifier).clearLocalCart();
+      await ref.read(userProvider.notifier).clearSession();
+      if (context.mounted) {
+        context.go('/login');
+      }
+    }
   }
 
   Widget _buildDesktopTopBar(bool isOnline, int currentIndex, bool sharing) {
