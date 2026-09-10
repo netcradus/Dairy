@@ -116,14 +116,90 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         return;
       }
 
-      setState(() => _isUploadingPhoto = true);
+      // 1. Validate file extension (case-insensitive: .jpg, .jpeg, .png)
+      final fileName = picked.name.isNotEmpty ? picked.name : picked.path;
+      final dotIndex = fileName.lastIndexOf('.');
+      final ext = dotIndex != -1 ? fileName.substring(dotIndex).toLowerCase() : '';
+      final hasValidExt = ext == '.jpg' || ext == '.jpeg' || ext == '.png';
+
+      if (!hasValidExt) {
+        debugPrint('[PROFILE DEBUG] Upload rejected: invalid extension "$ext"');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  'Invalid file type. Please upload only JPG, JPEG, or PNG images.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
 
       final bytes = await picked.readAsBytes();
+
+      // 2. Validate file size limit (Maximum 5 MB = 5 * 1024 * 1024 bytes)
+      const maxSizeBytes = 5 * 1024 * 1024;
+      if (bytes.length > maxSizeBytes) {
+        debugPrint(
+            '[PROFILE DEBUG] Upload rejected: file size ${bytes.length} exceeds 5 MB');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  'Image is too large. Please select an image smaller than 5 MB.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      // 3. Validate MIME / Magic Bytes signature
+      // JPEG SOI marker: FF D8 FF
+      // PNG signature: 89 50 4E 47 0D 0A 1A 0A
+      final isJpeg = bytes.length >= 3 &&
+          bytes[0] == 0xFF &&
+          bytes[1] == 0xD8 &&
+          bytes[2] == 0xFF;
+      final isPng = bytes.length >= 8 &&
+          bytes[0] == 0x89 &&
+          bytes[1] == 0x50 &&
+          bytes[2] == 0x4E &&
+          bytes[3] == 0x47 &&
+          bytes[4] == 0x0D &&
+          bytes[5] == 0x0A &&
+          bytes[6] == 0x1A &&
+          bytes[7] == 0x0A;
+
+      if (!isJpeg && !isPng) {
+        debugPrint(
+            '[PROFILE DEBUG] Upload rejected: magic bytes do not match JPEG or PNG');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  'Invalid file type. Please upload only JPG, JPEG, or PNG images.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      final detectedContentType = isPng ? 'image/png' : 'image/jpeg';
+
+      setState(() => _isUploadingPhoto = true);
+
       final storagePath = 'profiles/$effectiveUid/image';
       debugPrint('[PROFILE DEBUG] 2. Storage upload path: $storagePath');
 
       final downloadUrl = await FirebaseStorageService.instance
-          .uploadProfileImage(uid: effectiveUid, bytes: bytes);
+          .uploadProfileImage(
+            uid: effectiveUid,
+            bytes: bytes,
+            contentType: detectedContentType,
+          );
 
       final uri = Uri.tryParse(downloadUrl);
       final safeUrlSummary = uri != null

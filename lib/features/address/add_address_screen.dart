@@ -9,6 +9,7 @@ import '../../models/address.dart';
 import '../../providers/address_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../services/location_service.dart';
+import '../../services/pincode_service.dart';
 
 /// Sawariya Dairy Phase 6 & 8 — Add / Edit Delivery Address Screen
 class AddAddressScreen extends ConsumerStatefulWidget {
@@ -265,6 +266,30 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
     final city = _cityController.text.trim();
     final state = _stateController.text.trim();
     final pin = _pinCodeController.text.trim();
+
+    // Validate PIN code format and City/District/State matching before Firestore writes
+    final pinValidation = await PinCodeService.instance.validatePinCode(
+      pinCode: pin,
+      city: city,
+      state: state,
+    );
+
+    if (!pinValidation.isValid) {
+      if (mounted) {
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              pinValidation.errorMessage ??
+                  'This PIN code does not match the selected city.',
+            ),
+            backgroundColor: AppColors.error,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+      return;
+    }
 
     double? resolvedLat = _latitude;
     double? resolvedLng = _longitude;
@@ -660,9 +685,16 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
                           prefixIcon: const Icon(Icons.pin_drop_outlined,
                               color: AppColors.primaryBlue),
                           keyboardType: TextInputType.number,
-                          validator: (v) => v == null || v.length < 6
-                              ? 'Enter 6-digit PIN'
-                              : null,
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) {
+                              return 'Please enter a valid 6-digit PIN code.';
+                            }
+                            final clean = v.trim();
+                            if (!RegExp(r'^\d{6}$').hasMatch(clean)) {
+                              return 'Please enter a valid 6-digit PIN code.';
+                            }
+                            return null;
+                          },
                         ),
                       ),
                     ],
