@@ -46,3 +46,5 @@ app.*.map.json
 
 # Node dependencies
 node_modules/
+
+.firebase/
