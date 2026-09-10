@@ -20,8 +20,9 @@ class EarningsService {
 
   /// Persists a single earning / payout record.
   ///
-  /// Intended to be called when an order transitions to `delivered`. Pass
-  /// [EarningModel.id] equal to the order id to guarantee one record per order.
+  /// Note: Normal delivery earnings are created automatically and securely by
+  /// the trusted backend Cloud Function upon order delivery. This method is
+  /// retained for admin payouts, manual adjustments, or testing.
   Future<void> logEarning(EarningModel earning) async {
     try {
       await _firestore

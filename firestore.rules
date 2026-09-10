@@ -239,12 +239,17 @@ service cloud.firestore {
 
     // ── 10. earnings Collection ─────────────────────────────────────────────
     match /earnings/{earningId} {
-      // Delivery agent reads own earnings; Admins read all
+      // Delivery agent reads own earnings; Admins read all.
+      // Delivery agents can NEVER read other agents' earnings.
       allow read: if isAdmin()
           || (isDelivery() && resource.data.agentId == request.auth.uid);
 
-      // Written by Cloud Functions / Admin SDK only (bypasses rules)
-      // Admins can manage earnings
+      // Strictly written by Cloud Functions / Admin SDK only.
+      // Delivery agents and customers CANNOT:
+      //   - create arbitrary earnings
+      //   - modify earning amount or tip
+      //   - alter agentId or orderId
+      //   - mutate another agent's earnings
       allow write: if isAdmin();
     }
 

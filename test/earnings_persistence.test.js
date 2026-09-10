@@ -101,6 +101,24 @@ describe('Task 6 — Delivery Earnings Persistence Tests', function () {
       return { status: 'skipped', reason: 'missing_assigned_agent' };
     }
 
+    const cleanAgentId = agentId.trim();
+    let isAuthorized = false;
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore();
+      const userSnap = await getDoc(doc(db, 'users', cleanAgentId));
+      if (userSnap.exists()) {
+        const role = userSnap.data().role;
+        if (role === 'delivery' || role === 'admin') isAuthorized = true;
+      } else {
+        const agentSnap = await getDoc(doc(db, 'delivery_agents', cleanAgentId));
+        if (agentSnap.exists()) isAuthorized = true;
+      }
+    });
+
+    if (!isAuthorized) {
+      return { status: 'skipped', reason: 'invalid_delivery_agent' };
+    }
+
     const rawSubtotal = afterData.subtotal != null
       ? Number(afterData.subtotal)
       : (afterData.totalAmount != null ? Number(afterData.totalAmount) : 0);
