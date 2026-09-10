@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/utils/validators.dart';
 import '../../core/widgets/app_network_image.dart';
 import '../../providers/user_provider.dart';
 import '../../services/firebase_storage_service.dart';
@@ -51,13 +53,29 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   Future<void> _saveChanges() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final rawName = _nameController.text;
+    final nameError = AppValidators.validateFullName(rawName);
+    if (nameError != null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(nameError),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+      return;
+    }
+
+    final normalizedName = AppValidators.normalizeName(rawName);
+
     setState(() {
       _isLoading = true;
     });
 
     try {
       await ref.read(userProvider.notifier).updateProfile(
-            name: _nameController.text.trim(),
+            name: normalizedName,
             email: _emailController.text.trim(),
           );
 
@@ -296,8 +314,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                       fit: BoxFit.cover,
                                       loadingBuilder:
                                           (context, child, loadingProgress) {
-                                        if (loadingProgress == null)
+                                        if (loadingProgress == null) {
                                           return child;
+                                        }
                                         return const Center(
                                           child: SizedBox(
                                             width: 28,
@@ -378,12 +397,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.person_outline),
                 ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter your name';
-                  }
-                  return null;
-                },
+                keyboardType: TextInputType.name,
+                textCapitalization: TextCapitalization.words,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+                  LengthLimitingTextInputFormatter(50),
+                ],
+                validator: AppValidators.validateFullName,
               ),
               const SizedBox(height: 16),
               // Email Input

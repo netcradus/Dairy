@@ -8,6 +8,27 @@ abstract class AppValidators {
     return null;
   }
 
+  static String? validateFullName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Please enter your full name.';
+    }
+    if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
+      return 'Name can contain letters and spaces only.';
+    }
+    final trimmed = value.trim();
+    if (trimmed.length < 2) {
+      return 'Name must be at least 2 characters.';
+    }
+    if (trimmed.length > 50) {
+      return 'Name cannot exceed 50 characters.';
+    }
+    return null;
+  }
+
+  static String normalizeName(String name) {
+    return name.trim().replaceAll(RegExp(r'\s+'), ' ');
+  }
+
   static String? validatePhone(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Phone number is required';
