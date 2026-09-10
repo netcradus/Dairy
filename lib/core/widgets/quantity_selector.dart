@@ -67,6 +67,11 @@ class QuantitySelector extends StatelessWidget {
           IconButton(
             padding: EdgeInsets.zero,
             visualDensity: VisualDensity.compact,
+            style: IconButton.styleFrom(
+              minimumSize: const Size(24, 24),
+              padding: EdgeInsets.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
             constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
             icon: const Icon(Icons.remove,
                 size: 16, color: AppColors.textOnPrimary),
@@ -83,6 +88,11 @@ class QuantitySelector extends StatelessWidget {
           IconButton(
             padding: EdgeInsets.zero,
             visualDensity: VisualDensity.compact,
+            style: IconButton.styleFrom(
+              minimumSize: const Size(24, 24),
+              padding: EdgeInsets.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
             constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
             icon:
                 const Icon(Icons.add, size: 16, color: AppColors.textOnPrimary),

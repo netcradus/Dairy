@@ -124,7 +124,7 @@ class CartItemTile extends StatelessWidget {
                   onIncrement: onIncrement,
                   onDecrement: onDecrement,
                   height: 32,
-                  width: 84,
+                  width: 90,
                 ),
               ],
             ),

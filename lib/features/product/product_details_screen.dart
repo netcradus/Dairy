@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
@@ -456,6 +457,29 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     );
   }
 
+  void _navigateToCart(BuildContext context) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    try {
+      context.push('/cart');
+    } catch (_) {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const CartScreen()),
+      );
+    }
+  }
+
+  void _navigateToCheckout(BuildContext context) {
+    try {
+      context.push('/checkout');
+    } catch (_) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const CheckoutScreen(),
+        ),
+      );
+    }
+  }
+
   Widget _buildQuantityAndCart(WidgetRef ref, Product product) {
     return Column(
       children: [
@@ -496,6 +520,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                   onPressed: () {
                     final qtyToAdd = _selectedQuantity;
                     ref.read(cartProvider.notifier).addItem(product, qtyToAdd);
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
@@ -503,16 +528,12 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                               ? 'Added ${product.title} to your Cart!'
                               : 'Added $qtyToAdd x ${product.title} to your Cart!',
                         ),
-                        duration: const Duration(seconds: 2),
+                        duration: const Duration(seconds: 4),
                         action: SnackBarAction(
                           label: 'VIEW CART',
+                          textColor: AppColors.ratingStar,
                           onPressed: () {
-                            Navigator.pop(context);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const CartScreen()),
-                            );
+                            _navigateToCart(context);
                           },
                         ),
                       ),
@@ -546,12 +567,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                     ref
                         .read(cartProvider.notifier)
                         .setItemQuantity(product, buyNowQuantity);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const CheckoutScreen(),
-                      ),
-                    );
+                    _navigateToCheckout(context);
                   },
                   icon: const Icon(Icons.flash_on_rounded),
                   label: const Text(
