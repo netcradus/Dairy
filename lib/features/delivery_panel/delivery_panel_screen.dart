@@ -6,8 +6,10 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/responsive/responsive_layout.dart';
 import '../../models/delivery_boy_model.dart';
+import '../../providers/cart_provider.dart';
 import '../../providers/delivery_live_location_provider.dart';
 import '../../providers/delivery_provider.dart';
+import '../../providers/user_provider.dart';
 import 'screens/requests_tab.dart';
 import 'screens/active_delivery_tab.dart';
 import 'screens/orders_tab.dart';
@@ -250,6 +252,39 @@ class _DeliveryPanelScreenState extends ConsumerState<DeliveryPanelScreen> {
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              const Spacer(),
+              TextButton(
+                onPressed: () async {
+                  await ref.read(userProvider.notifier).clearSession();
+                  if (mounted) {
+                    context.go('/login');
+                  }
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.logout_rounded,
+                      size: 18,
+                      color: AppColors.textMuted,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Logout',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        color: AppColors.textMuted,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
