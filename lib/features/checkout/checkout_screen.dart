@@ -53,6 +53,16 @@ class CheckoutScreen extends ConsumerWidget {
     }
 
     final selectedAddress = ref.read(selectedAddressProvider);
+    if (selectedAddress == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please add or select a delivery address to place your order.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
     final paymentMethod = ref.read(paymentMethodProvider);
     final paymentName = paymentMethod == PaymentMethodType.cashOnDelivery
         ? 'Cash on Delivery'
@@ -70,7 +80,7 @@ class CheckoutScreen extends ConsumerWidget {
       newOrder = await ref.read(orderServiceProvider).placeOrder(
             userId: authUser.uid,
             items: cartItems,
-            deliveryAddress: selectedAddress ?? _fallbackAddress(),
+            deliveryAddress: selectedAddress,
             paymentMethod: paymentName,
           );
     } catch (e) {
@@ -122,7 +132,7 @@ class CheckoutScreen extends ConsumerWidget {
               ),
               const SizedBox(height: AppSizes.p8),
               Text(
-                'Thank you for ordering with Sawariya Dairy!\nYour fresh products will be delivered to:\n\n${selectedAddress?.fullName ?? 'Customer'}\n${selectedAddress?.fullAddressText ?? ''}\n\nPayment Mode: $paymentName',
+                'Thank you for ordering with Sawariya Dairy!\nYour fresh products will be delivered to:\n\n${selectedAddress.fullName}\n${selectedAddress.fullAddressText}\n\nPayment Mode: $paymentName',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 13,
@@ -168,22 +178,6 @@ class CheckoutScreen extends ConsumerWidget {
     final ms = now.millisecondsSinceEpoch;
     final sequence = ms.remainder(100000);
     return 'SD-$sequence';
-  }
-
-  /// Fallback address used when no delivery address is selected
-  static Address _fallbackAddress() {
-    return const Address(
-      id: 'addr_default',
-      label: 'Home',
-      fullName: 'Sawariya Customer',
-      mobileNumber: '+91 9876543210',
-      houseFlat: '123 Dairy Lane',
-      streetArea: 'Main Street',
-      city: 'Indore',
-      state: 'Madhya Pradesh',
-      pinCode: '452001',
-      isDefault: true,
-    );
   }
 
   @override

@@ -39,16 +39,24 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     super.initState();
     _videoController = VideoPlayerController.asset(
       'assets/images/orderv.mp4',
+      videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
     );
-    _videoController.initialize().then((_) {
+    _videoController.initialize().then((_) async {
       if (!mounted) return;
-      _videoController
-        ..setLooping(true)
-        ..setVolume(0)
-        ..play();
-      setState(() {
-        _isVideoInitialized = true;
-      });
+      await _videoController.setVolume(0.0);
+      await _videoController.setLooping(true);
+      try {
+        await _videoController.play();
+      } catch (e) {
+        debugPrint('Shop video autoplay prevented: $e');
+      }
+      if (mounted) {
+        setState(() {
+          _isVideoInitialized = true;
+        });
+      }
+    }).catchError((e) {
+      debugPrint('Error initializing shop video: $e');
     });
   }
 
@@ -543,12 +551,13 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
           child: _videoController.value.hasError
               ? Container(
                   color: const Color(0xFF005F38),
-                  padding: const EdgeInsets.all(8),
-                  alignment: Alignment.center,
-                  child: Text(
-                    'Playback Error: ${_videoController.value.errorDescription}',
-                    style: const TextStyle(color: Colors.white, fontSize: 11),
-                    textAlign: TextAlign.center,
+                  child: Image.asset(
+                    'assets/images/shopbanner1.png',
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const Center(
+                      child: Icon(Icons.play_circle_outline,
+                          size: 48, color: Colors.white),
+                    ),
                   ),
                 )
               : (!_isVideoInitialized

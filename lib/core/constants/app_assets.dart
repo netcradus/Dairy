@@ -149,15 +149,37 @@ abstract class AppAssets {
     String? categoryKey,
     String? productId,
     String? productTitle,
+    String? title,
   }) {
     if (_isNetwork(imageUrl)) return imageUrl!.trim();
     if (_isAsset(imageUrl)) return imageUrl!.trim();
+
+    final effectiveTitle = productTitle ?? title;
+
     final fromCategory = _fallbackDefault(_productDefaultByKey, categoryKey);
     if (fromCategory != null) return fromCategory;
     final fromId = _fallbackDefault(_productDefaultByKey, productId);
     if (fromId != null) return fromId;
-    final fromTitle = _fallbackDefault(_productDefaultByKey, productTitle);
+    final fromTitle = _fallbackDefault(_productDefaultByKey, effectiveTitle);
     if (fromTitle != null) return fromTitle;
-    return null;
+
+    final search =
+        '${effectiveTitle ?? ''} ${imageUrl ?? ''} ${categoryKey ?? ''} ${productId ?? ''}'
+            .toLowerCase();
+    if (search.contains('paneer') || search.contains('pan')) return paneerPng;
+    if (search.contains('ghee') || search.contains('gh')) return gheePng;
+    if (search.contains('lassi') || search.contains('las')) return lassiPng;
+    if (search.contains('makhan') ||
+        search.contains('butter') ||
+        search.contains('mak')) return makhanPng;
+    if (search.contains('uple') ||
+        search.contains('dung') ||
+        search.contains('u3')) return uplePng;
+    if (search.contains('water') || search.contains('w3')) return waterPng;
+    if (search.contains('milk') ||
+        search.contains('doodh') ||
+        search.contains('nnd')) return milkPng;
+
+    return milkPng;
   }
 }

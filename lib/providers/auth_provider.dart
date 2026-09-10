@@ -322,7 +322,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         final fullName = (state.tempFullName != null &&
                 state.tempFullName!.trim().isNotEmpty)
             ? state.tempFullName!.trim()
-            : 'Sawariya Customer';
+            : '';
 
         // Determine role: preserve existing if user document exists, otherwise default to 'customer'
         // Never grant admin/delivery privileges based on phone number;
@@ -333,7 +333,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           phone: mobile,
           email: firebaseUser.email?.isNotEmpty == true
               ? firebaseUser.email!
-              : 'customer@sawariyadairy.com',
+              : '',
           role: 'customer',
         );
 

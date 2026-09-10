@@ -7,6 +7,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
 import '../../models/notification_item.dart';
+import '../../providers/navigation_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../../providers/order_provider.dart';
 import '../orders/order_details_screen.dart';
@@ -95,12 +96,10 @@ class NotificationsScreen extends ConsumerWidget {
                   ),
                 if (notifications.isNotEmpty && userId != null)
                   IconButton(
-                    icon:
-                        const Icon(Icons.delete_sweep_rounded, size: 20),
+                    icon: const Icon(Icons.delete_sweep_rounded, size: 20),
                     tooltip: 'Clear all',
                     onPressed: () {
-                      final allIds =
-                          notifications.map((n) => n.id).toList();
+                      final allIds = notifications.map((n) => n.id).toList();
                       repo.clearAll(userId, allIds).catchError((_) {});
                     },
                   ),
@@ -110,63 +109,56 @@ class NotificationsScreen extends ConsumerWidget {
             const [],
       ),
       body: asyncNotifications.when(
-        loading: () {
-          debugPrint('[NOTIF DEBUG] NotificationsScreen: state = LOADING');
-          return const Center(
-            child: CircularProgressIndicator(
-              color: AppColors.primaryBlue,
-            ),
-          );
-        },
-        error: (error, stack) {
-          debugPrint('[NOTIF DEBUG] NotificationsScreen: state = ERROR: $error');
-          debugPrint('[NOTIF DEBUG] NotificationsScreen stack: $stack');
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSizes.p24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.cloud_off_rounded,
-                    size: 56,
+        loading: () => const Center(
+          child: CircularProgressIndicator(
+            color: AppColors.primaryBlue,
+          ),
+        ),
+        error: (error, _) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSizes.p24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.cloud_off_rounded,
+                  size: 56,
+                  color: AppColors.textSecondary,
+                ),
+                const SizedBox(height: AppSizes.p16),
+                const Text(
+                  'Could not load notifications',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: AppSizes.p8),
+                Text(
+                  error.toString(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 12,
                     color: AppColors.textSecondary,
                   ),
-                  const SizedBox(height: AppSizes.p16),
-                  const Text(
-                    'Could not load notifications',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
+                ),
+                const SizedBox(height: AppSizes.p16),
+                ElevatedButton.icon(
+                  onPressed: () =>
+                      ref.invalidate(userNotificationsStreamProvider),
+                  icon: const Icon(Icons.refresh_rounded),
+                  label: const Text('Retry'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryBlue,
+                    foregroundColor: Colors.white,
                   ),
-                  const SizedBox(height: AppSizes.p8),
-                  Text(
-                    error.toString(),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: AppSizes.p16),
-                  ElevatedButton.icon(
-                    onPressed: () => ref.invalidate(userNotificationsStreamProvider),
-                    icon: const Icon(Icons.refresh_rounded),
-                    label: const Text('Retry'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryBlue,
-                      foregroundColor: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          );
-        },
+          ),
+        ),
         data: (notifications) {
-          debugPrint('[NOTIF DEBUG] NotificationsScreen: state = DATA, received ${notifications.length} notification(s)');
           if (notifications.isEmpty) {
             return _buildEmptyState(context, ref);
           }
@@ -245,11 +237,12 @@ class NotificationsScreen extends ConsumerWidget {
               height: 48,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  // context.go navigates correctly whether this screen was
-                  // pushed via Navigator.push (from Profile) or opened via
-                  // the bottom-nav tab — unlike navigationProvider.setIndex
-                  // which only works when already inside the MainLayout.
-                  context.go('/home');
+                  ref.read(navigationProvider.notifier).setIndex(0);
+                  if (Navigator.of(context).canPop()) {
+                    Navigator.of(context).pop();
+                  } else {
+                    context.go('/home');
+                  }
                 },
                 icon: const Icon(Icons.home_rounded),
                 label: const Text(

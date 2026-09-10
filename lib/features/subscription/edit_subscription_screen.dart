@@ -6,8 +6,8 @@ import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
 import '../../core/utils/validators.dart';
 import '../../core/widgets/app_button.dart';
-import '../../core/widgets/category_image.dart';
 import '../../core/widgets/app_text_field.dart';
+import '../../core/widgets/product_image.dart';
 import '../../models/product.dart';
 import '../../models/subscription.dart';
 import '../../providers/subscription_provider.dart';
@@ -285,8 +285,10 @@ class _EditSubscriptionScreenState
                         value: p.id,
                         child: Row(
                           children: [
-                            CategoryImage(
+                            ProductImage(
                               imageUrl: p.imageUrl,
+                              categoryKey: p.categoryId,
+                              title: p.title,
                               size: 22,
                               radius: 5,
                             ),

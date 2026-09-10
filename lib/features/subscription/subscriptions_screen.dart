@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../core/constants/app_assets.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
-import '../../core/widgets/category_image.dart';
+import '../../core/widgets/product_image.dart';
 import '../../models/subscription.dart';
 import '../../providers/subscription_provider.dart';
 import '../subscription/edit_subscription_screen.dart';
@@ -148,11 +148,14 @@ class SubscriptionsScreen extends ConsumerWidget {
                   color: AppColors.lightBlue,
                   borderRadius: AppSizes.borderSmall,
                 ),
-                child: const Center(
-                  child: CategoryImage(
-                    imageUrl: AppAssets.milkPlaceholder,
-                    size: 32,
+                child: Center(
+                  child: ProductImage(
+                    imageUrl: sub.product.imageUrl,
+                    categoryKey: sub.product.categoryId,
+                    title: sub.product.title,
+                    size: 38,
                     radius: 8,
+                    fit: BoxFit.contain,
                   ),
                 ),
               ),
@@ -458,11 +461,14 @@ class _SubscriptionCard extends ConsumerWidget {
                           color: AppColors.lightBlue,
                           borderRadius: AppSizes.borderSmall,
                         ),
-                        child: const Center(
-                          child: CategoryImage(
-                            imageUrl: AppAssets.milkPlaceholder,
-                            size: 32,
+                        child: Center(
+                          child: ProductImage(
+                            imageUrl: subscription.product.imageUrl,
+                            categoryKey: subscription.product.categoryId,
+                            title: subscription.product.title,
+                            size: 38,
                             radius: 8,
+                            fit: BoxFit.contain,
                           ),
                         ),
                       ),

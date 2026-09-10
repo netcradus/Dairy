@@ -286,24 +286,32 @@ class _AuthVideoPlayerState extends State<_AuthVideoPlayer> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.asset(widget.videoPath);
+    _controller = VideoPlayerController.asset(
+      widget.videoPath,
+      videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+    );
     _controller.addListener(() {
-      if (_controller.value.hasError && mounted) {
+      if (mounted) {
         setState(() {});
       }
     });
-    _controller.initialize().then((_) {
+    _initVideo();
+  }
+
+  Future<void> _initVideo() async {
+    try {
+      await _controller.initialize();
+      await _controller.setVolume(0.0);
+      await _controller.setLooping(true);
       if (mounted) {
         setState(() {
           _isInitialized = true;
         });
-        _controller.setLooping(true);
-        _controller.play();
-        _controller.setVolume(0.0); // Mute
       }
-    }).catchError((error) {
-      debugPrint('Error initializing auth video: $error');
-    });
+      await _controller.play();
+    } catch (e) {
+      debugPrint('Video play postponed until interaction: $e');
+    }
   }
 
   @override
@@ -312,54 +320,92 @@ class _AuthVideoPlayerState extends State<_AuthVideoPlayer> {
     super.dispose();
   }
 
+  void _onTapPlay() {
+    if (!_controller.value.isPlaying) {
+      _controller.setVolume(0.0);
+      _controller.play();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (_controller.value.hasError) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline,
-                  color: Colors.redAccent, size: 36),
-              const SizedBox(height: 8),
-              Text(
-                'Video Playback Error: ${_controller.value.errorDescription}',
-                style: const TextStyle(color: Colors.redAccent, fontSize: 12),
-                textAlign: TextAlign.center,
+    if (!_isInitialized) {
+      return Container(
+        color: const Color(0xFF005F38),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.asset(
+              AppAssets.landingBg,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                color: const Color(0xFF005F38),
               ),
-            ],
+            ),
+            Container(
+              color: Colors.black.withValues(alpha: 0.35),
+            ),
+            Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset(
+                    AppAssets.sawariyaLogo,
+                    width: 80,
+                    height: 80,
+                    errorBuilder: (_, __, ___) => const Icon(
+                      Icons.eco_rounded,
+                      color: Color(0xFFD4AF37),
+                      size: 50,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Sawariya Dairy',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    Widget videoWidget;
+    if (widget.fit == BoxFit.contain) {
+      videoWidget = AspectRatio(
+        aspectRatio: _controller.value.aspectRatio > 0
+            ? _controller.value.aspectRatio
+            : 16 / 9,
+        child: VideoPlayer(_controller),
+      );
+    } else {
+      videoWidget = SizedBox.expand(
+        child: FittedBox(
+          fit: widget.fit,
+          child: SizedBox(
+            width: _controller.value.size.width > 0
+                ? _controller.value.size.width
+                : 16,
+            height: _controller.value.size.height > 0
+                ? _controller.value.size.height
+                : 9,
+            child: VideoPlayer(_controller),
           ),
         ),
       );
     }
 
-    if (!_isInitialized) {
-      return const AspectRatio(
-        aspectRatio: 16 / 9,
-        child: Center(
-          child: CircularProgressIndicator(
-            color: Color(0xFF005F38),
-          ),
-        ),
-      );
-    }
-    if (widget.fit == BoxFit.contain) {
-      return AspectRatio(
-        aspectRatio: _controller.value.aspectRatio,
-        child: VideoPlayer(_controller),
-      );
-    }
-    return SizedBox.expand(
-      child: FittedBox(
-        fit: widget.fit,
-        child: SizedBox(
-          width: _controller.value.size.width,
-          height: _controller.value.size.height,
-          child: VideoPlayer(_controller),
-        ),
-      ),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: _onTapPlay,
+      child: videoWidget,
     );
   }
 }

@@ -335,16 +335,24 @@ class _HeroPromotionalBannerState extends State<_HeroPromotionalBanner> {
     super.initState();
     _controller = VideoPlayerController.asset(
       'assets/images/banner3v.mp4',
+      videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
     );
-    _controller.initialize().then((_) {
+    _controller.initialize().then((_) async {
       if (!mounted) return;
-      _controller
-        ..setLooping(true)
-        ..setVolume(0)
-        ..play();
-      setState(() {
-        _isInitialized = true;
-      });
+      await _controller.setVolume(0.0);
+      await _controller.setLooping(true);
+      try {
+        await _controller.play();
+      } catch (e) {
+        debugPrint('Banner video autoplay prevented: $e');
+      }
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    }).catchError((e) {
+      debugPrint('Error initializing banner video: $e');
     });
   }
 
@@ -383,12 +391,12 @@ class _HeroPromotionalBannerState extends State<_HeroPromotionalBanner> {
                   ? Container(
                       color: Colors.grey[200],
                       padding: const EdgeInsets.all(8),
-                      child: Center(
-                        child: Text(
-                          'Playback Error: ${_controller.value.errorDescription}',
-                          style: const TextStyle(
-                              color: Colors.redAccent, fontSize: 11),
-                          textAlign: TextAlign.center,
+                      child: Image.asset(
+                        'assets/images/banner1.png',
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Center(
+                          child: Icon(Icons.play_circle_outline,
+                              size: 48, color: Color(0xFF005F38)),
                         ),
                       ),
                     )
@@ -987,16 +995,24 @@ class _WhyChooseUsVideoState extends State<_WhyChooseUsVideo> {
     super.initState();
     _controller = VideoPlayerController.asset(
       'assets/images/whyv.mp4',
+      videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
     );
-    _controller.initialize().then((_) {
+    _controller.initialize().then((_) async {
       if (!mounted) return;
-      _controller
-        ..setLooping(true)
-        ..setVolume(0)
-        ..play();
-      setState(() {
-        _isInitialized = true;
-      });
+      await _controller.setVolume(0.0);
+      await _controller.setLooping(true);
+      try {
+        await _controller.play();
+      } catch (e) {
+        debugPrint('Why choose us video autoplay prevented: $e');
+      }
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    }).catchError((e) {
+      debugPrint('Error initializing why video: $e');
     });
   }
 
@@ -1016,12 +1032,12 @@ class _WhyChooseUsVideoState extends State<_WhyChooseUsVideo> {
             ? Container(
                 color: Colors.grey[200],
                 padding: const EdgeInsets.all(8),
-                child: Center(
-                  child: Text(
-                    'Playback Error: ${_controller.value.errorDescription}',
-                    style:
-                        const TextStyle(color: Colors.redAccent, fontSize: 11),
-                    textAlign: TextAlign.center,
+                child: Image.asset(
+                  'assets/images/banner2.png',
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const Center(
+                    child: Icon(Icons.play_circle_outline,
+                        size: 48, color: Color(0xFF005F38)),
                   ),
                 ),
               )

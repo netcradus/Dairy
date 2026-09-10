@@ -3,7 +3,7 @@ import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
 import '../../models/cart_item.dart';
 import '../localization/app_language.dart';
-import 'category_image.dart';
+import 'product_image.dart';
 import 'price_text.dart';
 import 'quantity_selector.dart';
 
@@ -55,9 +55,11 @@ class CartItemTile extends StatelessWidget {
               borderRadius: AppSizes.borderSmall,
             ),
             child: Center(
-              child: CategoryImage(
-                imageUrl: cartItem.product.imageUrl,
-                size: isCompact ? 56 : 68,
+              child: ProductImage(
+                imageUrl: product.imageUrl,
+                categoryKey: product.categoryId,
+                title: product.title,
+                size: isCompact ? 50 : 60,
                 radius: AppSizes.radiusSmall,
               ),
             ),

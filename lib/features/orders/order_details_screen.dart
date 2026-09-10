@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
 import '../../core/responsive/responsive.dart';
+import '../../core/widgets/product_image.dart';
 import '../../models/order.dart';
 import '../../providers/order_provider.dart';
 import '../../services/order_service.dart';
@@ -216,44 +217,14 @@ class OrderDetailsScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Center(
-                        child: Builder(builder: (context) {
-                          final imageSource = item.product.resolvedImageUrl;
-                          if (imageSource.isEmpty) {
-                            return const Icon(
-                              Icons.local_drink_rounded,
-                              size: 24,
-                              color: Color(0xFF005F38),
-                            );
-                          }
-                          final isNetwork = imageSource.startsWith('http://') ||
-                              imageSource.startsWith('https://');
-                          return ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: isNetwork
-                                ? Image.network(
-                                    imageSource,
-                                    width: 36,
-                                    height: 36,
-                                    fit: BoxFit.contain,
-                                    errorBuilder: (_, __, ___) => const Icon(
-                                      Icons.local_drink_rounded,
-                                      size: 24,
-                                      color: Color(0xFF005F38),
-                                    ),
-                                  )
-                                : Image.asset(
-                                    imageSource,
-                                    width: 36,
-                                    height: 36,
-                                    fit: BoxFit.contain,
-                                    errorBuilder: (_, __, ___) => const Icon(
-                                      Icons.local_drink_rounded,
-                                      size: 24,
-                                      color: Color(0xFF005F38),
-                                    ),
-                                  ),
-                          );
-                        }),
+                        child: ProductImage(
+                          imageUrl: item.product.imageUrl,
+                          categoryKey: item.product.categoryId,
+                          title: item.product.title,
+                          size: 42,
+                          radius: 8,
+                          fit: BoxFit.contain,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/address.dart';
+import '../services/location_service.dart';
 import 'user_provider.dart';
 
 final addressLoadingProvider = StateProvider<bool>((ref) => false);
@@ -10,18 +11,43 @@ final addressErrorProvider = StateProvider<String?>((ref) => null);
 class AddressNotifier extends StateNotifier<List<Address>> {
   final String _userId;
   final Ref _ref;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore? _firestoreOverride;
+  final FirebaseAuth? _authOverride;
 
-  AddressNotifier(this._userId, this._ref) : super([]) {
+  AddressNotifier(
+    this._userId,
+    this._ref, {
+    FirebaseFirestore? firestore,
+    FirebaseAuth? auth,
+  })  : _firestoreOverride = firestore,
+        _authOverride = auth,
+        super([]) {
     _loadAddresses();
   }
 
-  String get _activeUid {
-    final firebaseUid = _auth.currentUser?.uid;
-    if (firebaseUid != null && firebaseUid.isNotEmpty) {
-      return firebaseUid;
+  FirebaseFirestore? get _firestore {
+    try {
+      return _firestoreOverride ?? FirebaseFirestore.instance;
+    } catch (_) {
+      return null;
     }
+  }
+
+  FirebaseAuth? get _auth {
+    try {
+      return _authOverride ?? FirebaseAuth.instance;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String get _activeUid {
+    try {
+      final firebaseUid = _auth?.currentUser?.uid;
+      if (firebaseUid != null && firebaseUid.isNotEmpty) {
+        return firebaseUid;
+      }
+    } catch (_) {}
     return _userId;
   }
 
@@ -33,12 +59,18 @@ class AddressNotifier extends StateNotifier<List<Address>> {
     }
 
     try {
+      final firestore = _firestore;
+      if (firestore == null) {
+        state = [];
+        return;
+      }
+
       Future.microtask(() {
         _ref.read(addressLoadingProvider.notifier).state = true;
         _ref.read(addressErrorProvider.notifier).state = null;
       });
 
-      final snapshot = await _firestore
+      final snapshot = await firestore
           .collection('users')
           .doc(activeId)
           .collection('addresses')
@@ -65,8 +97,11 @@ class AddressNotifier extends StateNotifier<List<Address>> {
     final activeId = _activeUid;
     if (activeId.isEmpty) return;
     try {
+      final firestore = _firestore;
+      if (firestore == null) return;
+
       final colRef =
-          _firestore.collection('users').doc(activeId).collection('addresses');
+          firestore.collection('users').doc(activeId).collection('addresses');
 
       final data = {
         'label': address.label,
@@ -85,7 +120,7 @@ class AddressNotifier extends StateNotifier<List<Address>> {
       };
 
       if (address.isDefault) {
-        final batch = _firestore.batch();
+        final batch = firestore.batch();
         for (var a in state) {
           if (a.isDefault) {
             batch.update(colRef.doc(a.id), {'isDefault': false});
@@ -106,8 +141,11 @@ class AddressNotifier extends StateNotifier<List<Address>> {
     final activeId = _activeUid;
     if (activeId.isEmpty) return;
     try {
+      final firestore = _firestore;
+      if (firestore == null) return;
+
       final colRef =
-          _firestore.collection('users').doc(activeId).collection('addresses');
+          firestore.collection('users').doc(activeId).collection('addresses');
 
       final data = {
         'label': address.label,
@@ -125,7 +163,7 @@ class AddressNotifier extends StateNotifier<List<Address>> {
       };
 
       if (address.isDefault) {
-        final batch = _firestore.batch();
+        final batch = firestore.batch();
         for (var a in state) {
           if (a.isDefault && a.id != address.id) {
             batch.update(colRef.doc(a.id), {'isDefault': false});
@@ -145,7 +183,10 @@ class AddressNotifier extends StateNotifier<List<Address>> {
     final activeId = _activeUid;
     if (activeId.isEmpty) return;
     try {
-      await _firestore
+      final firestore = _firestore;
+      if (firestore == null) return;
+
+      await firestore
           .collection('users')
           .doc(activeId)
           .collection('addresses')
@@ -159,9 +200,12 @@ class AddressNotifier extends StateNotifier<List<Address>> {
     final activeId = _activeUid;
     if (activeId.isEmpty) return;
     try {
+      final firestore = _firestore;
+      if (firestore == null) return;
+
       final colRef =
-          _firestore.collection('users').doc(activeId).collection('addresses');
-      final batch = _firestore.batch();
+          firestore.collection('users').doc(activeId).collection('addresses');
+      final batch = firestore.batch();
       for (var a in state) {
         batch.update(colRef.doc(a.id), {'isDefault': a.id == id});
       }
@@ -180,20 +224,10 @@ final addressesProvider =
 /// Currently selected address ID for checkout
 final selectedAddressIdProvider = StateProvider<String>((ref) {
   final addresses = ref.watch(addressesProvider);
+  if (addresses.isEmpty) return '';
   final defaultAddress = addresses.firstWhere(
     (a) => a.isDefault,
-    orElse: () => addresses.isNotEmpty
-        ? addresses.first
-        : const Address(
-            id: 'addr_temp',
-            fullName: 'Customer Name',
-            mobileNumber: '9876543210',
-            houseFlat: '123 Dairy Lane',
-            streetArea: 'Main Street',
-            city: 'Indore',
-            state: 'Madhya Pradesh',
-            pinCode: '452001',
-          ),
+    orElse: () => addresses.first,
   );
   return defaultAddress.id;
 });
@@ -205,6 +239,89 @@ final selectedAddressProvider = Provider<Address?>((ref) {
   if (addresses.isEmpty) return null;
   return addresses.firstWhere(
     (a) => a.id == selectedId,
-    orElse: () => addresses.first,
+    orElse: () => addresses.firstWhere(
+      (a) => a.isDefault,
+      orElse: () => addresses.first,
+    ),
+  );
+});
+
+/// Formats an [Address] model into a short, elegant header string.
+/// E.g. "Sector 45, Gurugram" or "Gurugram, 122001" or "Indore, 452001".
+String formatAddressForHeader(Address a) {
+  final street = a.streetArea.trim();
+  final city = a.city.trim();
+  final pin = a.pinCode.trim();
+  if (street.isNotEmpty &&
+      city.isNotEmpty &&
+      street.toLowerCase() != city.toLowerCase()) {
+    return '$street, $city';
+  } else if (city.isNotEmpty && pin.isNotEmpty) {
+    return '$city, $pin';
+  } else if (city.isNotEmpty) {
+    return city;
+  } else if (street.isNotEmpty) {
+    return street;
+  } else if (a.houseFlat.trim().isNotEmpty) {
+    return a.houseFlat.trim();
+  }
+  return 'Select location';
+}
+
+/// Provider for reverse-geocoded current device GPS location string (e.g. "Noida, 201301").
+final currentGpsAddressProvider = FutureProvider<String?>((ref) async {
+  try {
+    final locationService = ref.read(locationServiceProvider);
+    final result = await locationService.getCurrentPositionDetailed();
+    if (result.status == LocationResultStatus.success &&
+        result.position != null) {
+      final geo = await locationService.reverseGeocode(
+        result.position!.latitude,
+        result.position!.longitude,
+      );
+      if (geo != null) {
+        final street = geo.streetOrArea?.trim() ?? '';
+        final city = geo.city?.trim() ?? '';
+        final pin = geo.postalCode?.trim() ?? '';
+        if (street.isNotEmpty &&
+            city.isNotEmpty &&
+            street.toLowerCase() != city.toLowerCase()) {
+          return '$street, $city';
+        } else if (city.isNotEmpty && pin.isNotEmpty) {
+          return '$city, $pin';
+        } else if (city.isNotEmpty) {
+          return city;
+        } else if (street.isNotEmpty) {
+          return street;
+        } else if (geo.state?.trim().isNotEmpty ?? false) {
+          return geo.state!.trim();
+        }
+      }
+    }
+  } catch (_) {
+    // Gracefully handle GPS/geocoding failure or denial
+  }
+  return null;
+});
+
+/// High-level delivery location text for the header app bar.
+/// Priority:
+/// 1. Selected or default saved delivery address
+/// 2. Current reverse-geocoded GPS location
+/// 3. "Select location"
+final deliveryLocationDisplayProvider = Provider<String>((ref) {
+  final selectedAddress = ref.watch(selectedAddressProvider);
+  if (selectedAddress != null) {
+    final formatted = formatAddressForHeader(selectedAddress);
+    if (formatted.isNotEmpty && formatted != 'Select location') {
+      return formatted;
+    }
+  }
+
+  final gpsAsync = ref.watch(currentGpsAddressProvider);
+  return gpsAsync.maybeWhen(
+    data: (gpsLoc) =>
+        (gpsLoc != null && gpsLoc.isNotEmpty) ? gpsLoc : 'Select location',
+    orElse: () => 'Select location',
   );
 });

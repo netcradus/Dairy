@@ -5,8 +5,10 @@ import '../../core/responsive/responsive.dart';
 import '../../core/widgets/app_app_bar.dart';
 import '../../core/widgets/app_bottom_navigation.dart';
 import '../../core/widgets/app_desktop_sidebar.dart';
+import '../../providers/address_provider.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/navigation_provider.dart';
+import '../address/address_screen.dart';
 import '../cart/cart_screen.dart';
 import '../home/home_screen.dart';
 import '../notifications/notifications_screen.dart';
@@ -22,6 +24,7 @@ class MainLayoutScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentIndex = ref.watch(navigationProvider);
     final cartCount = ref.watch(cartItemCountProvider);
+    final deliveryLocation = ref.watch(deliveryLocationDisplayProvider);
     final isDesktop = context.isDesktop;
 
     final List<Widget> pages = [
@@ -30,6 +33,13 @@ class MainLayoutScreen extends ConsumerWidget {
       const OrdersScreen(), // 2 – Orders
       const ProfileScreen(), // 3 – Profile
     ];
+
+    void handleLocationTap() {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const AddressScreen()),
+      );
+    }
 
     if (isDesktop) {
       return Scaffold(
@@ -46,6 +56,8 @@ class MainLayoutScreen extends ConsumerWidget {
                 children: [
                   AppTopAppBar(
                     cartItemCount: cartCount,
+                    deliveryLocation: deliveryLocation,
+                    onLocationTap: handleLocationTap,
                     onSearchTap: () {
                       ref.read(navigationProvider.notifier).setIndex(1);
                     },
@@ -85,6 +97,8 @@ class MainLayoutScreen extends ConsumerWidget {
         preferredSize: Size.fromHeight(72.0 + topPadding),
         child: AppTopAppBar(
           cartItemCount: cartCount,
+          deliveryLocation: deliveryLocation,
+          onLocationTap: handleLocationTap,
           onSearchTap: () {
             ref.read(navigationProvider.notifier).setIndex(1);
           },

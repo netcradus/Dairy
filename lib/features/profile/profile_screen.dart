@@ -8,7 +8,6 @@ import '../../core/responsive/responsive.dart';
 import '../../core/widgets/app_network_image.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/user_provider.dart';
-import '../../providers/navigation_provider.dart';
 import '../../services/firebase_storage_service.dart';
 import 'edit_profile_screen.dart';
 import '../notifications/notifications_screen.dart';
@@ -44,9 +43,7 @@ class ProfileScreen extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // ─── 2. My Orders Quick Stats Card ───
-                        _buildMyOrdersStatsCard(context, ref),
-                        const SizedBox(height: 20),
+
 
 
 
@@ -363,109 +360,7 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildMyOrdersStatsCard(BuildContext context, WidgetRef ref) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFF1F5F9), width: 1.0),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          // Title Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'My Orders',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF172033),
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  ref
-                      .read(navigationProvider.notifier)
-                      .setIndex(2); // Navigate to Orders Tab
-                },
-                child: const Row(
-                  children: [
-                    Text(
-                      'View All',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF005F38),
-                      ),
-                    ),
-                    SizedBox(width: 2),
-                    Icon(
-                      Icons.chevron_right_rounded,
-                      size: 16,
-                      color: Color(0xFF005F38),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
 
-          // Count stats row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildOrderStatColumn(
-                  Icons.shopping_bag_outlined, 'All Orders', '12'),
-              _buildOrderStatColumn(
-                  Icons.inventory_2_outlined, 'Processing', '3'),
-              _buildOrderStatColumn(Icons.check_box_outlined, 'Delivered', '8'),
-              _buildOrderStatColumn(
-                  Icons.cancel_presentation_outlined, 'Cancelled', '1'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOrderStatColumn(IconData icon, String label, String count) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: const BoxDecoration(
-            color: Color(0xFFEAF5EF),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: const Color(0xFF005F38), size: 20),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF667085),
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          count,
-          style: const TextStyle(
-            fontSize: 13.5,
-            fontWeight: FontWeight.w900,
-            color: Color(0xFF005F38),
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget _buildMenuTile(
     BuildContext context,

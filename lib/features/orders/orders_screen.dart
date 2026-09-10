@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
 import '../../core/responsive/responsive.dart';
+import '../../core/widgets/product_image.dart';
 import '../../models/order.dart';
 import '../../providers/order_provider.dart';
 import 'order_details_screen.dart';
@@ -329,56 +330,31 @@ class _OrderCard extends ConsumerWidget {
                 // Thumbnails Stack
                 SizedBox(
                   height: 48,
-                  width: 80,
+                  width: (order.items.length.clamp(1, 2) * 28.0) + 20,
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: List.generate(
                       order.items.length.clamp(0, 2),
                       (i) {
                         final item = order.items[i];
-                        final imageSource = item.product.resolvedImageUrl;
-                        final isNetwork = imageSource.startsWith('http://') ||
-                            imageSource.startsWith('https://');
                         return Positioned(
                           left: i * 26.0,
                           child: Container(
                             width: 44,
                             height: 44,
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: const Color(0xFFF1F5F9),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                  color: const Color(0xFFF1F5F9), width: 1.5),
+                                  color: const Color(0xFFE2E8F0), width: 1.0),
                             ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(6),
-                              child: imageSource.isEmpty
-                                  ? const Icon(
-                                      Icons.local_drink_rounded,
-                                      size: 20,
-                                      color: Color(0xFF005F38),
-                                    )
-                                  : (isNetwork
-                                      ? Image.network(
-                                          imageSource,
-                                          fit: BoxFit.contain,
-                                          errorBuilder: (_, __, ___) =>
-                                              const Icon(
-                                            Icons.local_drink_rounded,
-                                            size: 20,
-                                            color: Color(0xFF005F38),
-                                          ),
-                                        )
-                                      : Image.asset(
-                                          imageSource,
-                                          fit: BoxFit.contain,
-                                          errorBuilder: (_, __, ___) =>
-                                              const Icon(
-                                            Icons.local_drink_rounded,
-                                            size: 20,
-                                            color: Color(0xFF005F38),
-                                          ),
-                                        )),
+                            child: ProductImage(
+                              imageUrl: item.product.imageUrl,
+                              categoryKey: item.product.categoryId,
+                              title: item.product.title,
+                              size: 40,
+                              radius: 7,
+                              fit: BoxFit.contain,
                             ),
                           ),
                         );
@@ -535,7 +511,6 @@ class _OrderCard extends ConsumerWidget {
       ),
     );
   }
-
 
   Color _statusColor(OrderStatus status) {
     switch (status) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
@@ -24,12 +25,37 @@ class CartScreen extends ConsumerWidget {
     final grandTotal = ref.watch(cartGrandTotalProvider);
     final isDesktop = context.isDesktop;
 
+    void handleGoBack() {
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      } else if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go('/home');
+      }
+    }
+
+    void handleGoToShop() {
+      ref.read(navigationProvider.notifier).setIndex(1);
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      } else if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go('/home');
+      }
+    }
+
     if (cartItems.isEmpty) {
       return Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           title: const Text('My Shopping Cart'),
           elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: handleGoBack,
+          ),
         ),
         body: Center(
           child: Padding(
@@ -75,11 +101,7 @@ class CartScreen extends ConsumerWidget {
                 SizedBox(
                   height: 48,
                   child: ElevatedButton.icon(
-                    onPressed: () {
-                      ref
-                          .read(navigationProvider.notifier)
-                          .setIndex(1); // Nav to Shop
-                    },
+                    onPressed: handleGoToShop,
                     icon: const Icon(Icons.storefront_rounded),
                     label: const Text(
                       'Explore Fresh Dairy Catalog',
@@ -107,6 +129,10 @@ class CartScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text('My Cart (${cartItems.length} items)'),
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: handleGoBack,
+        ),
         actions: [
           TextButton.icon(
             onPressed: () {
@@ -159,7 +185,7 @@ class CartScreen extends ConsumerWidget {
                             ),
                           ),
                           const SizedBox(height: AppSizes.p16),
-                          _buildContinueShoppingButton(ref),
+                          _buildContinueShoppingButton(context, ref),
                         ],
                       ),
                     ),
@@ -222,7 +248,7 @@ class CartScreen extends ConsumerWidget {
                       },
                     ),
                     const SizedBox(height: AppSizes.p16),
-                    _buildContinueShoppingButton(ref),
+                    _buildContinueShoppingButton(context, ref),
                   ],
                 ),
         ),
@@ -255,10 +281,17 @@ class CartScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildContinueShoppingButton(WidgetRef ref) {
+  Widget _buildContinueShoppingButton(BuildContext context, WidgetRef ref) {
     return OutlinedButton.icon(
       onPressed: () {
         ref.read(navigationProvider.notifier).setIndex(1);
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        } else if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go('/home');
+        }
       },
       icon: const Icon(Icons.arrow_back_rounded),
       label: const Text('Continue Shopping'),

@@ -26,9 +26,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   void initState() {
     super.initState();
     final user = ref.read(userProvider);
-    debugPrint('EditProfileScreen initState: user.profileImageUrl = ${user.profileImageUrl}');
-    _nameController = TextEditingController(text: user.name);
-    _emailController = TextEditingController(text: user.email ?? '');
+    debugPrint(
+        'EditProfileScreen initState: user.profileImageUrl = ${user.profileImageUrl}');
+    final isDummyName = user.name == 'Sawariya Customer' ||
+        user.name == 'Guest Customer' ||
+        user.name.trim().toLowerCase() == 'sarkar';
+    final isDummyEmail = (user.email ?? '').contains('sawariyadairy.com') ||
+        (user.email ?? '').isEmpty;
+
+    _nameController = TextEditingController(text: isDummyName ? '' : user.name);
+    _emailController =
+        TextEditingController(text: isDummyEmail ? '' : (user.email ?? ''));
     _phoneController = TextEditingController(text: user.phone);
   }
 
@@ -50,9 +58,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     try {
       await ref.read(userProvider.notifier).updateProfile(
             name: _nameController.text.trim(),
-            email: _emailController.text.trim().isNotEmpty
-                ? _emailController.text.trim()
-                : null,
+            email: _emailController.text.trim(),
           );
 
       if (mounted) {
@@ -87,8 +93,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final authUid = FirebaseAuth.instance.currentUser?.uid;
     final effectiveUid = (uid.trim().isNotEmpty) ? uid.trim() : (authUid ?? '');
 
-    debugPrint('[PROFILE DEBUG T0] 1. Firebase Auth UID: $authUid (effective: $effectiveUid)');
-    debugPrint('[PROFILE DEBUG T0] profileImageUrl before upload: ${ref.read(userProvider).profileImageUrl}');
+    debugPrint(
+        '[PROFILE DEBUG T0] 1. Firebase Auth UID: $authUid (effective: $effectiveUid)');
+    debugPrint(
+        '[PROFILE DEBUG T0] profileImageUrl before upload: ${ref.read(userProvider).profileImageUrl}');
 
     if (effectiveUid.isEmpty) {
       debugPrint('[PROFILE DEBUG] Upload aborted: no authenticated user found');
@@ -118,19 +126,26 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           .uploadProfileImage(uid: effectiveUid, bytes: bytes);
 
       final uri = Uri.tryParse(downloadUrl);
-      final safeUrlSummary = uri != null ? '${uri.scheme}://${uri.host}${uri.path}' : '[unparseable]';
+      final safeUrlSummary = uri != null
+          ? '${uri.scheme}://${uri.host}${uri.path}'
+          : '[unparseable]';
       debugPrint('[PROFILE DEBUG T1] 3. Storage upload succeeded: true');
-      debugPrint('[PROFILE DEBUG T1] 4. downloadUrl exists: ${downloadUrl.isNotEmpty}');
-      debugPrint('[PROFILE DEBUG T1] 5. Download URL host/path: $safeUrlSummary');
+      debugPrint(
+          '[PROFILE DEBUG T1] 4. downloadUrl exists: ${downloadUrl.isNotEmpty}');
+      debugPrint(
+          '[PROFILE DEBUG T1] 5. Download URL host/path: $safeUrlSummary');
 
-      debugPrint('[PROFILE DEBUG T2] 6. Firestore document path: users/$effectiveUid');
+      debugPrint(
+          '[PROFILE DEBUG T2] 6. Firestore document path: users/$effectiveUid');
       await ref
           .read(userProvider.notifier)
           .updateProfile(profileImageUrl: downloadUrl);
 
       final userAfter = ref.read(userProvider);
-      debugPrint('[PROFILE DEBUG T3] 7. Firestore profileImageUrl after write: $safeUrlSummary');
-      debugPrint('[PROFILE DEBUG T3] 8. userProvider.profileImageUrl immediately after updateProfile(): ${userAfter.profileImageUrl}');
+      debugPrint(
+          '[PROFILE DEBUG T3] 7. Firestore profileImageUrl after write: $safeUrlSummary');
+      debugPrint(
+          '[PROFILE DEBUG T3] 8. userProvider.profileImageUrl immediately after updateProfile(): ${userAfter.profileImageUrl}');
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -191,17 +206,22 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           height: 92,
                           child: (user.profileImageUrl != null &&
                                   user.profileImageUrl!.trim().isNotEmpty &&
-                                  user.profileImageUrl!.trim().startsWith('http'))
+                                  user.profileImageUrl!
+                                      .trim()
+                                      .startsWith('http'))
                               ? Builder(
                                   builder: (context) {
-                                    debugPrint('[PROFILE DEBUG] 10. EditProfileScreen rendering: AppNetworkImage');
+                                    debugPrint(
+                                        '[PROFILE DEBUG] 10. EditProfileScreen rendering: AppNetworkImage');
                                     return AppNetworkImage(
                                       imageUrl: user.profileImageUrl!.trim(),
                                       width: 92,
                                       height: 92,
                                       fit: BoxFit.cover,
-                                      loadingBuilder: (context, child, loadingProgress) {
-                                        if (loadingProgress == null) return child;
+                                      loadingBuilder:
+                                          (context, child, loadingProgress) {
+                                        if (loadingProgress == null)
+                                          return child;
                                         return const Center(
                                           child: SizedBox(
                                             width: 28,
@@ -213,8 +233,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                           ),
                                         );
                                       },
-                                      errorBuilder: (context, error, stackTrace) {
-                                        debugPrint('[PROFILE DEBUG] 12. EditProfileScreen image error: $error');
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        debugPrint(
+                                            '[PROFILE DEBUG] 12. EditProfileScreen image error: $error');
                                         return const Center(
                                           child: Icon(
                                             Icons.person_rounded,
@@ -276,6 +298,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 controller: _nameController,
                 decoration: const InputDecoration(
                   labelText: 'Full Name',
+                  hintText: 'Enter your full name',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.person_outline),
                 ),
@@ -292,6 +315,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 controller: _emailController,
                 decoration: const InputDecoration(
                   labelText: 'Email Address (Optional)',
+                  hintText: 'Enter your email address',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.email_outlined),
                 ),
