@@ -18,7 +18,8 @@ class CustomerComplaint {
   final String phone;
   final String email;
   final String subject;
-  final String issueType; // e.g. 'Late Delivery', 'Damaged Pouch', 'Wrong Quantity', 'Quality Concern', etc.
+  final String
+      issueType; // e.g. 'Late Delivery', 'Damaged Pouch', 'Wrong Quantity', 'Quality Concern', etc.
   final String description;
   final String? orderId;
   final String priority; // 'High', 'Medium', 'Low'
@@ -50,7 +51,8 @@ class CustomerComplaint {
   String get displayTicketId {
     if (ticketId.isNotEmpty) return ticketId;
     if (id.isNotEmpty) {
-      final sub = id.length > 6 ? id.substring(0, 6).toUpperCase() : id.toUpperCase();
+      final sub =
+          id.length > 6 ? id.substring(0, 6).toUpperCase() : id.toUpperCase();
       return 'CMP-$sub';
     }
     return 'CMP-TICKET';
@@ -108,6 +110,7 @@ class CustomerComplaint {
       'id': id,
       'ticketId': ticketId,
       'customerId': customerId,
+      'userId': customerId,
       'customerName': customerName,
       'customerPhone': phone,
       'customerEmail': email,
@@ -118,13 +121,15 @@ class CustomerComplaint {
       if (orderId != null && orderId!.isNotEmpty) 'orderId': orderId,
       'priority': priority,
       'status': status,
-      if (adminReply != null && adminReply!.isNotEmpty) 'adminReply': adminReply,
+      if (adminReply != null && adminReply!.isNotEmpty)
+        'adminReply': adminReply,
       'createdAt': Timestamp.fromDate(createdAt),
       if (updatedAt != null) 'updatedAt': Timestamp.fromDate(updatedAt!),
     };
   }
 
-  factory CustomerComplaint.fromMap(Map<String, dynamic> map, [String docId = '']) {
+  factory CustomerComplaint.fromMap(Map<String, dynamic> map,
+      [String docId = '']) {
     final rawCategory = map['category'] ?? map['issueType'] ?? 'Other';
     final rawStatus = map['status'] ?? 'Open';
     final rawPriority = map['priority'] ?? 'Medium';
@@ -144,7 +149,8 @@ class CustomerComplaint {
       status: rawStatus.toString(),
       adminReply: map['adminReply'] ?? map['adminResponse'],
       createdAt: _parseDateTime(map['createdAt']),
-      updatedAt: map['updatedAt'] != null ? _parseDateTime(map['updatedAt']) : null,
+      updatedAt:
+          map['updatedAt'] != null ? _parseDateTime(map['updatedAt']) : null,
     );
   }
 

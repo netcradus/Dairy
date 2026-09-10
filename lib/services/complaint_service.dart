@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/complaint_model.dart';
 
 /// Service for managing customer complaints and support tickets in Cloud Firestore.
@@ -12,6 +13,7 @@ class ComplaintService {
       _firestore.collection('complaints');
 
   /// Creates and stores a new complaint / support ticket in Firestore.
+  /// Enforces verified authenticated user UID for ownership to prevent forgery.
   Future<CustomerComplaint> createComplaint({
     required String customerId,
     required String customerName,
@@ -26,13 +28,25 @@ class ComplaintService {
     final docRef = _complaintsRef.doc();
     final now = DateTime.now();
     // Unique human-readable ticket ID (e.g. CMP-492018)
-    final ticketNum = (now.millisecondsSinceEpoch % 1000000).toString().padLeft(6, '0');
+    final ticketNum =
+        (now.millisecondsSinceEpoch % 1000000).toString().padLeft(6, '0');
     final ticketId = 'CMP-$ticketNum';
+
+    // Verify current authenticated UID — never trust independent UI-supplied UID
+    final authUid = FirebaseAuth.instance.currentUser?.uid;
+    final effectiveCustomerId = (authUid != null && authUid.isNotEmpty)
+        ? authUid
+        : (customerId.isNotEmpty ? customerId : '');
+
+    if (effectiveCustomerId.isEmpty) {
+      throw Exception('Authentication required to submit support ticket.');
+    }
 
     final data = <String, dynamic>{
       'id': docRef.id,
       'ticketId': ticketId,
-      'customerId': customerId,
+      'customerId': effectiveCustomerId,
+      'userId': effectiveCustomerId,
       'customerName': customerName.trim(),
       'customerPhone': phone.trim(),
       'customerEmail': email.trim(),
@@ -40,7 +54,9 @@ class ComplaintService {
       'category': category.trim(),
       'issueType': category.trim(),
       'description': description.trim(),
-      'orderId': (orderId != null && orderId.trim().isNotEmpty) ? orderId.trim() : null,
+      'orderId': (orderId != null && orderId.trim().isNotEmpty)
+          ? orderId.trim()
+          : null,
       'priority': priority,
       'status': 'Open',
       'adminReply': null,
@@ -53,14 +69,16 @@ class ComplaintService {
     return CustomerComplaint(
       id: docRef.id,
       ticketId: ticketId,
-      customerId: customerId,
+      customerId: effectiveCustomerId,
       customerName: customerName.trim(),
       phone: phone.trim(),
       email: email.trim(),
       subject: subject.trim(),
       issueType: category.trim(),
       description: description.trim(),
-      orderId: (orderId != null && orderId.trim().isNotEmpty) ? orderId.trim() : null,
+      orderId: (orderId != null && orderId.trim().isNotEmpty)
+          ? orderId.trim()
+          : null,
       priority: priority,
       status: 'Open',
       adminReply: null,
@@ -70,14 +88,20 @@ class ComplaintService {
   }
 
   /// Real-time stream of complaints filed by a specific customer.
-  /// Result is sorted client-side by date descending to prevent index requirement issues.
-  Stream<List<CustomerComplaint>> streamComplaintsForCustomer(String customerId) {
-    if (customerId.isEmpty) {
+  /// Queries only tickets belonging to the authenticated customer UID.
+  /// Result is sorted client-side by date descending.
+  Stream<List<CustomerComplaint>> streamComplaintsForCustomer(
+      String customerId) {
+    final authUid = FirebaseAuth.instance.currentUser?.uid;
+    final effectiveUid =
+        (authUid != null && authUid.isNotEmpty) ? authUid : customerId;
+
+    if (effectiveUid.isEmpty) {
       return Stream.value(<CustomerComplaint>[]);
     }
 
     return _complaintsRef
-        .where('customerId', isEqualTo: customerId)
+        .where('customerId', isEqualTo: effectiveUid)
         .snapshots()
         .map((snapshot) {
       final list = snapshot.docs

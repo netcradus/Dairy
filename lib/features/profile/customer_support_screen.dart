@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -141,7 +142,23 @@ class _CustomerSupportScreenState extends ConsumerState<CustomerSupportScreen> {
 
     try {
       final user = ref.read(userProvider);
-      final customerId = user.id.isNotEmpty ? user.id : 'guest_${DateTime.now().millisecondsSinceEpoch}';
+      final authUid = FirebaseAuth.instance.currentUser?.uid;
+      final customerId =
+          (authUid != null && authUid.isNotEmpty) ? authUid : user.id;
+
+      if (customerId.isEmpty) {
+        if (!mounted) return;
+        setState(() => _submitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content:
+                Text('Please log in to submit a complaint or support ticket.'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+        return;
+      }
+
       final customerName = _nameController.text.trim().isNotEmpty
           ? _nameController.text.trim()
           : (user.name.isNotEmpty ? user.name : 'Customer');
@@ -558,7 +575,8 @@ class _CustomerSupportScreenState extends ConsumerState<CustomerSupportScreen> {
                     ),
                     child: Text(
                       'Failed to load tickets: $err',
-                      style: TextStyle(color: Colors.red.shade800, fontSize: 13),
+                      style:
+                          TextStyle(color: Colors.red.shade800, fontSize: 13),
                     ),
                   ),
                   data: (tickets) {
@@ -569,8 +587,8 @@ class _CustomerSupportScreenState extends ConsumerState<CustomerSupportScreen> {
                         decoration: BoxDecoration(
                           color: AppColors.surface,
                           borderRadius: AppSizes.borderLarge,
-                          border: Border.all(
-                              color: AppColors.border, width: 1.0),
+                          border:
+                              Border.all(color: AppColors.border, width: 1.0),
                         ),
                         child: Column(
                           children: [
