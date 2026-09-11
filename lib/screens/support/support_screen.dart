@@ -39,7 +39,8 @@ class _SupportScreenState extends State<SupportScreen> {
     CustomerComplaint ticket,
   ) {
     String selectedStatus = ticket.status;
-    final replyController = TextEditingController(text: ticket.adminReply ?? '');
+    final replyController =
+        TextEditingController(text: ticket.adminReply ?? '');
     bool isSaving = false;
 
     showDialog(
@@ -262,9 +263,8 @@ class _SupportScreenState extends State<SupportScreen> {
                                     fontWeight: isSelected
                                         ? FontWeight.w700
                                         : FontWeight.w500,
-                                    color: isSelected
-                                        ? Colors.white
-                                        : textPrimary,
+                                    color:
+                                        isSelected ? Colors.white : textPrimary,
                                   ),
                                   selectedColor: AppColors.primary,
                                   backgroundColor: AppColors.bgOf(context),
@@ -331,9 +331,8 @@ class _SupportScreenState extends State<SupportScreen> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         TextButton(
-                          onPressed: isSaving
-                              ? null
-                              : () => Navigator.pop(dialogCtx),
+                          onPressed:
+                              isSaving ? null : () => Navigator.pop(dialogCtx),
                           child: Text(
                             'Cancel',
                             style: GoogleFonts.plusJakartaSans(
@@ -581,14 +580,11 @@ class _SupportScreenState extends State<SupportScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
-                            color: isSelected
-                                ? AppColors.primary
-                                : cardBg,
+                            color: isSelected ? AppColors.primary : cardBg,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: isSelected
-                                  ? AppColors.primary
-                                  : cardBorder,
+                              color:
+                                  isSelected ? AppColors.primary : cardBorder,
                             ),
                           ),
                           child: Row(
@@ -601,9 +597,8 @@ class _SupportScreenState extends State<SupportScreen> {
                                   fontWeight: isSelected
                                       ? FontWeight.w700
                                       : FontWeight.w600,
-                                  color: isSelected
-                                      ? Colors.white
-                                      : textPrimary,
+                                  color:
+                                      isSelected ? Colors.white : textPrimary,
                                 ),
                               ),
                               const SizedBox(width: 6),
@@ -820,8 +815,8 @@ class _SupportScreenState extends State<SupportScreen> {
                                               children: [
                                                 Text(
                                                   ticket.displayTicketId,
-                                                  style:
-                                                      GoogleFonts.plusJakartaSans(
+                                                  style: GoogleFonts
+                                                      .plusJakartaSans(
                                                     fontSize: 12,
                                                     fontWeight: FontWeight.w800,
                                                     color: AppColors.primary,
@@ -834,8 +829,8 @@ class _SupportScreenState extends State<SupportScreen> {
                                                 ),
                                                 Text(
                                                   ticket.customerName,
-                                                  style:
-                                                      GoogleFonts.plusJakartaSans(
+                                                  style: GoogleFonts
+                                                      .plusJakartaSans(
                                                     fontSize: 14,
                                                     fontWeight: FontWeight.w700,
                                                     color: textPrimary,
@@ -851,7 +846,8 @@ class _SupportScreenState extends State<SupportScreen> {
                                                         .customersOrangeBg
                                                         .withValues(alpha: 0.3),
                                                     borderRadius:
-                                                        BorderRadius.circular(4),
+                                                        BorderRadius.circular(
+                                                            4),
                                                   ),
                                                   child: Text(
                                                     ticket.category,
@@ -874,13 +870,14 @@ class _SupportScreenState extends State<SupportScreen> {
                                                         vertical: 2),
                                                     decoration: BoxDecoration(
                                                       color: AppColors.primary
-                                                          .withValues(alpha: 0.1),
+                                                          .withValues(
+                                                              alpha: 0.1),
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                               4),
                                                     ),
                                                     child: Text(
-                                                      'Order: ${ticket.orderId}',
+                                                      'Order #${ticket.orderId}',
                                                       style: GoogleFonts
                                                           .plusJakartaSans(
                                                         fontSize: 10,
@@ -899,8 +896,8 @@ class _SupportScreenState extends State<SupportScreen> {
                                             if (ticket.subject.isNotEmpty) ...[
                                               Text(
                                                 ticket.subject,
-                                                style: GoogleFonts
-                                                    .plusJakartaSans(
+                                                style:
+                                                    GoogleFonts.plusJakartaSans(
                                                   fontSize: 13,
                                                   fontWeight: FontWeight.w600,
                                                   color: textPrimary,
@@ -937,7 +934,8 @@ class _SupportScreenState extends State<SupportScreen> {
                                                     color: textSecondary,
                                                   ),
                                                 ),
-                                                if (ticket.phone.isNotEmpty) ...[
+                                                if (ticket
+                                                    .phone.isNotEmpty) ...[
                                                   const SizedBox(width: 12),
                                                   Icon(Icons.phone_outlined,
                                                       size: 13,
@@ -1011,8 +1009,7 @@ class _SupportScreenState extends State<SupportScreen> {
                                           const SizedBox(height: 8),
                                           Text(
                                             'Manage ›',
-                                            style:
-                                                GoogleFonts.plusJakartaSans(
+                                            style: GoogleFonts.plusJakartaSans(
                                               fontSize: 11,
                                               fontWeight: FontWeight.w700,
                                               color: AppColors.primary,
