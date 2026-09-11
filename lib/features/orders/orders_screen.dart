@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 
 import '../../core/responsive/responsive.dart';
 import '../../core/widgets/product_image.dart';
@@ -20,15 +19,6 @@ class OrdersScreen extends ConsumerStatefulWidget {
 class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   String _selectedFilter =
       'All'; // 'All' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled'
-
-  final CarouselSliderController _carouselController =
-      CarouselSliderController();
-  int _bannerIndex = 0;
-
-  final List<String> _banners = [
-    'assets/images/deliver.png',
-    'assets/images/deliver4.png',
-  ];
 
   @override
   void initState() {
@@ -285,7 +275,7 @@ class _OrderCard extends ConsumerWidget {
         border: Border.all(color: const Color(0xFFF1F5F9), width: 1.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.015),
+            color: Colors.black.withValues(alpha: 0.015),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -301,7 +291,7 @@ class _OrderCard extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Order #${order.id}',
+                  'Order #${order.displayOrderCode}',
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
@@ -351,6 +341,7 @@ class _OrderCard extends ConsumerWidget {
                             child: ProductImage(
                               imageUrl: item.product.imageUrl,
                               categoryKey: item.product.categoryId,
+                              productId: item.product.id,
                               title: item.product.title,
                               size: 40,
                               radius: 7,

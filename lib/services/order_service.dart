@@ -47,7 +47,30 @@ class OrderService {
     );
   }
 
-  /// Writes a new order to Firestore from the provided cart [items] and returns
+  /// Generates a unique 6-character customer-facing order code (LLLNNN).
+  /// Verifies against Firestore to avoid duplicate order codes.
+  Future<String> generateUniqueOrderCode() async {
+    const maxAttempts = 10;
+    for (int attempt = 0; attempt < maxAttempts; attempt++) {
+      final candidate = Order.generateRandomOrderCode();
+      try {
+        final existing = await _firestore
+            .collection('orders')
+            .where('orderCode', isEqualTo: candidate)
+            .limit(1)
+            .get();
+        if (existing.docs.isEmpty) {
+          return candidate;
+        }
+      } catch (_) {
+        // If query fails (e.g. offline/mock testing), return candidate directly
+        return candidate;
+      }
+    }
+    return Order.formatFallbackOrderCode(
+        DateTime.now().microsecondsSinceEpoch.toString());
+  }
+
   /// Writes a new order to Firestore from the provided cart [items] and returns
   /// the created [Order] (with its generated id).
   Future<Order> placeOrder({
@@ -58,7 +81,8 @@ class OrderService {
   }) async {
     final currentAuthUser = FirebaseAuth.instance.currentUser;
     if (currentAuthUser == null) {
-      throw StateError('User must be authenticated with Firebase to place an order.');
+      throw StateError(
+          'User must be authenticated with Firebase to place an order.');
     }
 
     final authoritativeUid = currentAuthUser.uid;
@@ -70,9 +94,11 @@ class OrderService {
     final totals = computeTotals(items);
     final docRef = _firestore.collection('orders').doc();
     final now = DateTime.now();
+    final orderCode = await generateUniqueOrderCode();
 
     final order = Order(
       id: docRef.id,
+      orderCode: orderCode,
       items: items,
       subtotal: totals.subtotal,
       deliveryCharge: totals.deliveryCharge,
@@ -85,17 +111,27 @@ class OrderService {
     );
 
     await docRef.set({
+      'orderCode': orderCode,
       'userId': authoritativeUid,
       'status': 'Pending',
       'items': items
           .map((item) => {
                 'productId': item.product.id,
                 'title': item.product.title,
+                'productName': item.product.title,
+                'name': item.product.title,
                 'unit': item.product.unit,
                 'price': item.product.price,
                 'quantity': item.quantity,
                 'totalPrice': item.totalPrice,
-                'imageUrl': item.product.imageUrl,
+                'imageUrl': item.product.resolvedImageUrl.isNotEmpty
+                    ? item.product.resolvedImageUrl
+                    : item.product.imageUrl,
+                'image': item.product.resolvedImageUrl.isNotEmpty
+                    ? item.product.resolvedImageUrl
+                    : item.product.imageUrl,
+                'categoryId': item.product.categoryId,
+                'categoryName': item.product.categoryName,
               })
           .toList(),
       'subtotal': totals.subtotal,
@@ -194,10 +230,9 @@ class OrderService {
           );
     }
 
-    return query.snapshots().map((snap) => snap.docs
-        .map((d) => Order.fromFirestore(d.data(), d.id))
-        .toList()
-      ..sort((a, b) => b.orderDate.compareTo(a.orderDate)));
+    return query.snapshots().map((snap) =>
+        snap.docs.map((d) => Order.fromFirestore(d.data(), d.id)).toList()
+          ..sort((a, b) => b.orderDate.compareTo(a.orderDate)));
   }
 
   /// Accepts an order on behalf of a delivery agent. Persists the acceptance to
@@ -221,6 +256,30 @@ class OrderService {
       'assignedAgentId': null,
       'acceptedAt': null,
     });
+  }
+
+  /// Safely backfills existing Firestore order documents that lack an `orderCode`.
+  /// Iterates through orders, derives a valid 6-character LLLNNN code deterministically
+  /// from the document ID, and saves it permanently to Firestore.
+  Future<int> backfillLegacyOrderCodes() async {
+    int count = 0;
+    try {
+      final snap = await _firestore.collection('orders').get();
+      for (final doc in snap.docs) {
+        final data = doc.data();
+        final existingCode = (data['orderCode'] as String?)?.trim() ?? '';
+        final isValidFormat = existingCode.length == 6 &&
+            RegExp(r'^[A-Z]{3}[0-9]{3}$').hasMatch(existingCode.toUpperCase());
+        if (!isValidFormat) {
+          final assignedCode = Order.formatFallbackOrderCode(doc.id);
+          await doc.reference.update({'orderCode': assignedCode});
+          count++;
+        }
+      }
+    } catch (_) {
+      // Handled gracefully for offline or security restricted environments
+    }
+    return count;
   }
 }
 

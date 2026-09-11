@@ -185,6 +185,7 @@ class AdminProvider extends ChangeNotifier {
 
     return DairyOrder(
       id: o.id,
+      orderCode: o.displayOrderCode,
       customerName: o.deliveryAddress.fullName.trim().isNotEmpty
           ? o.deliveryAddress.fullName
           : 'Customer',

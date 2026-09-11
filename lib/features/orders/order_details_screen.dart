@@ -33,7 +33,7 @@ class OrderDetailsScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text('Order #${liveOrder.id}'),
+        title: Text('Order #${liveOrder.displayOrderCode}'),
         elevation: 0,
         backgroundColor: AppColors.surface,
         foregroundColor: AppColors.textPrimary,
@@ -131,7 +131,7 @@ class OrderDetailsScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Order #${o.id}',
+                  'Order #${o.displayOrderCode}',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -220,6 +220,7 @@ class OrderDetailsScreen extends ConsumerWidget {
                         child: ProductImage(
                           imageUrl: item.product.imageUrl,
                           categoryKey: item.product.categoryId,
+                          productId: item.product.id,
                           title: item.product.title,
                           size: 42,
                           radius: 8,

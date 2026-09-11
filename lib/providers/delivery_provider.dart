@@ -39,6 +39,7 @@ DeliveryOrder deliveryOrderFromOrder(Order order) {
   return DeliveryOrder(
     id: order.id,
     orderId: order.id,
+    orderCode: order.displayOrderCode,
     customerName: order.deliveryAddress.fullName,
     customerPhone: order.deliveryAddress.mobileNumber,
     customerAddress: order.deliveryAddress.fullAddressText,
@@ -311,7 +312,8 @@ class DeliveryEarningsNotifier extends StateNotifier<List<DeliveryEarnings>> {
     });
   }
 
-  static List<DeliveryEarnings> _groupEarningsByDate(List<EarningModel> models) {
+  static List<DeliveryEarnings> _groupEarningsByDate(
+      List<EarningModel> models) {
     if (models.isEmpty) return const [];
 
     final Map<String, List<EarningModel>> byDay = {};

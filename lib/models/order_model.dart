@@ -26,6 +26,7 @@ enum OrderStatus {
 
 class DairyOrder {
   final String id;
+  final String orderCode;
   final String customerName;
   final String customerPhone;
   final String itemsSummary;
@@ -38,6 +39,7 @@ class DairyOrder {
 
   const DairyOrder({
     required this.id,
+    this.orderCode = '',
     required this.customerName,
     required this.customerPhone,
     required this.itemsSummary,
@@ -49,8 +51,12 @@ class DairyOrder {
     required this.paymentMode,
   });
 
+  /// The customer-facing 6-character order code (e.g. "KRT482").
+  String get displayCode => orderCode.isNotEmpty ? orderCode : id;
+
   DairyOrder copyWith({
     String? id,
+    String? orderCode,
     String? customerName,
     String? customerPhone,
     String? itemsSummary,
@@ -63,6 +69,7 @@ class DairyOrder {
   }) {
     return DairyOrder(
       id: id ?? this.id,
+      orderCode: orderCode ?? this.orderCode,
       customerName: customerName ?? this.customerName,
       customerPhone: customerPhone ?? this.customerPhone,
       itemsSummary: itemsSummary ?? this.itemsSummary,

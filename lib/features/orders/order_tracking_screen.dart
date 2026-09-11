@@ -37,7 +37,7 @@ class OrderTrackingScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text('Order #${order.id}'),
+        title: Text('Order #${order.displayOrderCode}'),
         elevation: 0,
         backgroundColor: AppColors.surface,
         foregroundColor: AppColors.textPrimary,
@@ -410,7 +410,7 @@ class _LiveTrackingMapCardState extends ConsumerState<_LiveTrackingMapCard> {
         'DO-001': LatLng(22.7180, 75.8720),
         'DO-002': LatLng(22.7410, 75.8920),
       };
-      
+
       return dropPoints[widget.orderId] ??
           LatLng(
             indoreCenter.latitude + (widget.orderId.hashCode % 20) * 0.0008,
@@ -423,7 +423,7 @@ class _LiveTrackingMapCardState extends ConsumerState<_LiveTrackingMapCard> {
 
   void _fitMapBounds(LatLng? agentPos, LatLng? dropLoc) {
     if (!mounted) return;
-    
+
     final points = <LatLng>[];
     points.add(pickupHub);
     if (agentPos != null) points.add(agentPos);
@@ -583,12 +583,16 @@ class _LiveTrackingMapCardState extends ConsumerState<_LiveTrackingMapCard> {
                       children: [
                         Icon(
                           Icons.gps_fixed_rounded,
-                          color: agentPos != null ? AppColors.freshGreen : AppColors.textMuted,
+                          color: agentPos != null
+                              ? AppColors.freshGreen
+                              : AppColors.textMuted,
                           size: 12,
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          agentPos != null ? 'Agent Live Location' : 'Connecting Location...',
+                          agentPos != null
+                              ? 'Agent Live Location'
+                              : 'Connecting Location...',
                           style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
@@ -605,7 +609,8 @@ class _LiveTrackingMapCardState extends ConsumerState<_LiveTrackingMapCard> {
                     left: 10,
                     right: 10,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.9),
                         borderRadius: BorderRadius.circular(8),
