@@ -208,6 +208,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
       if (provider.searchQuery.isEmpty) return true;
       final q = provider.searchQuery.toLowerCase();
       return order.id.toLowerCase().contains(q) ||
+          order.displayCode.toLowerCase().contains(q) ||
           order.customerName.toLowerCase().contains(q) ||
           order.address.toLowerCase().contains(q) ||
           order.itemsSummary.toLowerCase().contains(q);
@@ -255,7 +256,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      order.id,
+                      'Order #${order.displayCode}',
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 13,
                         fontWeight: FontWeight.w800,

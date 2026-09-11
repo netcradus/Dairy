@@ -5,6 +5,7 @@ import '../constants/app_assets.dart';
 class ProductImage extends StatelessWidget {
   final String? imageUrl;
   final String? categoryKey;
+  final String? productId;
   final String? title;
   final double size;
   final double radius;
@@ -15,6 +16,7 @@ class ProductImage extends StatelessWidget {
     super.key,
     this.imageUrl,
     this.categoryKey,
+    this.productId,
     this.title,
     this.size = 56,
     this.radius = 8,
@@ -27,6 +29,7 @@ class ProductImage extends StatelessWidget {
     final resolved = AppAssets.productImage(
           imageUrl: imageUrl,
           categoryKey: categoryKey,
+          productId: productId,
           title: title,
         ) ??
         AppAssets.milkPng;
@@ -41,7 +44,11 @@ class ProductImage extends StatelessWidget {
             height: size,
             fit: fit,
             errorBuilder: (_, __, ___) => Image.asset(
-              AppAssets.productImage(title: title, categoryKey: categoryKey) ??
+              AppAssets.productImage(
+                    productId: productId,
+                    title: title,
+                    categoryKey: categoryKey,
+                  ) ??
                   AppAssets.milkPng,
               width: size,
               height: size,
@@ -63,7 +70,12 @@ class ProductImage extends StatelessWidget {
             height: size,
             fit: fit,
             errorBuilder: (_, __, ___) => Image.asset(
-              AppAssets.milkPng,
+              AppAssets.productImage(
+                    productId: productId,
+                    title: title,
+                    categoryKey: categoryKey,
+                  ) ??
+                  AppAssets.milkPng,
               width: size,
               height: size,
               fit: fit,

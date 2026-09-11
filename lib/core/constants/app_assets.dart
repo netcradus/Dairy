@@ -7,11 +7,9 @@ abstract class AppAssets {
   static const String bannerPath = '$imagePath/banners';
   static const String iconPath = '$imagePath/icons';
 
-  static const String landingHeroMilk = '$imagePath/landing_hero_milk.jpg';
-  static const String landingHeroProducts =
-      '$imagePath/landing_hero_products.jpg';
-  static const String landingHeroScooter =
-      '$imagePath/landing_hero_scooter.jpg';
+  static const String landingHeroMilk = '$imagePath/newland1.png';
+  static const String landingHeroProducts = '$imagePath/newland2.png';
+  static const String landingHeroScooter = '$imagePath/newland3.png';
   static const String landingBgMeadow = '$imagePath/landing_bg_meadow.jpg';
   static const String landingBg = '$imagePath/landing.jpg';
   static const String loginHeroCow = '$imagePath/login_hero_cow.jpg';
@@ -142,8 +140,8 @@ abstract class AppAssets {
 
   /// Resolves which image source to use for a product thumbnail.
   /// A valid network URL (http/https) is ALWAYS returned unchanged.
-  /// A valid local asset path is returned unchanged.
-  /// Only invalid, empty, or obsolete paths fall back to the product default.
+  /// Identifies the product from title, categoryKey, or productId to avoid
+  /// displaying stale generic milk images from previous order records.
   static String? productImage({
     String? imageUrl,
     String? categoryKey,
@@ -151,34 +149,67 @@ abstract class AppAssets {
     String? productTitle,
     String? title,
   }) {
-    if (_isNetwork(imageUrl)) return imageUrl!.trim();
-    if (_isAsset(imageUrl)) return imageUrl!.trim();
+    // 1. Direct valid network URL (http/https from Firestore / Firebase Storage)
+    if (_isNetwork(imageUrl)) {
+      return imageUrl!.trim();
+    }
 
-    final effectiveTitle = productTitle ?? title;
+    final effectiveTitle = (productTitle ?? title)?.trim();
+    final effectiveProductId = productId?.trim();
+    final effectiveCategoryKey = categoryKey?.trim();
 
-    final fromCategory = _fallbackDefault(_productDefaultByKey, categoryKey);
-    if (fromCategory != null) return fromCategory;
-    final fromId = _fallbackDefault(_productDefaultByKey, productId);
-    if (fromId != null) return fromId;
-    final fromTitle = _fallbackDefault(_productDefaultByKey, effectiveTitle);
-    if (fromTitle != null) return fromTitle;
-
+    // 2. Identify the product from title, category, or ID first
     final search =
-        '${effectiveTitle ?? ''} ${imageUrl ?? ''} ${categoryKey ?? ''} ${productId ?? ''}'
+        '${effectiveTitle ?? ''} ${effectiveCategoryKey ?? ''} ${effectiveProductId ?? ''}'
             .toLowerCase();
-    if (search.contains('paneer') || search.contains('pan')) return paneerPng;
-    if (search.contains('ghee') || search.contains('gh')) return gheePng;
-    if (search.contains('lassi') || search.contains('las')) return lassiPng;
+
+    if (search.contains('paneer') || search.contains('pan')) {
+      return paneerPng;
+    }
+    if (search.contains('ghee') || search.contains('gh')) {
+      return gheePng;
+    }
+    if (search.contains('lassi') || search.contains('las')) {
+      return lassiPng;
+    }
     if (search.contains('makhan') ||
         search.contains('butter') ||
-        search.contains('mak')) return makhanPng;
+        search.contains('mak')) {
+      return makhanPng;
+    }
     if (search.contains('uple') ||
         search.contains('dung') ||
-        search.contains('u3')) return uplePng;
-    if (search.contains('water') || search.contains('w3')) return waterPng;
+        search.contains('u3')) {
+      return uplePng;
+    }
+    if (search.contains('water') || search.contains('w3')) {
+      return waterPng;
+    }
     if (search.contains('milk') ||
         search.contains('doodh') ||
-        search.contains('nnd')) return milkPng;
+        search.contains('nnd')) {
+      return milkPng;
+    }
+
+    // 3. Fallbacks by mapped keys
+    final fromId = _fallbackDefault(_productDefaultByKey, effectiveProductId);
+    if (fromId != null) {
+      return fromId;
+    }
+    final fromCategory =
+        _fallbackDefault(_productDefaultByKey, effectiveCategoryKey);
+    if (fromCategory != null) {
+      return fromCategory;
+    }
+    final fromTitle = _fallbackDefault(_productDefaultByKey, effectiveTitle);
+    if (fromTitle != null) {
+      return fromTitle;
+    }
+
+    // 4. If imageUrl is an explicit valid asset and no conflicting keyword was found
+    if (_isAsset(imageUrl)) {
+      return imageUrl!.trim();
+    }
 
     return milkPng;
   }
