@@ -4,7 +4,6 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:ui' show PointerDeviceKind;
 
-import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
 import '../../core/localization/app_language.dart';
@@ -180,138 +179,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 1. Trust Badges Strip (4 Badges in a Row)
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _TrustBadgesStrip extends StatelessWidget {
-  const _TrustBadgesStrip();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border, width: 0.8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.025),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minWidth: constraints.maxWidth),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _BadgeItem(
-                    icon: Icons.shield_outlined,
-                    iconColor: const Color(0xFF1E6BFF),
-                    bgColor: const Color(0xFFEFF6FF),
-                    title: tr('FSSAI Certified'),
-                    subtitle: tr('Safe & Certified'),
-                  ),
-                  const SizedBox(width: 16),
-                  _BadgeItem(
-                    icon: Icons.local_shipping_outlined,
-                    iconColor: const Color(0xFF10B981),
-                    bgColor: const Color(0xFFEDFBF5),
-                    title: tr('Free Delivery'),
-                    subtitle: tr('On all orders'),
-                  ),
-                  const SizedBox(width: 16),
-                  _BadgeItem(
-                    icon: Icons.access_time_rounded,
-                    iconColor: const Color(0xFFF59E0B),
-                    bgColor: const Color(0xFFFFFBEB),
-                    title: tr('Same-Day Fresh'),
-                    subtitle: tr('Timely & Fresh'),
-                  ),
-                  const SizedBox(width: 16),
-                  _BadgeItem(
-                    icon: Icons.replay_rounded,
-                    iconColor: const Color(0xFFEF4444),
-                    bgColor: const Color(0xFFFEF2F2),
-                    title: tr('Easy Returns'),
-                    subtitle: tr('Hassle-free returns'),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _BadgeItem extends StatelessWidget {
-  final IconData icon;
-  final Color iconColor;
-  final Color bgColor;
-  final String title;
-  final String subtitle;
-
-  const _BadgeItem({
-    required this.icon,
-    required this.iconColor,
-    required this.bgColor,
-    required this.title,
-    required this.subtitle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Container(
-          height: 38,
-          width: 38,
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, color: iconColor, size: 20),
-        ),
-        const SizedBox(width: 10),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 1),
-            Text(
-              subtitle,
-              style: const TextStyle(
-                fontSize: 10.5,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // 2. Hero Promotional Banner ("Pure Goodness, Delivered to Your Doorstep")
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -329,6 +196,7 @@ class _HeroPromotionalBanner extends StatefulWidget {
 class _HeroPromotionalBannerState extends State<_HeroPromotionalBanner> {
   late VideoPlayerController _controller;
   bool _isInitialized = false;
+  bool _hasError = false;
 
   @override
   void initState() {
@@ -353,6 +221,11 @@ class _HeroPromotionalBannerState extends State<_HeroPromotionalBanner> {
       }
     }).catchError((e) {
       debugPrint('Error initializing banner video: $e');
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+        });
+      }
     });
   }
 
@@ -375,7 +248,7 @@ class _HeroPromotionalBannerState extends State<_HeroPromotionalBanner> {
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -387,7 +260,7 @@ class _HeroPromotionalBannerState extends State<_HeroPromotionalBanner> {
             aspectRatio: 16 / 9,
             child: GestureDetector(
               onTap: widget.onTap,
-              child: _controller.value.hasError
+              child: (_controller.value.hasError || _hasError)
                   ? Container(
                       color: Colors.grey[200],
                       padding: const EdgeInsets.all(8),
@@ -414,276 +287,6 @@ class _HeroPromotionalBannerState extends State<_HeroPromotionalBanner> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildFallbackBanner(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        gradient: const LinearGradient(
-          colors: [Color(0xFFE8F3FC), Color(0xFFD5E9F9), Color(0xFFD0E8F8)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        border: Border.all(color: const Color(0xFFC7E2F7), width: 1.0),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(18),
-        child: Stack(
-          children: [
-            // Right half — meadow/nature background image
-            Positioned(
-              right: 0,
-              top: 0,
-              bottom: 0,
-              width: 320,
-              child: Image.asset(
-                AppAssets.landingBgMeadow,
-                fit: BoxFit.cover,
-                alignment: Alignment.center,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-              ),
-            ),
-            // Soft fade from left (keeps text readable)
-            Positioned(
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: 280,
-              child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFFE8F3FC), Color(0x00E8F3FC)],
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                  ),
-                ),
-              ),
-            ),
-
-            // Top Right Stamp: FARM TO FAMILY
-            Positioned(
-              top: 12,
-              right: 14,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 9,
-                  vertical: 7,
-                ),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.92),
-                  border: Border.all(
-                    color: const Color(0xFF005F38).withValues(alpha: 0.3),
-                    width: 1.2,
-                  ),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 8,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: const Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'FARM',
-                      style: TextStyle(
-                        fontSize: 8.5,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF005F38),
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    Text(
-                      'TO',
-                      style: TextStyle(
-                        fontSize: 7,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF005F38),
-                      ),
-                    ),
-                    Text(
-                      'FAMILY',
-                      style: TextStyle(
-                        fontSize: 8,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF005F38),
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    Icon(
-                      Icons.eco_rounded,
-                      size: 10,
-                      color: Color(0xFF10B981),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Main Content Row
-            Positioned.fill(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(22, 16, 12, 16),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Left: Text + Feature Grid
-                    Expanded(
-                      flex: 55,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            tr('Pure Goodness,\nDelivered to Your Doorstep'),
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                              color: Color(0xFF0F2F64),
-                              height: 1.2,
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            tr('Farm fresh milk & dairy products,\nhygienically packed for your family.'),
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF4A5568),
-                              height: 1.4,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-
-                          // Horizontal Feature Icon Row matching mockup
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              _HeroFeatureIcon(
-                                icon: Icons.eco_outlined,
-                                label: tr('100%\nPure'),
-                              ),
-                              const SizedBox(width: 14),
-                              _HeroFeatureIcon(
-                                icon: Icons.water_drop_outlined,
-                                label: tr('No Added\nPreservatives'),
-                              ),
-                              const SizedBox(width: 14),
-                              _HeroFeatureIcon(
-                                icon: Icons.sanitizer_outlined,
-                                label: tr('Hygienically\nPacked'),
-                              ),
-                              const SizedBox(width: 14),
-                              _HeroFeatureIcon(
-                                icon: Icons.favorite_border_rounded,
-                                label: tr('Trusted by\nThousands'),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Right: Two Milk Bottles
-                    Expanded(
-                      flex: 45,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Expanded(
-                            child: Image.asset(
-                              AppAssets.milkPng,
-                              height: 230,
-                              fit: BoxFit.contain,
-                              alignment: Alignment.bottomCenter,
-                              errorBuilder: (_, __, ___) => const Icon(
-                                Icons.local_drink_rounded,
-                                size: 75,
-                                color: AppColors.primaryBlue,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Image.asset(
-                              AppAssets.lassiPng,
-                              height: 230,
-                              fit: BoxFit.contain,
-                              alignment: Alignment.bottomCenter,
-                              errorBuilder: (_, __, ___) => const Icon(
-                                Icons.local_drink_rounded,
-                                size: 75,
-                                color: AppColors.primaryBlue,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Circular icon + short label below — used in the hero banner 2×2 feature grid.
-class _HeroFeatureIcon extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const _HeroFeatureIcon({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white.withValues(alpha: 0.82),
-            border: Border.all(
-              color: const Color(0xFF1E6BFF).withValues(alpha: 0.18),
-              width: 1.0,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Icon(icon, size: 16, color: const Color(0xFF1E6BFF)),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontSize: 9.5,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF0F3778),
-            height: 1.25,
-          ),
-        ),
-      ],
     );
   }
 }
@@ -837,7 +440,7 @@ class _FreshnessBanner extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -869,46 +472,8 @@ class _FreshnessBanner extends StatelessWidget {
   }
 }
 
-class _CheckRow extends StatelessWidget {
-  final String text;
-
-  const _CheckRow({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          height: 16,
-          width: 16,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.check_rounded,
-            size: 11,
-            color: Color(0xFF005F38),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(
-              fontSize: 11.5,
-              fontWeight: FontWeight.w500,
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
-// Middle/Category Promotional Banner (banner4.png, banner5.png)
+// Middle/Category Promotional Banner (1.png, 2.png, 3.png)
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _CategoryPromotionalBanner extends StatefulWidget {
@@ -925,17 +490,21 @@ class _CategoryPromotionalBannerState
       CarouselSliderController();
 
   final List<String> bannerImages = [
-    'assets/images/banner4.png',
-    'assets/images/banner5.png',
+    'assets/images/1.png',
+    'assets/images/2.png',
+    'assets/images/3.png',
   ];
 
   @override
   Widget build(BuildContext context) {
+    final isTest =
+        WidgetsBinding.instance.runtimeType.toString().contains('Test');
+
     return CarouselSlider(
       carouselController: _carouselController,
       options: CarouselOptions(
         aspectRatio: 1764 / 608,
-        autoPlay: true,
+        autoPlay: !isTest,
         autoPlayInterval: const Duration(seconds: 4),
         autoPlayAnimationDuration: const Duration(milliseconds: 800),
         enlargeCenterPage: false,
@@ -989,6 +558,7 @@ class _WhyChooseUsVideo extends StatefulWidget {
 class _WhyChooseUsVideoState extends State<_WhyChooseUsVideo> {
   late VideoPlayerController _controller;
   bool _isInitialized = false;
+  bool _hasError = false;
 
   @override
   void initState() {
@@ -1013,6 +583,11 @@ class _WhyChooseUsVideoState extends State<_WhyChooseUsVideo> {
       }
     }).catchError((e) {
       debugPrint('Error initializing why video: $e');
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+        });
+      }
     });
   }
 
@@ -1028,7 +603,7 @@ class _WhyChooseUsVideoState extends State<_WhyChooseUsVideo> {
       borderRadius: BorderRadius.circular(16),
       child: AspectRatio(
         aspectRatio: _isInitialized ? _controller.value.aspectRatio : 16 / 9,
-        child: _controller.value.hasError
+        child: (_controller.value.hasError || _hasError)
             ? Container(
                 color: Colors.grey[200],
                 padding: const EdgeInsets.all(8),

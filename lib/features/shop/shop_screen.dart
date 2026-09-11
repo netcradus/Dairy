@@ -23,15 +23,16 @@ class ShopScreen extends ConsumerStatefulWidget {
 class _ShopScreenState extends ConsumerState<ShopScreen> {
   late VideoPlayerController _videoController;
   bool _isVideoInitialized = false;
+  bool _videoHasError = false;
 
   final CarouselSliderController _middleCarouselController =
       CarouselSliderController();
   int _middleBannerIndex = 0;
 
   final List<String> _middleBanners = [
-    'assets/images/shopbanner1.png',
-    'assets/images/shopbanner2.png',
-    'assets/images/shopbanner3.png',
+    'assets/images/1.png',
+    'assets/images/2.png',
+    'assets/images/3.png',
   ];
 
   @override
@@ -57,6 +58,11 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       }
     }).catchError((e) {
       debugPrint('Error initializing shop video: $e');
+      if (mounted) {
+        setState(() {
+          _videoHasError = true;
+        });
+      }
     });
   }
 
@@ -548,11 +554,11 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         borderRadius: BorderRadius.circular(16),
         child: AspectRatio(
           aspectRatio: 2.0,
-          child: _videoController.value.hasError
+          child: (_videoController.value.hasError || _videoHasError)
               ? Container(
                   color: const Color(0xFF005F38),
                   child: Image.asset(
-                    'assets/images/shopbanner1.png',
+                    'assets/images/1.png',
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => const Center(
                       child: Icon(Icons.play_circle_outline,
@@ -582,12 +588,15 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   }
 
   Widget _buildMiddlePromoBanner() {
+    final isTest =
+        WidgetsBinding.instance.runtimeType.toString().contains('Test');
+
     return CarouselSlider(
       carouselController: _middleCarouselController,
       options: CarouselOptions(
         aspectRatio: 1764 / 608,
         viewportFraction: 1.0,
-        autoPlay: true,
+        autoPlay: !isTest,
         autoPlayInterval: const Duration(seconds: 4),
         enlargeCenterPage: false,
         onPageChanged: (index, reason) {

@@ -52,12 +52,16 @@ class AppButton extends StatelessWidget {
                 Icon(icon, size: 18),
                 const SizedBox(width: AppSizes.p8),
               ],
-              Text(
-                text,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.2,
+              Flexible(
+                child: Text(
+                  text,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.2,
+                  ),
                 ),
               ),
             ],
@@ -70,6 +74,7 @@ class AppButton extends StatelessWidget {
         button = ElevatedButton(
           onPressed: isLoading ? null : onPressed,
           style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16),
             minimumSize: Size(
                 isFullWidth ? double.infinity : (width ?? 0), effectiveHeight),
             backgroundColor: AppColors.primaryBlue,
@@ -87,6 +92,7 @@ class AppButton extends StatelessWidget {
         button = ElevatedButton(
           onPressed: isLoading ? null : onPressed,
           style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16),
             minimumSize: Size(
                 isFullWidth ? double.infinity : (width ?? 0), effectiveHeight),
             backgroundColor: AppColors.lightBlue,
@@ -103,6 +109,7 @@ class AppButton extends StatelessWidget {
         button = OutlinedButton(
           onPressed: isLoading ? null : onPressed,
           style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16),
             minimumSize: Size(
                 isFullWidth ? double.infinity : (width ?? 0), effectiveHeight),
             side: const BorderSide(color: AppColors.primaryBlue, width: 1.5),
@@ -118,6 +125,7 @@ class AppButton extends StatelessWidget {
         button = TextButton(
           onPressed: isLoading ? null : onPressed,
           style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16),
             minimumSize: Size(
                 isFullWidth ? double.infinity : (width ?? 0), effectiveHeight),
             foregroundColor: AppColors.primaryBlue,

@@ -6,6 +6,9 @@ import 'package:dairy_app/main.dart';
 import 'package:dairy_app/providers/user_provider.dart';
 import 'package:dairy_app/models/user.dart';
 
+import 'package:dairy_app/models/category.dart';
+import 'package:dairy_app/providers/product_provider.dart';
+
 void main() {
   testWidgets('Real router renders Home (desktop viewport)',
       (WidgetTester tester) async {
@@ -33,10 +36,24 @@ void main() {
       role: 'customer',
     );
 
+    const testCategory = Category(
+      id: 'cat_milk',
+      title: 'Fresh Milk',
+      subtitle: '100% Pure',
+      imageUrl: 'assets/images/doodh.png',
+      iconData: Icons.local_drink_rounded,
+      backgroundColor: Color(0xFFEAF5FF),
+      borderColor: Color(0xFF5B9BD5),
+      titleColor: Color(0xFF0C1A30),
+      itemCount: 8,
+    );
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           userProvider.overrideWith((ref) => UserNotifier()..state = loggedIn),
+          categoriesProvider
+              .overrideWith((ref) => Stream.value([testCategory])),
         ],
         child: const MyApp(),
       ),

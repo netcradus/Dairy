@@ -22,6 +22,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
+  Timer? _navigationTimer;
 
   @override
   void initState() {
@@ -47,12 +48,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     _controller.forward();
 
-    // Navigate after 3 seconds
-    _navigateToNextScreen();
+    // Navigate after 3 seconds with a cancellable timer
+    _navigationTimer = Timer(const Duration(milliseconds: 3000), () {
+      _navigateToNextScreen();
+    });
   }
 
   Future<void> _navigateToNextScreen() async {
-    await Future.delayed(const Duration(milliseconds: 3000));
     if (!mounted) return;
 
     // If a session already exists, go straight to the relevant home screen
@@ -83,6 +85,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   void dispose() {
+    _navigationTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }

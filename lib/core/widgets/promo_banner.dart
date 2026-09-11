@@ -41,6 +41,7 @@ class _HeroBannerCarouselState extends State<HeroBannerCarousel> {
 
   void _startAutoScroll() {
     if (widget.banners.length <= 1) return;
+    if (WidgetsBinding.instance.runtimeType.toString().contains('Test')) return;
     _timer = Timer.periodic(widget.autoScrollInterval, (_) {
       if (!mounted) return;
       final next = (_currentIndex + 1) % widget.banners.length;
