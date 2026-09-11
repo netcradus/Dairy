@@ -56,7 +56,8 @@ class CheckoutScreen extends ConsumerWidget {
     if (selectedAddress == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please add or select a delivery address to place your order.'),
+          content: Text(
+              'Please add or select a delivery address to place your order.'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -131,6 +132,23 @@ class CheckoutScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: AppSizes.p8),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Order #${newOrder.displayOrderCode}',
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.primaryBlue,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSizes.p12),
               Text(
                 'Thank you for ordering with Sawariya Dairy!\nYour fresh products will be delivered to:\n\n${selectedAddress.fullName}\n${selectedAddress.fullAddressText}\n\nPayment Mode: $paymentName',
                 textAlign: TextAlign.center,

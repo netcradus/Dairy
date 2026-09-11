@@ -97,7 +97,8 @@ void main() {
       expect(sub.isActiveAndValid, true);
     });
 
-    test('Subscription safely handles null/missing dates and fallback status', () {
+    test('Subscription safely handles null/missing dates and fallback status',
+        () {
       final data = {
         'id': 'sub_minimal',
         'quantity': 1,
