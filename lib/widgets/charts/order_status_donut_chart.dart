@@ -34,16 +34,36 @@ class _OrderStatusDonutChartState extends State<OrderStatusDonutChart> {
     final totalOrders = provider.totalOrdersCount;
 
     final sectionsData = [
-      {'label': 'Pending', 'value': pendingCount, 'color': AppColors.statusPending},
-      {'label': 'Confirmed', 'value': confirmedCount, 'color': AppColors.statusConfirmed},
-      {'label': 'Preparing', 'value': preparingCount, 'color': AppColors.statusPreparing},
+      {
+        'label': 'Pending',
+        'value': pendingCount,
+        'color': AppColors.statusPending
+      },
+      {
+        'label': 'Confirmed',
+        'value': confirmedCount,
+        'color': AppColors.statusConfirmed
+      },
+      {
+        'label': 'Preparing',
+        'value': preparingCount,
+        'color': AppColors.statusPreparing
+      },
       {
         'label': 'Out for Delivery',
         'value': outForDeliveryCount,
         'color': AppColors.statusOutForDelivery
       },
-      {'label': 'Delivered', 'value': deliveredCount, 'color': AppColors.statusDelivered},
-      {'label': 'Cancelled', 'value': cancelledCount, 'color': AppColors.statusCancelled},
+      {
+        'label': 'Delivered',
+        'value': deliveredCount,
+        'color': AppColors.statusDelivered
+      },
+      {
+        'label': 'Cancelled',
+        'value': cancelledCount,
+        'color': AppColors.statusCancelled
+      },
     ];
 
     return Container(
