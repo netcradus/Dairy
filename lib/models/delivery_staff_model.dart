@@ -48,8 +48,7 @@ class DeliveryRider {
       email: email ?? this.email,
       vehicle: vehicle ?? this.vehicle,
       assignedZone: assignedZone ?? this.assignedZone,
-      totalDeliveriesToday:
-          totalDeliveriesToday ?? this.totalDeliveriesToday,
+      totalDeliveriesToday: totalDeliveriesToday ?? this.totalDeliveriesToday,
       pendingDeliveries: pendingDeliveries ?? this.pendingDeliveries,
       rating: rating ?? this.rating,
       status: status ?? this.status,

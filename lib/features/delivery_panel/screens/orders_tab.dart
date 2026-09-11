@@ -129,7 +129,7 @@ class OrdersTab extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Order #${order.orderId}',
+                  'Order #${order.displayCode}',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
@@ -232,6 +232,7 @@ class OrdersTab extends ConsumerWidget {
 
 class _HistoryOrderItem {
   final String orderId;
+  final String orderCode;
   final String customerName;
   final double earnings;
   final DateTime date;
@@ -239,15 +240,19 @@ class _HistoryOrderItem {
 
   _HistoryOrderItem({
     required this.orderId,
+    this.orderCode = '',
     required this.customerName,
     required this.earnings,
     required this.date,
     required this.distance,
   });
 
+  String get displayCode => orderCode.isNotEmpty ? orderCode : orderId;
+
   factory _HistoryOrderItem.fromHistory(DeliveryHistoryItem item) {
     return _HistoryOrderItem(
       orderId: item.orderId,
+      orderCode: item.displayCode,
       customerName: item.customerName,
       earnings: item.earnings,
       date: item.date,
@@ -258,6 +263,7 @@ class _HistoryOrderItem {
   factory _HistoryOrderItem.fromOrder(DeliveryOrder order) {
     return _HistoryOrderItem(
       orderId: order.orderId,
+      orderCode: order.displayCode,
       customerName: order.customerName,
       earnings: order.deliveryFee,
       date: order.deliveredTime ?? order.orderTime,

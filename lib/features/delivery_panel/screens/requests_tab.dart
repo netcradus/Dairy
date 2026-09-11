@@ -240,7 +240,7 @@ class _RequestsTabState extends ConsumerState<RequestsTab> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Order #${request.orderId}',
+                      'Order #${request.displayCode}',
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
@@ -424,7 +424,7 @@ class _RequestsTabState extends ConsumerState<RequestsTab> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Order ${order.orderId} accepted!'),
+          content: Text('Order #${order.displayCode} accepted!'),
           backgroundColor: AppColors.success,
         ),
       );

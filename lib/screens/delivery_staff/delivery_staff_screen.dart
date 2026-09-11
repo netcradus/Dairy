@@ -186,8 +186,8 @@ class DeliveryStaffScreen extends StatelessWidget {
                       itemBuilder: (ctx, idx) {
                         final rider = filteredRiders[idx];
                         return InkWell(
-                          onTap: () => _showRiderDetailsDialog(
-                              context, provider, rider),
+                          onTap: () =>
+                              _showRiderDetailsDialog(context, provider, rider),
                           borderRadius: BorderRadius.circular(16),
                           child: Container(
                             padding: const EdgeInsets.all(18),
@@ -409,14 +409,17 @@ class DeliveryStaffScreen extends StatelessWidget {
                       : AppColors.textMutedOf(context),
                 ),
                 const SizedBox(height: 10),
-                _buildDetailRow(context, Icons.local_shipping_outlined,
-                    'Deliveries Today', '${rider.totalDeliveriesToday} Completed'),
+                _buildDetailRow(
+                    context,
+                    Icons.local_shipping_outlined,
+                    'Deliveries Today',
+                    '${rider.totalDeliveriesToday} Completed'),
                 const SizedBox(height: 10),
                 _buildDetailRow(context, Icons.pending_actions_rounded,
                     'Pending Deliveries', '${rider.pendingDeliveries} Active'),
                 const SizedBox(height: 10),
-                _buildDetailRow(context, Icons.star_rounded,
-                    'Customer Rating', '${rider.rating.toStringAsFixed(1)} / 5.0'),
+                _buildDetailRow(context, Icons.star_rounded, 'Customer Rating',
+                    '${rider.rating.toStringAsFixed(1)} / 5.0'),
                 const SizedBox(height: 10),
                 _buildDetailRow(context, Icons.calendar_today_outlined,
                     'Joined Date', rider.joinedDate),
@@ -543,8 +546,8 @@ class DeliveryStaffScreen extends StatelessWidget {
                       Expanded(
                         child: TextField(
                           controller: emailCtrl,
-                          decoration: const InputDecoration(
-                              labelText: 'Email Address'),
+                          decoration:
+                              const InputDecoration(labelText: 'Email Address'),
                         ),
                       ),
                     ],
@@ -584,8 +587,7 @@ class DeliveryStaffScreen extends StatelessWidget {
                     items: const [
                       DropdownMenuItem(
                           value: 'Active', child: Text('Active / On Duty')),
-                      DropdownMenuItem(
-                          value: 'Break', child: Text('On Break')),
+                      DropdownMenuItem(value: 'Break', child: Text('On Break')),
                       DropdownMenuItem(
                           value: 'Offline', child: Text('Offline / Off-Duty')),
                     ],

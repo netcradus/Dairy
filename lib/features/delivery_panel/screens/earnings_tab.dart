@@ -128,7 +128,8 @@ class EarningsTab extends ConsumerWidget {
             ),
           )
         else
-          ...earnings.map((e) => _buildDailyEarningsItem(context, e, isDesktop)),
+          ...earnings
+              .map((e) => _buildDailyEarningsItem(context, e, isDesktop)),
       ],
     );
   }

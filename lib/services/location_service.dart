@@ -67,9 +67,7 @@ class GeocodedAddress {
       postalCode: (postalCode?.trim().isNotEmpty ?? false)
           ? postalCode
           : other.postalCode,
-      country: (country?.trim().isNotEmpty ?? false)
-          ? country
-          : other.country,
+      country: (country?.trim().isNotEmpty ?? false) ? country : other.country,
     );
   }
 }
@@ -175,7 +173,8 @@ class LocationService {
   /// 2. BigDataCloud Client Reverse Geocode - CORS-enabled, free fallback for city/state/locality.
   /// 3. Native platform Geocoder (Android / iOS only, skipped on Web).
   /// 4. Nominatim OpenStreetMap (Native only, skipped on Web due to browser CORS).
-  Future<GeocodedAddress?> reverseGeocode(double latitude, double longitude) async {
+  Future<GeocodedAddress?> reverseGeocode(
+      double latitude, double longitude) async {
     if (latitude == 0.0 && longitude == 0.0) return null;
 
     GeocodedAddress? combinedResult;
@@ -201,7 +200,8 @@ class LocationService {
           : combinedResult.mergeWith(bdcResult);
       if (combinedResult.city != null &&
           combinedResult.state != null &&
-          (combinedResult.streetOrArea != null || combinedResult.postalCode != null)) {
+          (combinedResult.streetOrArea != null ||
+              combinedResult.postalCode != null)) {
         return combinedResult;
       }
     }
@@ -240,9 +240,9 @@ class LocationService {
         'lon': longitude.toString(),
       });
 
-      final response = await http
-          .get(uri, headers: {'Accept': 'application/json'})
-          .timeout(const Duration(seconds: 5));
+      final response = await http.get(uri, headers: {
+        'Accept': 'application/json'
+      }).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
@@ -327,9 +327,9 @@ class LocationService {
         'localityLanguage': 'en',
       });
 
-      final response = await http
-          .get(uri, headers: {'Accept': 'application/json'})
-          .timeout(const Duration(seconds: 5));
+      final response = await http.get(uri, headers: {
+        'Accept': 'application/json'
+      }).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
@@ -467,20 +467,28 @@ class LocationService {
           final addr = decoded['address'];
           if (addr is Map<String, dynamic>) {
             final houseParts = <String>[];
-            if (addr['house_number'] != null) houseParts.add(addr['house_number'].toString().trim());
-            if (addr['building'] != null) houseParts.add(addr['building'].toString().trim());
-            if (addr['flat'] != null) houseParts.add(addr['flat'].toString().trim());
+            if (addr['house_number'] != null)
+              houseParts.add(addr['house_number'].toString().trim());
+            if (addr['building'] != null)
+              houseParts.add(addr['building'].toString().trim());
+            if (addr['flat'] != null)
+              houseParts.add(addr['flat'].toString().trim());
             final house = houseParts.isNotEmpty ? houseParts.join(', ') : null;
 
             final streetParts = <String>[];
-            if (addr['road'] != null) streetParts.add(addr['road'].toString().trim());
-            if (addr['suburb'] != null && !streetParts.contains(addr['suburb'].toString().trim())) {
+            if (addr['road'] != null)
+              streetParts.add(addr['road'].toString().trim());
+            if (addr['suburb'] != null &&
+                !streetParts.contains(addr['suburb'].toString().trim())) {
               streetParts.add(addr['suburb'].toString().trim());
             }
-            if (addr['neighbourhood'] != null && !streetParts.contains(addr['neighbourhood'].toString().trim())) {
+            if (addr['neighbourhood'] != null &&
+                !streetParts
+                    .contains(addr['neighbourhood'].toString().trim())) {
               streetParts.add(addr['neighbourhood'].toString().trim());
             }
-            final street = streetParts.isNotEmpty ? streetParts.join(', ') : null;
+            final street =
+                streetParts.isNotEmpty ? streetParts.join(', ') : null;
 
             String? city = addr['city']?.toString().trim() ??
                 addr['town']?.toString().trim() ??
@@ -559,7 +567,8 @@ class LocationService {
       if (nomLoc != null) return nomLoc;
 
       if (fallbackQuery != null && fallbackQuery.trim().isNotEmpty) {
-        final nomFallback = await _forwardGeocodeNominatim(fallbackQuery.trim());
+        final nomFallback =
+            await _forwardGeocodeNominatim(fallbackQuery.trim());
         if (nomFallback != null) return nomFallback;
       }
     }
@@ -576,9 +585,9 @@ class LocationService {
         'limit': '1',
       });
 
-      final response = await http
-          .get(uri, headers: {'Accept': 'application/json'})
-          .timeout(const Duration(seconds: 5));
+      final response = await http.get(uri, headers: {
+        'Accept': 'application/json'
+      }).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
@@ -593,7 +602,9 @@ class LocationService {
                 if (coordinates is List && coordinates.length >= 2) {
                   final lon = double.tryParse(coordinates[0].toString());
                   final lat = double.tryParse(coordinates[1].toString());
-                  if (lat != null && lon != null && (lat != 0.0 || lon != 0.0)) {
+                  if (lat != null &&
+                      lon != null &&
+                      (lat != 0.0 || lon != 0.0)) {
                     return (latitude: lat, longitude: lon);
                   }
                 }
@@ -669,4 +680,3 @@ class LocationService {
 final locationServiceProvider = Provider<LocationService>((ref) {
   return LocationService();
 });
-

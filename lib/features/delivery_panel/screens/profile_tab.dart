@@ -225,8 +225,6 @@ class ProfileTab extends ConsumerWidget {
     );
   }
 
-
-
   Widget _buildStatCard(
     BuildContext context,
     String label,

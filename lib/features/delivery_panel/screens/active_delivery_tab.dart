@@ -254,7 +254,7 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Order #${order.orderId}',
+                      'Order #${order.displayCode}',
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
@@ -567,7 +567,7 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
           onPressed: () => setState(() => _selectedOrder = null),
         ),
         title: Text(
-          'Order #${order.orderId}',
+          'Order #${order.displayCode}',
           style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
         ),
         backgroundColor: cardBg,
@@ -715,7 +715,7 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
       builder: (context) => AlertDialog(
         title: Text('Confirm Delivery',
             style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
-        content: Text('Mark order #${order.orderId} as delivered?',
+        content: Text('Mark order #${order.displayCode} as delivered?',
             style: GoogleFonts.plusJakartaSans()),
         actions: [
           TextButton(
@@ -730,7 +730,7 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
                 await ref
                     .read(orderServiceProvider)
                     .updateOrderStatus(order.id, OrderStatus.delivered);
-                
+
                 // Clear the agent's active orderId in Firestore & stop location tracking for that order
                 final agentId = ref.read(deliveryAgentProvider).id;
                 if (agentId.isNotEmpty) {
@@ -756,6 +756,7 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
               ref.read(deliveryHistoryProvider.notifier).addToHistory(
                     DeliveryHistoryItem(
                       orderId: order.orderId,
+                      orderCode: order.displayCode,
                       customerName: order.customerName,
                       status: 'Delivered',
                       earnings: order.deliveryFee,
@@ -783,7 +784,7 @@ class _ActiveDeliveryTabState extends ConsumerState<ActiveDeliveryTab> {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Order #${order.orderId} delivered!'),
+                  content: Text('Order #${order.displayCode} delivered!'),
                   backgroundColor: AppColors.success,
                 ),
               );

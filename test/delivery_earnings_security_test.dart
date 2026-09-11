@@ -9,27 +9,36 @@ void main() {
       expect(OrderService.agentEarningRate, 0.10);
     });
 
-    test('Earning calculation formula evaluates to exactly 10% of order subtotal', () {
+    test(
+        'Earning calculation formula evaluates to exactly 10% of order subtotal',
+        () {
       const subtotal1 = 650.0;
-      final earning1 = (subtotal1 * OrderService.agentEarningRate * 100).round() / 100;
+      final earning1 =
+          (subtotal1 * OrderService.agentEarningRate * 100).round() / 100;
       expect(earning1, 65.0);
 
       const subtotal2 = 249.50;
-      final earning2 = (subtotal2 * OrderService.agentEarningRate * 100).round() / 100;
+      final earning2 =
+          (subtotal2 * OrderService.agentEarningRate * 100).round() / 100;
       expect(earning2, 24.95);
 
       const subtotal3 = 0.0;
-      final earning3 = (subtotal3 * OrderService.agentEarningRate * 100).round() / 100;
+      final earning3 =
+          (subtotal3 * OrderService.agentEarningRate * 100).round() / 100;
       expect(earning3, 0.0);
     });
 
-    test('orderStatusToString correctly maps delivered status for backend Cloud Function triggers', () {
+    test(
+        'orderStatusToString correctly maps delivered status for backend Cloud Function triggers',
+        () {
       expect(orderStatusToString(OrderStatus.delivered), 'delivered');
       expect(orderStatusFromString('delivered'), OrderStatus.delivered);
       expect(orderStatusFromString('Delivered'), OrderStatus.delivered);
     });
 
-    test('EarningModel serializes and deserializes accurately with pending default status', () {
+    test(
+        'EarningModel serializes and deserializes accurately with pending default status',
+        () {
       final now = DateTime(2026, 9, 10, 15, 0, 0);
       final model = EarningModel(
         id: 'order_abc_123',
@@ -61,7 +70,8 @@ void main() {
     // =========================================================================
     // 1. DELIVERY AGENTS COLLECTION (/delivery_agents/{agentId})
     // =========================================================================
-    group('1. Delivery Agents Collection (/delivery_agents/{agentId}) RBAC', () {
+    group('1. Delivery Agents Collection (/delivery_agents/{agentId}) RBAC',
+        () {
       bool evaluateDeliveryAgentReadRule({
         required String? authUid,
         required String? authRole,
@@ -242,11 +252,11 @@ void main() {
 
         final isDelivery = authRole == 'delivery';
         if (isDelivery) {
-          final isUnassignedPending = (orderAssignedAgentId == null ||
-                  orderAssignedAgentId.isEmpty) &&
-              (orderStatus == 'Pending' ||
-                  orderStatus == 'pending' ||
-                  orderStatus == 'placed');
+          final isUnassignedPending =
+              (orderAssignedAgentId == null || orderAssignedAgentId.isEmpty) &&
+                  (orderStatus == 'Pending' ||
+                      orderStatus == 'pending' ||
+                      orderStatus == 'placed');
           final isAssignedToMe = orderAssignedAgentId == authUid;
           return isUnassignedPending || isAssignedToMe;
         }
@@ -288,13 +298,13 @@ void main() {
             'deliveredAt',
             'deliveryConfirmed'
           }.contains);
-          final isRelease = changedFields
-                  .every({'status', 'assignedAgentId', 'acceptedAt'}.contains) &&
+          final isRelease = changedFields.every(
+                  {'status', 'assignedAgentId', 'acceptedAt'}.contains) &&
               releases;
           return isDeliveryProgress || isRelease;
         } else if (isUnassigned) {
-          return changedFields
-                  .every({'status', 'assignedAgentId', 'acceptedAt'}.contains) &&
+          return changedFields.every(
+                  {'status', 'assignedAgentId', 'acceptedAt'}.contains) &&
               claimsSelf;
         }
 
@@ -313,7 +323,8 @@ void main() {
         expect(allowed, isTrue);
       });
 
-      test('PASS: delivery agent updates allowed delivery status to Delivered', () {
+      test('PASS: delivery agent updates allowed delivery status to Delivered',
+          () {
         final allowed = evaluateOrderUpdateRule(
           authUid: 'agent_1',
           authRole: 'delivery',

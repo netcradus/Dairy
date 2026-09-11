@@ -125,6 +125,7 @@ class DeliveryAgent {
 class DeliveryOrder {
   final String id;
   final String orderId;
+  final String orderCode;
   final String customerName;
   final String customerPhone;
   final String customerAddress;
@@ -146,6 +147,7 @@ class DeliveryOrder {
   const DeliveryOrder({
     required this.id,
     required this.orderId,
+    this.orderCode = '',
     required this.customerName,
     required this.customerPhone,
     required this.customerAddress,
@@ -165,9 +167,13 @@ class DeliveryOrder {
     this.longitude,
   });
 
+  /// The customer-facing 6-character order code (e.g. "KRT482").
+  String get displayCode => orderCode.isNotEmpty ? orderCode : orderId;
+
   DeliveryOrder copyWith({
     String? id,
     String? orderId,
+    String? orderCode,
     String? customerName,
     String? customerPhone,
     String? customerAddress,
@@ -189,6 +195,7 @@ class DeliveryOrder {
     return DeliveryOrder(
       id: id ?? this.id,
       orderId: orderId ?? this.orderId,
+      orderCode: orderCode ?? this.orderCode,
       customerName: customerName ?? this.customerName,
       customerPhone: customerPhone ?? this.customerPhone,
       customerAddress: customerAddress ?? this.customerAddress,
@@ -213,6 +220,7 @@ class DeliveryOrder {
 class DeliveryRequest {
   final String id;
   final String orderId;
+  final String orderCode;
   final String customerName;
   final String customerPhone;
   final String customerAddress;
@@ -230,6 +238,7 @@ class DeliveryRequest {
   const DeliveryRequest({
     required this.id,
     required this.orderId,
+    this.orderCode = '',
     required this.customerName,
     required this.customerPhone,
     required this.customerAddress,
@@ -245,9 +254,13 @@ class DeliveryRequest {
     this.status = DeliveryRequestStatus.pending,
   });
 
+  /// The customer-facing 6-character order code (e.g. "KRT482").
+  String get displayCode => orderCode.isNotEmpty ? orderCode : orderId;
+
   DeliveryRequest copyWith({
     String? id,
     String? orderId,
+    String? orderCode,
     String? customerName,
     String? customerPhone,
     String? customerAddress,
@@ -265,6 +278,7 @@ class DeliveryRequest {
     return DeliveryRequest(
       id: id ?? this.id,
       orderId: orderId ?? this.orderId,
+      orderCode: orderCode ?? this.orderCode,
       customerName: customerName ?? this.customerName,
       customerPhone: customerPhone ?? this.customerPhone,
       customerAddress: customerAddress ?? this.customerAddress,
@@ -302,6 +316,7 @@ class DeliveryEarnings {
 
 class DeliveryHistoryItem {
   final String orderId;
+  final String orderCode;
   final String customerName;
   final String status;
   final double earnings;
@@ -310,10 +325,14 @@ class DeliveryHistoryItem {
 
   const DeliveryHistoryItem({
     required this.orderId,
+    this.orderCode = '',
     required this.customerName,
     required this.status,
     required this.earnings,
     required this.date,
     required this.distance,
   });
+
+  /// The customer-facing 6-character order code (e.g. "KRT482").
+  String get displayCode => orderCode.isNotEmpty ? orderCode : orderId;
 }
