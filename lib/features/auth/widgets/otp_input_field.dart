@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_sizes.dart';
-
 /// Touch-Friendly 6-Digit OTP PIN Input Widget
 class OtpInputField extends StatefulWidget {
   final ValueChanged<String> onCompleted;
@@ -28,15 +25,25 @@ class _OtpInputFieldState extends State<OtpInputField> {
     super.initState();
     // Pre-populate with space to detect backspace on empty fields across all platforms (mobile IME)
     _controllers = List.generate(6, (_) => TextEditingController(text: ' '));
+    for (var node in _focusNodes) {
+      node.addListener(_onFocusChange);
+    }
+  }
+
+  void _onFocusChange() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
+    for (var node in _focusNodes) {
+      node.removeListener(_onFocusChange);
+      node.dispose();
+    }
     for (var controller in _controllers) {
       controller.dispose();
-    }
-    for (var node in _focusNodes) {
-      node.dispose();
     }
     super.dispose();
   }
@@ -85,67 +92,99 @@ class _OtpInputFieldState extends State<OtpInputField> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: List.generate(6, (index) {
+        final isFocused = _focusNodes[index].hasFocus;
+        final hasValue =
+            _controllers[index].text.replaceAll(' ', '').isNotEmpty;
+
         return Expanded(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4.0),
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 46),
+                constraints: const BoxConstraints(maxWidth: 48),
                 child: SizedBox(
-                  height: 56,
-                  child: KeyboardListener(
-                    focusNode: FocusNode(skipTraversal: true),
-                    onKeyEvent: (KeyEvent event) {
-                      if (event is KeyDownEvent) {
-                        if (event.logicalKey == LogicalKeyboardKey.arrowLeft &&
-                            index > 0) {
-                          _focusNodes[index - 1].requestFocus();
-                        } else if (event.logicalKey ==
-                                LogicalKeyboardKey.arrowRight &&
-                            index < 5) {
-                          _focusNodes[index + 1].requestFocus();
-                        }
-                      }
-                    },
-                    child: TextFormField(
-                      controller: _controllers[index],
-                      focusNode: _focusNodes[index],
-                      keyboardType: TextInputType.number,
-                      textAlign: TextAlign.center,
-                      textInputAction: index < 5
-                          ? TextInputAction.next
-                          : TextInputAction.done,
-                      onFieldSubmitted: (_) {
-                        final code = _controllers
-                            .map((c) => c.text.replaceAll(' ', ''))
-                            .join();
-                        if (code.length == 6) {
-                          widget.onCompleted(code);
+                  height: 58,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isFocused
+                            ? const Color(0xFF28541C) // Focused deep green
+                            : hasValue
+                                ? const Color(0xFF3B7228) // Filled green
+                                : const Color(
+                                    0xFF7FA873), // Clearly visible inactive green
+                        width: isFocused ? 2.2 : (hasValue ? 1.8 : 1.5),
+                      ),
+                      boxShadow: [
+                        if (isFocused)
+                          BoxShadow(
+                            color:
+                                const Color(0xFF28541C).withValues(alpha: 0.25),
+                            blurRadius: 8,
+                            spreadRadius: 1,
+                            offset: const Offset(0, 2),
+                          )
+                        else
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.07),
+                            blurRadius: 5,
+                            offset: const Offset(0, 2),
+                          ),
+                      ],
+                    ),
+                    child: KeyboardListener(
+                      focusNode: FocusNode(skipTraversal: true),
+                      onKeyEvent: (KeyEvent event) {
+                        if (event is KeyDownEvent) {
+                          if (event.logicalKey ==
+                                  LogicalKeyboardKey.arrowLeft &&
+                              index > 0) {
+                            _focusNodes[index - 1].requestFocus();
+                          } else if (event.logicalKey ==
+                                  LogicalKeyboardKey.arrowRight &&
+                              index < 5) {
+                            _focusNodes[index + 1].requestFocus();
+                          }
                         }
                       },
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primaryBlue,
-                      ),
-                      inputFormatters: [
-                        LengthLimitingTextInputFormatter(2),
-                        FilteringTextInputFormatter.allow(RegExp(r'[0-9\s]')),
-                      ],
-                      onChanged: (value) => _onDigitChanged(index, value),
-                      decoration: const InputDecoration(
-                        filled: true,
-                        fillColor: AppColors.inputBackground,
-                        contentPadding: EdgeInsets.zero,
-                        border: OutlineInputBorder(
-                          borderRadius: AppSizes.borderMedium,
-                          borderSide: BorderSide(color: AppColors.border),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: AppSizes.borderMedium,
-                          borderSide: BorderSide(
-                            color: AppColors.primaryBlue,
-                            width: 2.0,
+                      child: Center(
+                        child: TextFormField(
+                          controller: _controllers[index],
+                          focusNode: _focusNodes[index],
+                          keyboardType: TextInputType.number,
+                          textAlign: TextAlign.center,
+                          cursorColor: const Color(0xFF28541C),
+                          textInputAction: index < 5
+                              ? TextInputAction.next
+                              : TextInputAction.done,
+                          onFieldSubmitted: (_) {
+                            final code = _controllers
+                                .map((c) => c.text.replaceAll(' ', ''))
+                                .join();
+                            if (code.length == 6) {
+                              widget.onCompleted(code);
+                            }
+                          },
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF1B4315),
+                          ),
+                          inputFormatters: [
+                            LengthLimitingTextInputFormatter(2),
+                            FilteringTextInputFormatter.allow(
+                                RegExp(r'[0-9\s]')),
+                          ],
+                          onChanged: (value) => _onDigitChanged(index, value),
+                          decoration: const InputDecoration(
+                            isDense: true,
+                            contentPadding: EdgeInsets.zero,
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
                           ),
                         ),
                       ),

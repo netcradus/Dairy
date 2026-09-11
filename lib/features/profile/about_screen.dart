@@ -95,9 +95,10 @@ const List<_Product> _products = [
 
 const List<_Value> _values = [
   _Value('PURITY', 'Care in every drop.', 'assets/images/purity.jpg'),
-  _Value('QUALITY', 'Quality at every stage.', 'assets/images/nature quality.jpg'),
   _Value(
-      'FRESHNESS', 'Freshness for everyday life.', 'assets/images/freshness.jpg'),
+      'QUALITY', 'Quality at every stage.', 'assets/images/nature quality.jpg'),
+  _Value('FRESHNESS', 'Freshness for everyday life.',
+      'assets/images/freshness.jpg'),
   _Value('TRUST', 'Building lasting customer relationships.',
       'assets/images/trust.jpg'),
 ];
@@ -929,9 +930,8 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
                         crossAxisCount: isDesktop ? 4 : (isTablet ? 3 : 2),
                         mainAxisSpacing: AppSizes.p16,
                         crossAxisSpacing: AppSizes.p16,
-                        childAspectRatio: isDesktop
-                            ? 0.76
-                            : (isTablet ? 0.72 : 0.68),
+                        childAspectRatio:
+                            isDesktop ? 0.76 : (isTablet ? 0.72 : 0.68),
                         children: _products
                             .map((p) => _ProductCard(product: p))
                             .toList(),

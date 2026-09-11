@@ -12,7 +12,8 @@ import 'add_address_screen.dart';
 class AddressScreen extends ConsumerWidget {
   const AddressScreen({super.key});
 
-  Future<void> _onUseCurrentLocation(BuildContext context, WidgetRef ref) async {
+  Future<void> _onUseCurrentLocation(
+      BuildContext context, WidgetRef ref) async {
     final newAddr = await Navigator.push<Address>(
       context,
       MaterialPageRoute(
@@ -79,7 +80,8 @@ class AddressScreen extends ConsumerWidget {
                               color: AppColors.surface,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                  color: AppColors.error.withValues(alpha: 0.2)),
+                                  color:
+                                      AppColors.error.withValues(alpha: 0.2)),
                             ),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
@@ -125,14 +127,16 @@ class AddressScreen extends ConsumerWidget {
                               ),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: AppColors.primaryBlue.withValues(alpha: 0.35),
+                                color: AppColors.primaryBlue
+                                    .withValues(alpha: 0.35),
                                 width: 1.4,
                               ),
                             ),
                             child: Material(
                               color: Colors.transparent,
                               child: InkWell(
-                                onTap: () => _onUseCurrentLocation(context, ref),
+                                onTap: () =>
+                                    _onUseCurrentLocation(context, ref),
                                 borderRadius: BorderRadius.circular(12),
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(
@@ -144,7 +148,8 @@ class AddressScreen extends ConsumerWidget {
                                         height: 42,
                                         decoration: BoxDecoration(
                                           color: AppColors.primaryBlue,
-                                          borderRadius: BorderRadius.circular(10),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
                                         ),
                                         child: const Icon(
                                           Icons.my_location_rounded,
@@ -192,14 +197,16 @@ class AddressScreen extends ConsumerWidget {
                           // ── ADD NEW ADDRESS BUTTON ──
                           OutlinedButton.icon(
                             onPressed: () => _onAddNewAddress(context, ref),
-                            icon: const Icon(Icons.add_location_alt_outlined, size: 18),
+                            icon: const Icon(Icons.add_location_alt_outlined,
+                                size: 18),
                             label: const Text(
                               'Add New Address Manually',
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppColors.primaryBlue,
-                              side: const BorderSide(color: AppColors.primaryBlue),
+                              side: const BorderSide(
+                                  color: AppColors.primaryBlue),
                               padding: const EdgeInsets.symmetric(vertical: 13),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
@@ -277,7 +284,8 @@ class AddressScreen extends ConsumerWidget {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(Icons.location_off_outlined,
-                                        size: 44, color: AppColors.textSecondary),
+                                        size: 44,
+                                        color: AppColors.textSecondary),
                                     SizedBox(height: 10),
                                     Text(
                                       'No Saved Addresses',
@@ -312,4 +320,3 @@ class AddressScreen extends ConsumerWidget {
     );
   }
 }
-

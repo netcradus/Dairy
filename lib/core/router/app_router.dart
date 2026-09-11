@@ -77,8 +77,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       }
 
       // 4. Delivery-only routes: strictly enforce Delivery Agent authorization
-      final isDeliveryRoute =
-          path == '/delivery' || path == '/delivery-map' || path.startsWith('/delivery/');
+      final isDeliveryRoute = path == '/delivery' ||
+          path == '/delivery-map' ||
+          path.startsWith('/delivery/');
       if (isDeliveryRoute && !isDelivery) {
         return isAdmin ? '/admin' : '/home';
       }

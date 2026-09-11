@@ -73,7 +73,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             'Enjoy fresh and quality dairy products delivered with care from Sawariya Dairy.'),
         imageAsset: AppAssets.landingHeroMilk,
         showProductGrid: false,
-        visualWidget: _DairyFreshVisual(),
+        visualWidget: const _DairyFreshVisual(),
       ),
       OnboardingData(
         title: tr('Pure Products, Trusted Quality'),
@@ -81,7 +81,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             'Every product is sourced fresh, hygienically packed and quality-checked to bring you the best of Sawariya Dairy.'),
         imageAsset: AppAssets.landingHeroProducts,
         showProductGrid: true,
-        visualWidget: _DairyCollectionVisual(),
+        visualWidget: const _DairyCollectionVisual(),
       ),
       OnboardingData(
         title: tr('Simple Shopping, Fresh Delivery'),
@@ -89,7 +89,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             'Discover your favorite dairy products, order easily and enjoy freshness at your doorstep.'),
         imageAsset: AppAssets.landingHeroScooter,
         showProductGrid: false,
-        visualWidget: _DairyDeliveryVisual(),
+        visualWidget: const _DairyDeliveryVisual(),
       ),
     ];
 
@@ -191,48 +191,42 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     return Row(
       children: [
-        // Left Half: High Resolution Looping Hero Pane (4:5 full ratio)
+        // Left Half: High Resolution Hero Pane (covers whole area)
         Expanded(
           flex: 5,
           child: Container(
             color: Colors.white,
-            child: Center(
-              child: AspectRatio(
-                aspectRatio: 4 / 5,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Image.asset(
-                      key: ValueKey<String>(page.imageAsset),
-                      page.imageAsset,
-                      fit: BoxFit.contain,
-                      width: double.infinity,
-                      height: double.infinity,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Center(
-                        child: Icon(Icons.image_outlined,
-                            color: Color(0xFFD4AF37), size: 48),
-                      ),
-                    ),
-                    // Soft edge gradient overlay
-                    Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.black.withValues(alpha: 0.05),
-                              Colors.transparent,
-                              Colors.black.withValues(alpha: 0.12),
-                            ],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.asset(
+                  key: ValueKey<String>(page.imageAsset),
+                  page.imageAsset,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                  errorBuilder: (context, error, stackTrace) => const Center(
+                    child: Icon(Icons.image_outlined,
+                        color: Color(0xFFD4AF37), size: 48),
+                  ),
                 ),
-              ),
+                // Soft edge gradient overlay
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.black.withValues(alpha: 0.05),
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.12),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -312,47 +306,41 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     return Column(
       children: [
-        // Top Half: Visual Header Pane (4:5 full ratio)
+        // Top Half: Visual Header Pane (covers whole area)
         Expanded(
           flex: 5,
           child: Container(
             color: Colors.white,
-            child: Center(
-              child: AspectRatio(
-                aspectRatio: 4 / 5,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Image.asset(
-                      key: ValueKey<String>(page.imageAsset),
-                      page.imageAsset,
-                      fit: BoxFit.contain,
-                      width: double.infinity,
-                      height: double.infinity,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Center(
-                        child: Icon(Icons.image_outlined,
-                            color: Color(0xFFD4AF37), size: 48),
-                      ),
-                    ),
-                    Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.black.withValues(alpha: 0.08),
-                              Colors.transparent,
-                              Colors.black.withValues(alpha: 0.2),
-                            ],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.asset(
+                  key: ValueKey<String>(page.imageAsset),
+                  page.imageAsset,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                  errorBuilder: (context, error, stackTrace) => const Center(
+                    child: Icon(Icons.image_outlined,
+                        color: Color(0xFFD4AF37), size: 48),
+                  ),
                 ),
-              ),
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.black.withValues(alpha: 0.08),
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.2),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),

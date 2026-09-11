@@ -133,7 +133,9 @@ class PinCodeService {
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
-        if (decoded is List && decoded.isNotEmpty && decoded.first is Map<String, dynamic>) {
+        if (decoded is List &&
+            decoded.isNotEmpty &&
+            decoded.first is Map<String, dynamic>) {
           final entry = decoded.first as Map<String, dynamic>;
           final status = entry['Status']?.toString();
 
@@ -148,11 +150,16 @@ class PinCodeService {
 
               for (final po in postOffices) {
                 if (po is Map<String, dynamic>) {
-                  if (po['District'] != null) returnedDistricts.add(po['District'].toString());
-                  if (po['Name'] != null) returnedNames.add(po['Name'].toString());
-                  if (po['Block'] != null) returnedBlocks.add(po['Block'].toString());
-                  if (po['Division'] != null) returnedDivisions.add(po['Division'].toString());
-                  if (po['State'] != null) returnedStates.add(po['State'].toString());
+                  if (po['District'] != null)
+                    returnedDistricts.add(po['District'].toString());
+                  if (po['Name'] != null)
+                    returnedNames.add(po['Name'].toString());
+                  if (po['Block'] != null)
+                    returnedBlocks.add(po['Block'].toString());
+                  if (po['Division'] != null)
+                    returnedDivisions.add(po['Division'].toString());
+                  if (po['State'] != null)
+                    returnedStates.add(po['State'].toString());
                 }
               }
 
@@ -174,12 +181,14 @@ class PinCodeService {
                   status: PinCodeValidationStatus.valid,
                   matchedCities: returnedNames.toList(),
                   matchedDistricts: returnedDistricts.toList(),
-                  state: returnedStates.isNotEmpty ? returnedStates.first : null,
+                  state:
+                      returnedStates.isNotEmpty ? returnedStates.first : null,
                 );
               } else {
                 return const PinCodeValidationResult(
                   status: PinCodeValidationStatus.mismatch,
-                  errorMessage: 'This PIN code does not match the selected city.',
+                  errorMessage:
+                      'This PIN code does not match the selected city.',
                 );
               }
             }
@@ -198,7 +207,8 @@ class PinCodeService {
 
     // 3. Fallback: Query Photon Geocoder
     try {
-      final photonResult = await _verifyWithPhoton(cleanPin, cleanCity, cleanState);
+      final photonResult =
+          await _verifyWithPhoton(cleanPin, cleanCity, cleanState);
       if (photonResult != null) {
         return photonResult;
       }
@@ -231,11 +241,14 @@ class PinCodeService {
       ...divisions,
     };
 
-    final allNormTokens = allTokens.map(_normalize).where((s) => s.isNotEmpty).toSet();
+    final allNormTokens =
+        allTokens.map(_normalize).where((s) => s.isNotEmpty).toSet();
 
     // Check direct equality or substring inclusion
     for (final token in allNormTokens) {
-      if (token == normCity || token.contains(normCity) || normCity.contains(token)) {
+      if (token == normCity ||
+          token.contains(normCity) ||
+          normCity.contains(token)) {
         return true;
       }
     }
@@ -245,7 +258,9 @@ class PinCodeService {
     for (final alias in aliases) {
       final normAlias = _normalize(alias);
       for (final token in allNormTokens) {
-        if (token == normAlias || token.contains(normAlias) || normAlias.contains(token)) {
+        if (token == normAlias ||
+            token.contains(normAlias) ||
+            normAlias.contains(token)) {
           return true;
         }
       }
@@ -286,9 +301,9 @@ class PinCodeService {
       'limit': '5',
     });
 
-    final response = await _client
-        .get(uri, headers: {'Accept': 'application/json'})
-        .timeout(const Duration(seconds: 5));
+    final response = await _client.get(uri, headers: {
+      'Accept': 'application/json'
+    }).timeout(const Duration(seconds: 5));
 
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
@@ -302,11 +317,16 @@ class PinCodeService {
             if (f is Map<String, dynamic>) {
               final props = f['properties'];
               if (props is Map<String, dynamic>) {
-                if (props['city'] != null) returnedCities.add(props['city'].toString());
-                if (props['name'] != null) returnedCities.add(props['name'].toString());
-                if (props['county'] != null) returnedCities.add(props['county'].toString());
-                if (props['district'] != null) returnedCities.add(props['district'].toString());
-                if (props['state'] != null) returnedStates.add(props['state'].toString());
+                if (props['city'] != null)
+                  returnedCities.add(props['city'].toString());
+                if (props['name'] != null)
+                  returnedCities.add(props['name'].toString());
+                if (props['county'] != null)
+                  returnedCities.add(props['county'].toString());
+                if (props['district'] != null)
+                  returnedCities.add(props['district'].toString());
+                if (props['state'] != null)
+                  returnedStates.add(props['state'].toString());
               }
             }
           }
@@ -314,14 +334,18 @@ class PinCodeService {
           final normCity = _normalize(city);
           final matchesCity = returnedCities.any((c) {
             final nc = _normalize(c);
-            return nc == normCity || nc.contains(normCity) || normCity.contains(nc);
+            return nc == normCity ||
+                nc.contains(normCity) ||
+                normCity.contains(nc);
           });
 
           final normState = _normalize(state);
           final matchesState = normState.isEmpty ||
               returnedStates.any((s) {
                 final ns = _normalize(s);
-                return ns == normState || ns.contains(normState) || normState.contains(ns);
+                return ns == normState ||
+                    ns.contains(normState) ||
+                    normState.contains(ns);
               });
 
           if (matchesCity && matchesState) {

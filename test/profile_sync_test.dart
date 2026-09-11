@@ -64,8 +64,8 @@ void main() {
       // Verify 'Zehra' appears in both Sidebar and ProfileScreen
       expect(find.text('Zehra'), findsNWidgets(2));
 
-      // Verify 'Fresh Member' badge/label appears in both Sidebar and ProfileScreen
-      expect(find.text('Fresh Member'), findsNWidgets(2));
+      // Verify 'Fresh Member' badge/label appears in ProfileScreen header
+      expect(find.text('Fresh Member'), findsOneWidget);
 
       // Verify phone number in ProfileScreen
       expect(find.text('+91 98765 43210'), findsOneWidget);
@@ -93,7 +93,9 @@ void main() {
       expect(find.text('Zehra'), findsNWidgets(2));
 
       // Update user name in shared provider
-      await container.read(userProvider.notifier).updateProfile(name: 'Zehra Khan');
+      await container
+          .read(userProvider.notifier)
+          .updateProfile(name: 'Zehra Khan');
       await tester.pumpAndSettle();
 
       // Both Header and Sidebar must immediately reflect 'Zehra Khan'
@@ -132,6 +134,52 @@ void main() {
 
       // Provider holds new image URL
       expect(container.read(userProvider).profileImageUrl, equals(newImageUrl));
+    });
+
+    testWidgets(
+        'Test 4: Clicking bottom sidebar profile tile opens popup with logout button and logs out',
+        (tester) async {
+      setupScreenSize(tester);
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      const initialUser = User(
+        id: 'usr_test_123',
+        name: 'test',
+        phone: '+91 98765 43210',
+        email: 'test@example.com',
+        role: 'customer',
+      );
+      container.read(userProvider.notifier).setSession(initialUser);
+
+      await tester.pumpWidget(createDesktopLayoutTestWidget(container));
+      await tester.pumpAndSettle();
+
+      // Tap on the bottom sidebar profile tile showing 'test'
+      expect(find.text('test'), findsWidgets);
+      await tester.tap(find.text('test').first);
+      await tester.pumpAndSettle();
+
+      // Popup dialog appears with My Profile and Log Out options
+      expect(find.text('My Profile'), findsWidgets);
+      expect(find.text('Log Out'), findsWidgets);
+
+      // Tap Log Out in popup dialog
+      await tester.tap(find.text('Log Out').last);
+      await tester.pumpAndSettle();
+
+      // Confirmation dialog opens with question
+      expect(
+        find.text('Are you sure you want to log out of Sawariya Dairy?'),
+        findsOneWidget,
+      );
+
+      // Tap Log Out in confirmation dialog
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Log Out'));
+      await tester.pumpAndSettle();
+
+      // Session cleared
+      expect(container.read(userProvider).id, isEmpty);
     });
   });
 }

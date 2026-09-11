@@ -137,7 +137,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       // 1. Validate file extension (case-insensitive: .jpg, .jpeg, .png)
       final fileName = picked.name.isNotEmpty ? picked.name : picked.path;
       final dotIndex = fileName.lastIndexOf('.');
-      final ext = dotIndex != -1 ? fileName.substring(dotIndex).toLowerCase() : '';
+      final ext =
+          dotIndex != -1 ? fileName.substring(dotIndex).toLowerCase() : '';
       final hasValidExt = ext == '.jpg' || ext == '.jpeg' || ext == '.png';
 
       if (!hasValidExt) {
@@ -212,12 +213,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       final storagePath = 'profiles/$effectiveUid/image';
       debugPrint('[PROFILE DEBUG] 2. Storage upload path: $storagePath');
 
-      final downloadUrl = await FirebaseStorageService.instance
-          .uploadProfileImage(
-            uid: effectiveUid,
-            bytes: bytes,
-            contentType: detectedContentType,
-          );
+      final downloadUrl =
+          await FirebaseStorageService.instance.uploadProfileImage(
+        uid: effectiveUid,
+        bytes: bytes,
+        contentType: detectedContentType,
+      );
 
       final uri = Uri.tryParse(downloadUrl);
       final safeUrlSummary = uri != null

@@ -10,7 +10,9 @@ void main() {
       expect(AppValidators.validateFullName('Rahul Sharma'), isNull);
     });
 
-    test('Valid names with leading/trailing/multiple spaces should be accepted and normalized', () {
+    test(
+        'Valid names with leading/trailing/multiple spaces should be accepted and normalized',
+        () {
       expect(AppValidators.validateFullName('  Hiba Khan  '), isNull);
       expect(AppValidators.normalizeName('  Hiba Khan  '), equals('Hiba Khan'));
 

@@ -331,9 +331,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
           id: firebaseUser.uid,
           name: fullName,
           phone: mobile,
-          email: firebaseUser.email?.isNotEmpty == true
-              ? firebaseUser.email!
-              : '',
+          email:
+              firebaseUser.email?.isNotEmpty == true ? firebaseUser.email! : '',
           role: 'customer',
         );
 

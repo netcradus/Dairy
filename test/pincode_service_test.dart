@@ -43,7 +43,8 @@ void main() {
       expect(result.errorMessage, isNull);
     });
 
-    test('Test 2: Valid city + mismatching PIN returns mismatch error', () async {
+    test('Test 2: Valid city + mismatching PIN returns mismatch error',
+        () async {
       final mockClient = MockClient((request) async {
         if (request.url.path.contains('110001')) {
           return http.Response(
@@ -113,7 +114,8 @@ void main() {
       );
     });
 
-    test('Test 5: API / Network failure returns unable to verify error', () async {
+    test('Test 5: API / Network failure returns unable to verify error',
+        () async {
       final mockClient = MockClient((request) async {
         throw http.ClientException('Connection failed');
       });
@@ -132,7 +134,9 @@ void main() {
       );
     });
 
-    test('Test 6: Alias matching for cities (Gurugram <-> Gurgaon, Noida <-> Gautam Buddha Nagar)', () async {
+    test(
+        'Test 6: Alias matching for cities (Gurugram <-> Gurgaon, Noida <-> Gautam Buddha Nagar)',
+        () async {
       final mockClient = MockClient((request) async {
         if (request.url.path.contains('122001')) {
           return http.Response(

@@ -654,7 +654,7 @@ class _CustomerSupportScreenState extends ConsumerState<CustomerSupportScreen> {
                         TextFormField(
                           controller: _orderIdController,
                           decoration: _inputDecoration(
-                              'Related Order ID (Optional, e.g. ORD-10280)'),
+                              'Related Order ID (Optional, e.g. KRT482)'),
                         ),
                         const SizedBox(height: AppSizes.p14),
 
@@ -974,7 +974,7 @@ class _CustomerSupportScreenState extends ConsumerState<CustomerSupportScreen> {
                     size: 13, color: AppColors.textSecondary),
                 const SizedBox(width: 4),
                 Text(
-                  'Order: ${ticket.orderId}',
+                  'Order #${ticket.orderId}',
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
