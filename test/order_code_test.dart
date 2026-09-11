@@ -15,11 +15,14 @@ void main() {
         final code = Order.generateRandomOrderCode();
         expect(code.length, 6, reason: 'Code must be exactly 6 characters');
         expect(orderCodePattern.hasMatch(code), isTrue,
-            reason: 'Code $code must match 3 uppercase letters followed by 3 numbers');
+            reason:
+                'Code $code must match 3 uppercase letters followed by 3 numbers');
       }
     });
 
-    test('formatFallbackOrderCode produces valid deterministic 6-char LLLNNN code', () {
+    test(
+        'formatFallbackOrderCode produces valid deterministic 6-char LLLNNN code',
+        () {
       const docIds = [
         'qdGceFb4bFokrvU9wkUO',
         'GGhB3QDR2QU9jZQWGSEX',
@@ -39,7 +42,9 @@ void main() {
       }
     });
 
-    test('Order model preserves Firestore docId while providing displayOrderCode', () {
+    test(
+        'Order model preserves Firestore docId while providing displayOrderCode',
+        () {
       const docId = 'qdGceFb4bFokrvU9wkUO';
       final order = Order(
         id: docId,
@@ -81,7 +86,8 @@ void main() {
       expect(order.displayOrderCode, equals('KRT482'));
     });
 
-    test('Order model handles legacy documents without orderCode gracefully', () {
+    test('Order model handles legacy documents without orderCode gracefully',
+        () {
       const docId = 'GGhB3QDR2QU9jZQWGSEX';
       final rawFirestoreData = <String, dynamic>{
         'status': 'Pending',
