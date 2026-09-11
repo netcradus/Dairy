@@ -16,10 +16,7 @@ class NotificationRepository {
 
   /// Returns the notifications subcollection reference for a given [userId].
   CollectionReference<Map<String, dynamic>> _notifCol(String userId) =>
-      _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('notifications');
+      _firestore.collection('users').doc(userId).collection('notifications');
 
   // ─── Read ───────────────────────────────────────────────────────────────
 
@@ -28,9 +25,8 @@ class NotificationRepository {
     return _notifCol(userId)
         .orderBy('timestamp', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map(NotificationItem.fromFirestore)
-            .toList());
+        .map((snapshot) =>
+            snapshot.docs.map(NotificationItem.fromFirestore).toList());
   }
 
   // ─── Mark read ──────────────────────────────────────────────────────────
@@ -109,7 +105,9 @@ class NotificationRepository {
       final batch = _firestore.batch();
       final chunk = operations.sublist(
         i,
-        (i + chunkSize) < operations.length ? (i + chunkSize) : operations.length,
+        (i + chunkSize) < operations.length
+            ? (i + chunkSize)
+            : operations.length,
       );
       for (final op in chunk) {
         op(batch);

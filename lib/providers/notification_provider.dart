@@ -21,17 +21,18 @@ final userNotificationsStreamProvider =
     StreamProvider.autoDispose<List<NotificationItem>>((ref) {
   final user = ref.watch(userProvider);
   final authUid = FirebaseAuth.instance.currentUser?.uid;
-  final effectiveUid = (authUid != null && authUid.isNotEmpty)
-      ? authUid
-      : user.id;
+  final effectiveUid =
+      (authUid != null && authUid.isNotEmpty) ? authUid : user.id;
 
   debugPrint('[NOTIF DEBUG] 1. FirebaseAuth.currentUser.uid: $authUid');
   debugPrint('[NOTIF DEBUG] 2. userProvider.id: ${user.id}');
   debugPrint('[NOTIF DEBUG] 3. effectiveUid used: $effectiveUid');
-  debugPrint('[NOTIF DEBUG] 4. Exact Firestore collection path being queried: users/$effectiveUid/notifications');
+  debugPrint(
+      '[NOTIF DEBUG] 4. Exact Firestore collection path being queried: users/$effectiveUid/notifications');
 
   if (effectiveUid.isEmpty) {
-    debugPrint('[NOTIF DEBUG] effectiveUid is empty (guest user), returning empty stream');
+    debugPrint(
+        '[NOTIF DEBUG] effectiveUid is empty (guest user), returning empty stream');
     return const Stream.empty();
   }
   return ref

@@ -374,7 +374,7 @@ class _NotificationTile extends StatelessWidget {
                 if (item.orderId != null) ...[
                   const SizedBox(height: 4),
                   Text(
-                    'Order: ${item.orderId}',
+                    'Order #${item.orderId}',
                     style: const TextStyle(
                       fontSize: 11,
                       color: AppColors.primaryBlue,

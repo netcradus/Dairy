@@ -69,8 +69,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           const SnackBar(
             content: Row(
               children: [
-                Icon(Icons.check_circle_rounded,
-                    color: Colors.white, size: 18),
+                Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
                 SizedBox(width: 8),
                 Text('Broadcast sent successfully! 🚀'),
               ],
@@ -208,9 +207,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                             Icon(
                               type.icon,
                               size: 14,
-                              color: isSelected
-                                  ? Colors.white
-                                  : AppColors.primary,
+                              color:
+                                  isSelected ? Colors.white : AppColors.primary,
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -300,14 +298,14 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               ),
               const Spacer(),
               asyncHistory.whenOrNull(
-                data: (list) => Text(
-                  '${list.length} sent',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 12,
-                    color: textSecondary,
-                  ),
-                ),
-              ) ??
+                    data: (list) => Text(
+                      '${list.length} sent',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        color: textSecondary,
+                      ),
+                    ),
+                  ) ??
                   const SizedBox.shrink(),
             ],
           ),
@@ -354,8 +352,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   decoration: BoxDecoration(
                     color: cardBg,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: cardBorder, style: BorderStyle.solid),
+                    border:
+                        Border.all(color: cardBorder, style: BorderStyle.solid),
                   ),
                   child: Center(
                     child: Column(

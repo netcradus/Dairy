@@ -3,7 +3,9 @@ import 'package:dairy_app/models/notification_item.dart';
 
 void main() {
   group('Notifications Security, Path & Model Tests', () {
-    test('Notification path construction matches exact Firestore subcollection structure', () {
+    test(
+        'Notification path construction matches exact Firestore subcollection structure',
+        () {
       const userId = 'user_abc_123';
       const notificationId = 'notif_xyz_789';
 
@@ -33,7 +35,8 @@ void main() {
       final firestoreMap = item.toFirestore();
       expect(firestoreMap['type'], 'order');
       expect(firestoreMap['title'], 'Order Confirmed');
-      expect(firestoreMap['body'], 'Your fresh milk order #ORD-101 is confirmed.');
+      expect(
+          firestoreMap['body'], 'Your fresh milk order #ORD-101 is confirmed.');
       expect(firestoreMap['orderId'], 'ORD-101');
       expect(firestoreMap['isRead'], false);
       expect(firestoreMap['isActionable'], true);
@@ -48,11 +51,16 @@ void main() {
     });
 
     test('NotificationType parsing and icon coverage', () {
-      expect(NotificationTypeExtension.fromString('order'), NotificationType.order);
-      expect(NotificationTypeExtension.fromString('delivery'), NotificationType.delivery);
-      expect(NotificationTypeExtension.fromString('promotional'), NotificationType.promotional);
-      expect(NotificationTypeExtension.fromString('subscription'), NotificationType.subscription);
-      expect(NotificationTypeExtension.fromString('unknown'), NotificationType.system);
+      expect(NotificationTypeExtension.fromString('order'),
+          NotificationType.order);
+      expect(NotificationTypeExtension.fromString('delivery'),
+          NotificationType.delivery);
+      expect(NotificationTypeExtension.fromString('promotional'),
+          NotificationType.promotional);
+      expect(NotificationTypeExtension.fromString('subscription'),
+          NotificationType.subscription);
+      expect(NotificationTypeExtension.fromString('unknown'),
+          NotificationType.system);
 
       expect(NotificationType.order.value, 'order');
       expect(NotificationType.delivery.value, 'delivery');
@@ -76,7 +84,8 @@ void main() {
       }) {
         final isSignedIn = authUid != null && authUid.isNotEmpty;
         final isOwnDoc = isSignedIn && authUid == targetUserId;
-        final isAdmin = isSignedIn && (authRole == 'admin' || authRole == 'superadmin');
+        final isAdmin =
+            isSignedIn && (authRole == 'admin' || authRole == 'superadmin');
 
         return isAdmin || isOwnDoc;
       }
@@ -90,7 +99,8 @@ void main() {
         expect(allowed, isTrue);
       });
 
-      test('Authenticated user CANNOT read or write ANOTHER user notifications', () {
+      test('Authenticated user CANNOT read or write ANOTHER user notifications',
+          () {
         final allowed = evaluateNotificationRule(
           authUid: 'user_123',
           authRole: 'customer',
